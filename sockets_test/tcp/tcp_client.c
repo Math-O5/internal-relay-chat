@@ -1,12 +1,22 @@
+// source https://docs.oracle.com/cd/E19455-01/806-1017/
 #include<stdio.h>
 #include<stdlib.h>
-
+#include<string.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<unistd.h>
+#include<arpa/inet.h> 
+/*
+family: AF_INET6, for IPv6  (128 bits) (16 bytes)
+        AF_INET, for IPv4 (32 bits), sustenta 2^32 ips
+        AF_UNIX, for local socket (using a file)
+        It is a network protocol. 
+types SOCK_STREAM, SOCK_DGRAM, or SOCK_RAW, 
+*/
 
 #include<netinet/in.h>
-#define PORT 9001
 
+#define PORT 9002
 
 int main() {
     //1 create a socket
@@ -28,7 +38,7 @@ int main() {
     //reiceve data
     char server_response[256];
     char client_message[4096];
-    printf("Anser: %s", server_response);
+    printf("Serve's answer: %s\n", server_response);
 
     while(1) {
         printf("Client: \t");
@@ -36,6 +46,7 @@ int main() {
         send(network_socket, client_message, strlen(client_message), 0);
 
         if(strcmp(client_message, ":exit") == 0) {
+            close(network_socket);
             printf("[-]Disconnected from server.\n");
             exit(1);
         }
@@ -43,9 +54,9 @@ int main() {
         if(recv(network_socket, &server_response, sizeof(server_response), 0) < 0) {
             printf("[-]Error in receing data.\n");
             exit(1);
+        } else {
+            printf("Server: \t%s\n", server_response);
         }
-
-        printf("Server: \t%s\n", server_response)
 
     }
     close(network_socket);
