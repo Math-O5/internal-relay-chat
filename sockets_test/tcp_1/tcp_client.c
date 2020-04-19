@@ -16,7 +16,7 @@ types SOCK_STREAM, SOCK_DGRAM, or SOCK_RAW,
 
 #include<netinet/in.h>
 
-#define PORT 9002
+#define PORT 8888
 
 int main() {
     //1 create a socket

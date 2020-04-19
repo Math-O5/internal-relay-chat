@@ -30,7 +30,6 @@ int main() {
     int client_socket;
     struct sockaddr_in client_address;
     pid_t childpid;
-
     socklen_t add_size;
 
     // 2. define socket address
@@ -67,7 +66,7 @@ int main() {
             parametors: fp os server sockt, NULL or teh address struct of client socket, NULL or the size of the struct address client.
         */
         client_socket = accept(server_socket, (struct sockaddr*) &client_address, &add_size);
-
+        printf("[+] Create client socket: %d\n", client_socket);
         if(client_socket < 0) {
             exit(1);
         }
@@ -78,6 +77,7 @@ int main() {
 
             while(1) {
                 recv(client_socket, client_message, 256, 0);
+                printf("message from client socket: %d\n", client_socket);
                 if(strcmp(client_message, ":exit") == 0) {
                     printf("Disconnected from %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
                     break;
@@ -88,10 +88,8 @@ int main() {
                 }
             }
         }
-        // send(client_socket, server_message, sizeof(server_message), 0);
     }
 
-    
     close(client_socket);
 
     return 0;
