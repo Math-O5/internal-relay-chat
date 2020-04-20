@@ -5,7 +5,7 @@
 #include <stdlib.h>  
 #include <errno.h>  
 #include <unistd.h>   //close  
-#include <arpa/inet.h>    //close  
+#include <arpa/inet.h>    
 #include <sys/types.h>  
 #include <sys/socket.h>  
 #include <netinet/in.h>  
@@ -13,10 +13,10 @@
      
 #define TRUE   1  
 #define FALSE  0  
-int PORT;  
 
 fd_set readfds;         //set of socket descriptors  
 
+int PORT;  
 int max_sd, max_clients; 
 int client_socket[30];   
         
@@ -78,10 +78,8 @@ void build_sets(int master_socket) {
     
     int sd; 
 
-    //clear the socket set  
-    FD_ZERO(&readfds);   
-    //add master socket to set  
-    FD_SET(master_socket, &readfds);   
+    FD_ZERO(&readfds);    //clear the socket set  
+    FD_SET(master_socket, &readfds);   //add master socket to set  
     max_sd  = master_socket;   
             
     //add child sockets to set  
@@ -111,7 +109,7 @@ int main(int argc , char *argv[])
     
     if(argc < 3)
     {
-        error("[x] No port given.");
+        error("[x] No port given. Set PORT=[INT] nLISTEN=[INT]");
     }
 
     PORT = atoi(argv[1]);
@@ -166,6 +164,7 @@ int main(int argc , char *argv[])
                 {   
                     client_socket[index] = new_socket;   
                     printf("Adding to list of sockets as %d\n", index);   
+                    fflush(stdout);
                     break;   
                 }   
             }   
@@ -186,9 +185,9 @@ int main(int argc , char *argv[])
                 {   
                     //Somebody disconnected , get his details and print  
                     getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
-                    printf("Host disconnected , ip %s , port %d \n" ,  
-                          inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
-                         
+                    printf("Host disconnected, ip %s, port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));   
+                    fflush(stdout);
+
                     //Close the socket and mark as 0 in list for reuse  
                     close(sd);   
                     client_socket[index] = 0;   
@@ -197,12 +196,14 @@ int main(int argc , char *argv[])
                 //Echo back the message that came in  
                 else 
                 {   
-                    //set the string terminating NULL byte on the end  
-                    //of the data read  
+                    //set the string terminating NULL byte on the end of the data read  
                     for(int index= valread; index <= 4096; ++index){
                         buffer[index] = '\0';
                     }  
+
                     printf("Client(%d): %s\n", sd, buffer);
+                    fflush(stdout);
+                    
                     for(int index = 0; index < max_clients; ++index){
                         if(client_socket[index] > 0 && client_socket[index] != sd){
                             send(client_socket[index] , &buffer , sizeof(buffer) , 0 );
