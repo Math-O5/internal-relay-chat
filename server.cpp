@@ -13,13 +13,12 @@
      
 #define TRUE   1  
 #define FALSE  0  
-int PORT = 9003;  
+int PORT;  
 
 fd_set readfds;         //set of socket descriptors  
 
-int addrlen, new_socket , client_socket[30] ,  
-        max_clients = 30 , activity, i , valread , sd;   
-int max_sd;   
+int max_sd, max_clients; 
+int client_socket[30];   
         
 char buffer[4096];      // data buffer of 1K   
 char message[4096] = "Welcome !!!";  // Serve message  
@@ -35,7 +34,7 @@ void sucess(const char *msg) {
 }
 
 void create_socket(int *master_socket, int num_listen) {
-    int opt = TRUE;  
+    int opt = TRUE;
     struct sockaddr_in address;   
 
     //create a master socket  
@@ -70,7 +69,6 @@ void create_socket(int *master_socket, int num_listen) {
     }   
          
     //accept the incoming connection  
-    addrlen = sizeof(address);   
     sucess("[+] Waiting for connections ...");  
 
     return;
@@ -78,24 +76,26 @@ void create_socket(int *master_socket, int num_listen) {
 
 void build_sets(int master_socket) {
     
+    int sd; 
+
     //clear the socket set  
     FD_ZERO(&readfds);   
     //add master socket to set  
     FD_SET(master_socket, &readfds);   
-    max_sd = master_socket;   
+    max_sd  = master_socket;   
             
     //add child sockets to set  
-    for (int i = 0 ; i < max_clients ; i++)   
+    for (int index = 0 ; index < max_clients ; ++index)   
     {   
         //socket descriptor  
-        sd = client_socket[i];   
+        sd = client_socket[index];   
                 
         //if valid socket descriptor then add to read list  
         if(sd > 0)   
-            FD_SET( sd , &readfds);   
+            FD_SET(sd , &readfds);   
                 
         //highest file descriptor number, need it for the select function  
-        if(sd > max_sd)   
+        if(sd > max_sd )   
             max_sd = sd;   
     } 
     return;
@@ -103,21 +103,25 @@ void build_sets(int master_socket) {
 
 int main(int argc , char *argv[])   
 {   
-    int master_socket, num_listen; 
+    int master_socket, sd, new_socket,
+        valread, index,
+        activity,
+        addrlen;
     struct sockaddr_in address;   
     
-    if(argc < 2)
+    if(argc < 3)
     {
         error("[x] No port given.");
     }
 
     PORT = atoi(argv[1]);
-    create_socket(&master_socket, num_listen);  
+    max_clients = atoi(argv[2]);
+    create_socket(&master_socket, max_clients);  
      
     //initialise all client_socket[] to 0 so not checked  
-    for (i = 0; i < max_clients; i++)   
+    for (index = 0; index < max_clients; ++index)   
     {   
-        client_socket[i] = 0;   
+        client_socket[index] = 0;   
     }   
 
     while(TRUE)   
@@ -137,45 +141,40 @@ int main(int argc , char *argv[])
         //then its an incoming connection  
         if (FD_ISSET(master_socket, &readfds))   
         {   
-            if ((new_socket = accept(master_socket,  
-                    (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
+            if ((new_socket = accept(master_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
             {   
-                perror("accept");   
-                exit(EXIT_FAILURE);   
+                error("[x] accept");     
             }   
 
             //inform user of socket number - used in send and receive commands  
-            printf("New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));   
-           
+            printf("[x] New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));   
+            fflush(stdout);
+
             //send new connection greeting message  
-            if(send(new_socket, message, strlen(message), 0) != strlen(message))   
+            if((size_t)send(new_socket, message, strlen(message), 0) != (size_t)strlen(message))   
             {   
-                perror("send");   
+                error("[x] On send");   
             }   
                  
-            puts("Welcome message sent successfully");   
+            sucess("Welcome message sent successfully");   
                  
             //add new socket to array of sockets  
-            for (i = 0; i < max_clients; i++)   
+            for (index = 0; index < max_clients; ++index)   
             {   
                 //if position is empty  
-                if(client_socket[i] == 0)   
+                if(client_socket[index] == 0)   
                 {   
-                    client_socket[i] = new_socket;   
-                    printf("Adding to list of sockets as %d\n" , i);   
-
-                    // FD_SET
-                    // FD_SET(new_socket, &readfds);
-
+                    client_socket[index] = new_socket;   
+                    printf("Adding to list of sockets as %d\n", index);   
                     break;   
                 }   
             }   
         }   
              
         //else its some IO operation on some other socket 
-        for (i = 0; i < max_clients; i++)   
+        for (index = 0; index < max_clients; ++index)   
         {   
-            sd = client_socket[i];   
+            sd = client_socket[index];   
 
             if(sd == master_socket) continue;
                  
@@ -186,14 +185,13 @@ int main(int argc , char *argv[])
                 if ((valread = read(sd , buffer, sizeof(buffer))) == 0)   
                 {   
                     //Somebody disconnected , get his details and print  
-                    getpeername(sd , (struct sockaddr*)&address , 
-                        (socklen_t*)&addrlen);   
+                    getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
                     printf("Host disconnected , ip %s , port %d \n" ,  
                           inet_ntoa(address.sin_addr) , ntohs(address.sin_port));   
                          
                     //Close the socket and mark as 0 in list for reuse  
-                    close( sd );   
-                    client_socket[i] = 0;   
+                    close(sd);   
+                    client_socket[index] = 0;   
                 }   
                      
                 //Echo back the message that came in  
@@ -201,13 +199,13 @@ int main(int argc , char *argv[])
                 {   
                     //set the string terminating NULL byte on the end  
                     //of the data read  
-                    for(int i = valread; i <= 4096; i++){
-                        buffer[i] = '\0';
+                    for(int index= valread; index <= 4096; ++index){
+                        buffer[index] = '\0';
                     }  
                     printf("Client(%d): %s\n", sd, buffer);
-                    for(int i = 0; i < max_clients; i++){
-                        if(client_socket[i] > 0 && client_socket[i] != sd){
-                            send(client_socket[i] , &buffer , sizeof(buffer) , 0 );
+                    for(int index = 0; index < max_clients; ++index){
+                        if(client_socket[index] > 0 && client_socket[index] != sd){
+                            send(client_socket[index] , &buffer , sizeof(buffer) , 0 );
                         }
                     }
                 }   
