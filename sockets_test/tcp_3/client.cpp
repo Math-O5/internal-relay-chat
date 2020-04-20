@@ -16,13 +16,21 @@ types SOCK_STREAM, SOCK_DGRAM, or SOCK_RAW,
 
 #include<netinet/in.h>
 
-#define PORT 8888
-
+#define PORT 9002
+#define STDIN 0
 int main() {
     //1 create a socket
     int network_socket;
-    network_socket = socket(AF_INET, SOCK_STREAM, 0);
+    fd_set readys;
+    int retval, len;
+    char buffer[4096] = {0};
 
+    //reiceve data
+    char server_response[4096];
+    char client_message[4096];
+
+    network_socket = socket(AF_INET, SOCK_STREAM, 0);
+    
     //specify an address for thesocket
     struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
@@ -35,30 +43,47 @@ int main() {
         exit(1);
     }
 
-    //reiceve data
-    char server_response[256];
-    char client_message[4096];
-    printf("Serve's answer: %s\n", server_response);
+    while(true) {
+        FD_ZERO(&readys);
+        FD_SET(STDIN, &readys);
+        FD_SET(network_socket, &readys);
+        retval = select(network_socket+1, &readys, NULL, NULL, NULL);
 
-    while(1) {
-        printf("Client: \t");
-        scanf("%s", &client_message[0]);
-        send(network_socket, client_message, strlen(client_message), 0);
-
-        if(strcmp(client_message, ":exit") == 0) {
-            close(network_socket);
-            printf("[-]Disconnected from server.\n");
-            exit(1);
+        if (retval <= -1){
+            perror("select()");
+            exit(EXIT_FAILURE);
         }
+        else {
+            if(FD_ISSET(STDIN, &readys)){
+                printf("\nUser input - stdin");
+                /* FD_ISSET(0, &rfds) is true so input is available now. */
 
-        if(recv(network_socket, &server_response, sizeof(server_response), 0) < 0) {
-            printf("[-]Error in receing data.\n");
-            exit(1);
-        } else {
-            printf("Server: \t%s\n", server_response);
+                /* Read data from stdin using fgets. */
+                fgets(buffer, sizeof(buffer), stdin);
+
+                /* Remove trailing newline character from the input buffer if needed. */
+                len = strlen(buffer) - 1;
+                if (buffer[len] == '\n')
+                    buffer[len] = '\0';
+
+                printf("'%s' was read from stdin.\n", buffer);
+                send(network_socket, buffer, strlen(buffer), 0);
+                // FD_CLR(network_socket, &readys);
+
+            }
+            if(FD_ISSET(network_socket, &readys)){
+                // socket code
+                printf("ops");
+                if(recv(network_socket, &server_response, sizeof(server_response), 0) < 0) {
+                    printf("[-]Error in receing data.\n");
+                    exit(1);
+                } else {
+                    printf("Server: \t%s\n", server_response);
+                }
+            }
         }
-
     }
-    close(network_socket);
 
+    close(network_socket);
+    return 0;
 }

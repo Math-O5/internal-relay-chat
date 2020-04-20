@@ -1,4 +1,8 @@
 // source https://docs.oracle.com/cd/E19455-01/806-1017/
+/*
+family: AF_INET6, IPv6  pack: (128 bits) (16 bytes)
+types SOCK_STREAM (TCP) 
+*/
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -6,20 +10,18 @@
 #include<sys/socket.h>
 #include<unistd.h>
 #include<arpa/inet.h> 
-/*
-family: AF_INET6, for IPv6  (128 bits) (16 bytes)
-        AF_INET, for IPv4 (32 bits), sustenta 2^32 ips
-        AF_UNIX, for local socket (using a file)
-        It is a network protocol. 
-types SOCK_STREAM, SOCK_DGRAM, or SOCK_RAW, 
-*/
+#include<iostream>
+#include<set>
 
 #include<netinet/in.h>
 
 #define PORT 9002
 
-int main() {
+using namespace std;
 
+int main() {
+    set<int> clients_socket;
+    int high = 0;
     char server_message[4096] = "[+] You have reched the server!";
     char buffer[4096];
     // 1. create a socket
@@ -54,86 +56,56 @@ int main() {
     */
     // parameters sockt id, backlog the number of connect it can support.
     if(listen(server_socket, 2) == 0) {
-        printf("Listening...\n");
+        printf("Listening....\n");
     } else {
         printf("[-]Error in biding.\n");
     }
 
-
     fd_set master;
-    FD_ZERO(&master);
-
-    FD_SET(server_socket, &master);
+    high = max(high, server_socket);
 
     while(true) {
         
-        fd_set copy = master; //copy master because it ll be destroyed at end of while
+        FD_ZERO(&master);
+        FD_SET(server_socket, &master);
+        for(set<int>::iterator it = clients_socket.begin(); it != clients_socket.end(); ++it) {
+            FD_SET(*it, &master);
+            high = max(high, *it);
+        }
 
-        int socket_count = select(0, &copy, nullptr, nullptr, nullptr, nullptr); //
+        int socket_count = select(high+1, &master, nullptr, nullptr, nullptr); //
 
-        for(int i = 0; i < socket_count; ++i) {
-            int socket_copy = copy.fd_array[i];
-            if(socket_copy == server_socket) {
-                // new connection
-                client_socket = accept(server_socket, nullptr, nullptr);
+        if(FD_ISSET(server_socket, &master)) {
 
-                // add to the list of connected
-                FD_SET(client_socket, &master);
+            // new connection
+            client_socket = accept(server_socket, nullptr, nullptr);
+            clients_socket.insert(client_socket);
+            
+            printf("[+] new sock %d.\n", client_socket);
+        	fflush(stdout);
 
-                char welcome[] = "Welcome to the Awesome chat Server.\n";
-                send(client_socket, welcome, strlen(welcome), 0);
-            } else {
+            // add to the list of connected
+            char welcome[] = "Welcome to the Awesome chat Server.\n";
+            send(client_socket, welcome, strlen(welcome), 0);
+            FD_CLR(server_socket, &master);
+        }
+
+        for(int i = 0; i < high+1; ++i) {
+            
+            if(FD_ISSET(i, &master)) {
                 // new menssage
                 memset(buffer, '\0', 4096*sizeof(char));
-                int bytes_in = recv(socket_copy, buffer, 4096, 0) <= 0) {
-                if(bytes_in <= 0) {
-                    // drop the client
-                    close(socket_copy);
-                    FD_CLR(socket_copy, &master);
-                } else {
-                    // send to ohter clients 
-                    for(int i = 0; i < master.fd_count; ++i) {
-                        int out_socket= copy.fd_array[i];
-                        if(out_socket != client_socket && out_socket != server_socket) {
-                            send(out_socket, buffer, bytes_in, 0);
-                        }
+                int bytes_in = recv(i, buffer, 4096, 0);
+                
+                buffer[bytes_in] = '\0';
+
+                if(bytes_in > 0) {
+                    for(set<int>::iterator it = clients_socket.begin(); it != clients_socket.end(); ++it) {
+                        send(*it, buffer, bytes_in, 0);
                     }
-                }
+                }     
             }
         }
     }
-
-    // while(1) {
-    //     /*
-    //         When the clients calls, the event happens. (the process sleep while no events arrive).
-    //         parametors: fp os server sockt, NULL or teh address struct of client socket, NULL or the size of the struct address client.
-    //     */
-    //     client_socket = accept(server_socket, (struct sockaddr*) &client_address, &add_size);
-    //     printf("[+] Create client socket: %d\n", client_socket);
-    //     if(client_socket < 0) {
-    //         exit(1);
-    //     }
-    //     printf("Connected accepted %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
-
-    //     if((childpid = fork()) == 0) {
-    //         close(server_socket);
-
-    //         while(1) {
-    //             recv(client_socket, buffer, 256, 0);
-    //             printf("message from client socket: %d\n", client_socket);
-    //             if(strcmp(buffer, ":exit") == 0) {
-    //                 printf("Disconnected from %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
-    //                 break;
-    //             } else {
-    //                 printf("Client: %s\n", buffer);
-    //                 send(client_socket, buffer, strlen(buffer), 0);
-    //                 bzero(buffer, sizeof(buffer));
-    //             }
-    //         }
-    //     }
-    // }
-
-    // close(client_socket);
-
     return 0;
 }

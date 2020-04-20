@@ -6,6 +6,10 @@
 #include<sys/socket.h>
 #include<unistd.h>
 #include<arpa/inet.h> 
+#include<map>
+
+using namespace std;
+
 /*
 family: AF_INET6, for IPv6  (128 bits) (16 bytes)
         AF_INET, for IPv4 (32 bits), sustenta 2^32 ips
@@ -17,6 +21,8 @@ types SOCK_STREAM, SOCK_DGRAM, or SOCK_RAW,
 #include<netinet/in.h>
 
 #define PORT 9002
+
+map<int, int> clients;
 
 int main() {
 
@@ -66,7 +72,10 @@ int main() {
             parametors: fp os server sockt, NULL or teh address struct of client socket, NULL or the size of the struct address client.
         */
         client_socket = accept(server_socket, (struct sockaddr*) &client_address, &add_size);
-        printf("[+] Create client socket: %d\n", client_socket);
+        if(clients.find(client_socket) == clients.end()) {
+            printf("[+] Create client socket: %d\n", client_socket);
+        }
+
         if(client_socket < 0) {
             exit(1);
         }
@@ -84,6 +93,7 @@ int main() {
                 } else {
                     printf("Client: %s\n", client_message);
                     send(client_socket, client_message, strlen(client_message), 0);
+                    
                     bzero(client_message, sizeof(client_message));
                 }
             }
