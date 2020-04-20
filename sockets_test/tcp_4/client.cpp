@@ -51,7 +51,6 @@ void* send_msg_handler(void* args){
         }
         if(strcmp(client_message, "/quit") == 0){
             flag = 1;
-            break;
         }
 
     }
@@ -76,7 +75,6 @@ int main() {
     //reiceve data
     char server_response[4096];
     recv(network_socket, &server_response, sizeof(server_response), 0);
-    char client_message[4096];
     printf("Server's answer: %s\n", server_response);
 
     pthread_t send_msg_thread;
