@@ -13,7 +13,7 @@
      
 #define TRUE   1  
 #define FALSE  0  
-int PORT;  
+int PORT = 9003;  
 
 fd_set readfds;         //set of socket descriptors  
 
@@ -100,8 +100,6 @@ void build_sets(int master_socket) {
     } 
     return;
 }
-
-
 
 int main(int argc , char *argv[])   
 {   
