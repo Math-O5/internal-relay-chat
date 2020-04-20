@@ -4,7 +4,7 @@ all:
 server: server.cpp
 	g++ -Wall server.cpp -o server
 
-client:
+client: client.cpp
 	g++ -Wall client.cpp -lpthread -o client
 
 run_server:

@@ -1,4 +1,4 @@
-//Example code: A simple server side code, which echos back the received message. 
+//Example code: A simple server side code, which echos back the received server_response. 
 //Handle multiple socket connections with select and fd_set on Linux  
 #include <stdio.h>  
 #include <string.h>   //strlen  
@@ -10,9 +10,13 @@
 #include <sys/socket.h>  
 #include <netinet/in.h>  
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros  
-     
+#include <string>
+
 #define TRUE   1  
 #define FALSE  0  
+#define STREAM_SIZE 4096
+
+using namespace std;
 
 fd_set readfds;         //set of socket descriptors  
 
@@ -20,8 +24,8 @@ int PORT;
 int max_sd, max_clients; 
 int client_socket[30];   
         
-char buffer[4096];      // data buffer of 1K   
-char message[4096] = "Welcome !!!";  // Serve message  
+char buffer[STREAM_SIZE];      // data buffer of 1K   
+char server_response[STREAM_SIZE] = "[+] Server: Welcome !!!";  // Serve message  
 
 void error(const char *msg) {
     perror(msg);
@@ -132,7 +136,7 @@ int main(int argc , char *argv[])
        
         if ((activity < 0) && (errno!=EINTR))   
         {   
-            printf("select error");   
+            error("[x] Select error");  
         }   
              
         //If something happened on the master socket ,  
@@ -148,16 +152,16 @@ int main(int argc , char *argv[])
             printf("[x] New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));   
             fflush(stdout);
 
-            //send new connection greeting message  
-            if((size_t)send(new_socket, message, strlen(message), 0) != (size_t)strlen(message))   
+            //send new connection greeting server_response  
+            if((size_t)send(new_socket, server_response, strlen(server_response), 0) != (size_t)strlen(server_response))   
             {   
                 error("[x] On send");   
             }   
                  
-            sucess("Welcome message sent successfully");   
+            sucess("Welcome server_response sent successfully");   
                  
             //add new socket to array of sockets  
-            for (index = 0; index < max_clients; ++index)   
+            for(index = 0; index < max_clients; ++index)   
             {   
                 //if position is empty  
                 if(client_socket[index] == 0)   
@@ -171,17 +175,17 @@ int main(int argc , char *argv[])
         }   
              
         //else its some IO operation on some other socket 
-        for (index = 0; index < max_clients; ++index)   
+        for(index = 0; index < max_clients; ++index)   
         {   
             sd = client_socket[index];   
 
             if(sd == master_socket) continue;
                  
-            if (FD_ISSET(sd , &readfds))   
+            if(FD_ISSET(sd , &readfds))   
             {    
                 //Check if it was for closing , and also read the  
-                //incoming message  
-                if ((valread = read(sd , buffer, sizeof(buffer))) == 0)   
+                //incoming server_response  
+                if ((valread = read(sd , &buffer, sizeof(buffer))) == 0)   
                 {   
                     //Somebody disconnected , get his details and print  
                     getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
@@ -193,20 +197,24 @@ int main(int argc , char *argv[])
                     client_socket[index] = 0;   
                 }   
                      
-                //Echo back the message that came in  
+                //Echo back the server_response that came in  
                 else 
                 {   
                     //set the string terminating NULL byte on the end of the data read  
-                    for(int index= valread; index <= 4096; ++index){
+                    for(int index = valread; index <= STREAM_SIZE; ++index){
                         buffer[index] = '\0';
                     }  
 
-                    printf("Client(%d): %s\n", sd, buffer);
+                    string s = "Client(";
+                    s.append(to_string(sd));
+                    s.append("):");
+                    s.append(buffer);
+                    printf("%s", &s[0]);
                     fflush(stdout);
-                    
-                    for(int index = 0; index < max_clients; ++index){
+
+                    for(int index = 0; index <= max_clients; ++index){
                         if(client_socket[index] > 0 && client_socket[index] != sd){
-                            send(client_socket[index] , &buffer , sizeof(buffer) , 0 );
+                            send(client_socket[index] , &s[0] , sizeof(buffer) , 0 );
                         }
                     }
                 }   
