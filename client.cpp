@@ -44,9 +44,11 @@ void* recv_msg_handler(void* args)
     char server_response[STREAM_SIZE];
     while(TRUE)
     {
-        recv(network_socket, &server_response, sizeof(server_response), 0);
-        printf("%s\n",server_response);
-        fflush(stdout);
+        if(recv(network_socket, &server_response, sizeof(server_response), 0) > 0)
+        {
+            printf("%s\n",server_response);
+            fflush(stdout);
+        }
     }
 }
 
@@ -96,9 +98,7 @@ void create_socket(char *argv[]) {
     struct sockaddr_in server_address;
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = INADDR_ANY;   
-
-    // bcopy((char *) SERVER->h_addr, (char *) &server_address.sin_addr.s_addr, SERVER->h_length); // localhost : 127.0.0.1 or any other IP
+    bcopy((char *) SERVER->h_addr, (char *) &server_address.sin_addr.s_addr, SERVER->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(PORT);
 
     int connection_status = connect(network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
@@ -115,24 +115,19 @@ void create_socket(char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    int network_socket;
-    if(argc < 3) {
+
+    if(argc < 3)
         error("[x] No host to found. Pass it with make run_client host=[INT] PORT=[INT].\nYou can check your local host with ifconfig. Normally, the localhost is 127.0.0.1\n");
-    }
 
     create_socket(argv);
 
     pthread_t send_msg_thread;
     if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, NULL) != 0)
-    {
 		error("ERROR: pthread\n");
-	}
 
 	pthread_t recv_msg_thread;
     if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, NULL) != 0)
-    {
 		error("ERROR: pthread\n");
-	}
 
 	while(TRUE)
     {
