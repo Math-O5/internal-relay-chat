@@ -103,6 +103,22 @@ void build_sets(int master_socket) {
     return;
 }
 
+void send_all_message(const int from_id, const char *from_name, char *msg) {
+    string s = from_name;
+    s.append("(");
+    s.append(to_string(from_id));
+    s.append("): ");
+    s.append(msg);
+    printf("%s", &s[0]);
+    fflush(stdout);
+
+    for(int index = 0; index <= max_clients; ++index){
+        if(client_socket[index] > 0){
+            send(client_socket[index] , &s[0] , s.size() , 0 );
+        }
+    }
+}
+
 int main(int argc , char *argv[])   
 {   
     int master_socket, sd, new_socket,
@@ -189,8 +205,10 @@ int main(int argc , char *argv[])
                 {   
                     //Somebody disconnected , get his details and print  
                     getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
-                    printf("Host disconnected, ip %s, port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));   
-                    fflush(stdout);
+                    string addr = inet_ntoa(address.sin_addr);
+                    string s = "Host disconnected, client: " + to_string(sd) + " ip: " + addr + " port: " + to_string(ntohs(address.sin_port)) + "\n\0";
+
+                    send_all_message(0, "Server", &s[0]);
 
                     //Close the socket and mark as 0 in list for reuse  
                     close(sd);   
@@ -205,18 +223,7 @@ int main(int argc , char *argv[])
                         buffer[index] = '\0';
                     }  
 
-                    string s = "Client(";
-                    s.append(to_string(sd));
-                    s.append("):");
-                    s.append(buffer);
-                    printf("%s", &s[0]);
-                    fflush(stdout);
-
-                    for(int index = 0; index <= max_clients; ++index){
-                        if(client_socket[index] > 0 && client_socket[index] != sd){
-                            send(client_socket[index] , &s[0] , sizeof(buffer) , 0 );
-                        }
-                    }
+                    send_all_message(sd, "Client", buffer);
                 }   
             }   
         }   
