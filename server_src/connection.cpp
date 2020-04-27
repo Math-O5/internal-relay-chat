@@ -6,7 +6,6 @@ server_conn criar_server(){
     sv.sv_socket = -1;
     sv.port = -1;
     sv.max_conn = 0;
-    sprintf(sv.sserver, "127.0.0.1");
     sprintf(sv.sport, "9002");
     return sv;
 }
@@ -20,6 +19,7 @@ int abrir_server(server_conn* sv, int max_conn){
 
     // Buscando dados do servidor
     sv->port = atoi(sv->sport);
+    sv->max_conn = max_conn;
     sv->server = gethostbyname(sv->sserver);
     if(sv->server == NULL)
         return 1;
@@ -33,10 +33,10 @@ int abrir_server(server_conn* sv, int max_conn){
     struct sockaddr_in server_address;
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
-    bcopy((char *) sv->server->h_addr, (char *) &server_address.sin_addr.s_addr, sv->server->h_length);
-    server_address.sin_port = htons(sv->port);
+    address.sin_addr.s_addr = INADDR_ANY;   
+    address.sin_port = htons( sv->server );   
 
-    /* ????? */
+    /* enable multiple connections */
     int option = 1;
     if(setsockopt(sv->sv_socket, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0){
     	return 3;
