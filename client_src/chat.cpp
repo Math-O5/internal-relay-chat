@@ -114,7 +114,7 @@ void* recv_msg_handler(void* vrc){
                 rc->recv_buff_size = strlen(rc->recv_buff); 
 
             pthread_mutex_unlock(rc->recv_mutex);
-            
+
             memset(server_response,0,strlen(server_response));
         }
 
@@ -128,34 +128,37 @@ void* send_msg_handler(void* vrc){
     relay_chat* rc = (relay_chat*) vrc;
 
     char client_message[MAX_MESSAGE_LENGHT+1];
-    int  it = 0, it_message = 0, msg_len = 0;
+    int  it = 0, it_message = 0;
     
-
     while(rc->connection_status == CONNECTION_OPEN) {
         
-        it = 0;
-        it_message = 0;
-        msg_len = 0;
-
         if(rc->send_buff_size > 0){
+            it = 0;
+
             pthread_mutex_lock(rc->send_mutex);
 
-            // Percorre todo o buffer enviando as mensagens na fila
-            // ps: lembrando que as mensagens no protocolo são finalizadas
-            // não por um \0, mas por um \r\n (CR-LF).
-            while(rc->send_buff[it] != '\0'){
-                memset(client_message,0,strlen(client_message));
-                while(rc->send_buff[it] != '\n'){
-                    client_message[it_message++] = rc->send_buff[it];
-                    rc->send_buff[it++] = '\0';
-                }
-                write(rc->network_socket, client_message, strlen(client_message));
-                it_message = 0;
-            }
+                // Percorre todo o buffer enviando as mensagens na fila
+                // ps: lembrando que as mensagens no protocolo são finalizadas
+                // não por um \0, mas por um \r\n (CR-LF).
+                while( it < BUFFER_SIZE && rc->send_buff[it] != '\0'){
+                    
+                    memset(client_message, '\0', sizeof(client_message));
+                    it_message = 0;
 
-            rc->send_buff_size  = 0;
+                    while( it < BUFFER_SIZE && rc->send_buff[it] != '\n' && rc->send_buff[it] != '\0') {
+                        client_message[it_message++] = rc->send_buff[it];
+                        rc->send_buff[it++] = '\0';
+                    };
+                    client_message[it_message] = '\n';
+
+                    write(rc->network_socket, client_message, strlen(client_message));
+                    it++;
+                }
+
+        //     rc->send_buff_size  = 0;
             pthread_mutex_unlock(rc->send_mutex);
         }
         
+        sleep(2);
     }
 }

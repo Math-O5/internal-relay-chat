@@ -36,7 +36,6 @@ using namespace std;
     pthread_t in_terminal_thread;
     pthread_t out_terminal_thread;
 
-
 /**
  * Threads de I/O com o Terminal
  */
@@ -45,10 +44,13 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
+    system("clear");
+
     /**
      * Iniciando as variáveis globais necessárias;
      */ 
-
+        printf("   [+] Inicializando variáveis....\n"); 
+        
         send_mutex     = PTHREAD_MUTEX_INITIALIZER;
         recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
         terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -56,36 +58,55 @@ int main(int argc, char *argv[]){
         chat = criar_relay_chat(&send_mutex, &recv_mutex);        
         terminal.terminal_mutex = &terminal_mutex;
 
+        printf("   [+] Variáveis iniciadas com sucesso.\n"); 
+
+    /**
+     * Abrindo conexão com servidor padrão
+     */
+        printf("   [+] Abrindo conexão com o servidor 127.0.0.1:9002...\n"); 
+        
+        if(abrir_conexao(&chat) != 0){
+            printf("   [X] ERRO ao abrir conexão com o servidor.\n");
+            exit(1);
+        } 
+           
+        printf("   [+] Conexão com o SERVIDOR estabelecida com SUCESSO.\n"); 
+
     /**
      * Iniciando as Threads do Servidor
-     */
-        if(abrir_conexao(&chat) != 0){
-            printf("   [-] Erro ao abrir conexão com o servidor.\n");
-            exit(1);
-        } else {
-            printf("   [+] Conexão estabelecida com o servidor.\n"); 
+     */ 
+
+        printf("   [+] Iniciando Threads de conexão...\n"); 
+
+        if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
+	        printf("   [x] ERRO ao inicializar o 'Receive Messages Handler'.\n");
+        }
+        
+        if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
+	        printf("   [x] Erro ao inicializar o 'Send Messages Handler'\n");
         }
 
-        if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0)
-	        printf("   [x] Erro ao inicializar o 'Receive Messages Handler'\n");
-        
-        // if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0)
-	    //     printf("   [x] Erro ao inicializar o 'Send Messages Handler'\n");
+        printf("   [+] THREADS de conexão iniciadas com SUCESSO.\n"); 
 
     /**
      * Iniciando as Threads de I/O
-     */
-        if(pthread_create(&out_terminal_thread, NULL, &output_terminal_handler, NULL) != 0)
-	        printf("   [x] Erro ao inicializar o 'Output Terminal Handler'\n");
-
-        if(pthread_create(&in_terminal_thread, NULL, &input_terminal_handler, NULL) != 0)
-	        printf("   [x] Erro ao inicializar o 'Input Terminal Handler'\n");
-
+     */ 
+        printf("   [+] Iniciando THREADS  de I/O...\n"); 
         
-    // O programa acaba quando o loop de input é terminado.
-    pthread_join(in_terminal_thread, NULL);
-    // pthread_join(out_terminal_thread, NULL);
+        if(pthread_create(&out_terminal_thread, NULL, &output_terminal_handler, NULL) != 0){
+	        printf("   [x] Erro ao inicializar o 'Output Terminal Handler'.\n");
+        }
 
+        if(pthread_create(&in_terminal_thread, NULL, &input_terminal_handler, NULL) != 0) {
+	        printf("   [x] Erro ao inicializar o 'Input Terminal Handler'.\n");
+        }
+
+        printf("   [+] THREADS  de I/O iniciadas com SUCESSO.\n"); 
+        
+    // O programa é finalizado quando o usuário
+    // finaliza o input por meio de um /quit ou EOF
+    pthread_join(in_terminal_thread, NULL);
+    
     fechar_conexao(&chat);
     destruir_relay_chat(&chat);
 
@@ -115,7 +136,6 @@ void* input_terminal_handler(void*) {
             }
         }
         
-
         // Executando a ação
         switch (action_code) {
 
@@ -137,13 +157,26 @@ void* input_terminal_handler(void*) {
                 break;
 
             case ACTION_MESSAGE:
-                pthread_mutex_lock(terminal.terminal_mutex);
-                    printf("  [input]: \"%s\"\n", terminal.input);
-                pthread_mutex_unlock(terminal.terminal_mutex);
+                // pthread_mutex_lock(terminal.terminal_mutex);
+                //    printf("  [input]: \"%s\" %d\n", terminal.input, chat.send_buff_size);
+                // pthread_mutex_unlock(terminal.terminal_mutex);
+
+                pthread_mutex_lock(chat.send_mutex);
+                    if(chat.connection_status == CONNECTION_OPEN){
+                        
+                        if(chat.send_buff_size <= 0){
+                            strcpy(chat.send_buff, terminal.input);
+                        } else{
+                            strcat(chat.send_buff, terminal.input);
+                        }
+                        strcat(chat.send_buff, "\n");
+
+                        chat.send_buff_size = strlen(chat.send_buff);
+                    }
+                pthread_mutex_unlock(chat.send_mutex);
                 break;
         }
 
-        // sleep(1);
     }
     
     echo_enable(&terminal);
@@ -190,16 +223,15 @@ void* output_terminal_handler(void*){
 
                 int it = 0;
                 while(it < terminal.buffer_size){
-                    chat.recv_buff[it++] = '\0';
+                    terminal.output_buffer[it++] = '\0';
                 }
                 terminal.buffer_size = 0;
             }
         pthread_mutex_unlock(terminal.terminal_mutex);
+
     }
     
 }
-
-
 
 // EXEMPLO DE TESTE DE CONEXÂO APENAS RECEBENDO AS MENSAGENS DO SERVIDOR
 

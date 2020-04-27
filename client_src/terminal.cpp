@@ -4,7 +4,6 @@
 
 #include "terminal.h"
 
-
 // Habilita a propriedade ECHO do terminal.
 void echo_enable(terminal_control* t){
     struct termios termInfo;
@@ -52,15 +51,16 @@ int terminal_input_iteration(terminal_control* t){
 }
 
 void msg_inicio(terminal_control* t){
+
     system("clear");
-    printf("  [+]   Relay Chat Client iniciado com sucesso.\n");
-    printf("  [ ]   \n");
-    printf("  [+]   Comandos disponíveis: \n");
-    printf("  [+]   /connect                  - conectar no servidor padrão.\n");
-    printf("  [+]   /connect <HOST_IP> <PORT> - conectar em HOST específico\n");
-    printf("  [+]   /quit                     - sair do programa\n");
-    printf("  [ ]   \n");
-    printf("  [+]   Pressione ENTER para digitar algum comando.\n");
-    printf("  [ ]   \n");
+    printf("   [+]   Relay Chat Client iniciado com sucesso.\n");
+    printf("   [ ]   \n");
+    printf("   [+]   Comandos disponíveis: \n");
+    printf("   [+]   /connect                  - conectar no servidor padrão.\n");
+    printf("   [+]   /connect <HOST_IP> <PORT> - conectar em HOST específico\n");
+    printf("   [+]   /quit                     - sair do programa\n");
+    printf("   [ ]   \n");
+    printf("   [+]   Pressione ENTER para digitar algum comando.\n");
+    printf("   [ ]   \n");
 
 }
