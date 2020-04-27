@@ -5,11 +5,11 @@
     #include <sys/socket.h>
     #include <netinet/in.h>     /* struct sockaddr_in, */
     #include <netdb.h>          /* gethostbyname(), */
-    #include <unistd.h>         /* close */
+    #include <unistd.h>         /* close, sleep */
     #include <pthread.h>        /* pthread_create, pthread_mutex_t */
 
     /**
-     * chat.h
+     * @ chat.h
      * 
      * Responsável por conhecer o protocolo e realizar as trocas de
      * mensagens do aplicativo client com o servidor.

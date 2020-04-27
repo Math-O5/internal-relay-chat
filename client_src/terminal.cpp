@@ -25,42 +25,29 @@ void echo_disable(terminal_control* t){
     t->input_enabled = 0;
 }
 
-// Handler responsável por lidar com o terminal.
-void terminal_loop_handler(terminal_control* t){
+// Handler responsável por lidar com uma iteração de loop no terminal.
+int terminal_loop_handler(terminal_control* t){
 
-    echo_disable(t);
-    
-    msg_inicio(t);
+    t->input[0] = '\0';
+    scanf("%c", t->input);
 
-    while(1){
+    if( t->input[0] == '\n' && t->input_enabled == 0 ){
 
-        scanf("%c", t->input);
-
-        if( t->input[0] == '\n' && t->input_enabled == 0 ){
-
-            echo_enable(t);
-            t->input[0] = '\0';
-
-            printf("  >> ");
-            fflush(stdout); fflush(stdin);
-            scanf("%[^\n]", t->input);
-
-            if(strlen(t->input) > 0)
-                printf("  [MSG] %s\n", t->input);
-
-            if(strcmp(t->input, "quit") == 0)
-                break;
-      
-        } else if(t->input[0] == '\n' && t->input_enabled == 1){
-            echo_disable(t);
-        }
-
-        fflush(stdin);
+        echo_enable(t);
         t->input[0] = '\0';
+
+        printf("  >> ");
+        fflush(stdout); fflush(stdin);
+        scanf("%[^\n]", t->input);
+
+        if(strlen(t->input) > 0)
+            return 1;
+    
+    } else if(t->input[0] == '\n' && t->input_enabled == 1){
+        echo_disable(t);
     }
 
-    echo_enable(t);
-
+    return 0;
 }
 
 void msg_inicio(terminal_control* t){

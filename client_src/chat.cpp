@@ -58,11 +58,6 @@ int abrir_conexao(relay_chat* rc){
     bcopy((char *) rc->server->h_addr, (char *) &server_address.sin_addr.s_addr, rc->server->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(rc->port);
 
-    // Abrindo conexão com o servidor
-    rc->connection_status = connect(rc->network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
-    if(rc->connection_status != CONNECTION_OPEN) 
-        return 3;
-    
     // Abrindo os buffers
     rc->send_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
     rc->recv_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
@@ -71,6 +66,11 @@ int abrir_conexao(relay_chat* rc){
         fechar_conexao(rc);
         return 4;
     }
+
+    // Abrindo conexão com o servidor
+    rc->connection_status = connect(rc->network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
+    if(rc->connection_status == CONNECTION_CLOSED) 
+        return 3;
 
     return 0;
 }
@@ -111,17 +111,18 @@ void* recv_msg_handler(void* vrc){
             // Mutex protege o buffer de mensagens recebidas
             pthread_mutex_lock(rc->recv_mutex);
 
-            if(strlen(rc->recv_buff) == 0){
-                strcpy(rc->recv_buff, server_response);
-            } else {
-                strcat(rc->recv_buff, server_response);
-            }
-           rc->recv_buff_size = strlen(rc->recv_buff); 
+                if(strlen(rc->recv_buff) == 0){
+                    strcpy(rc->recv_buff, server_response);
+                } else {
+                    strcat(rc->recv_buff, server_response);
+                }
+                rc->recv_buff_size = strlen(rc->recv_buff); 
 
             pthread_mutex_unlock(rc->recv_mutex);
-
             memset(server_response,0,strlen(server_response));
         }
+
+        sleep(2);
     }
 
 }

@@ -33,7 +33,7 @@
             void echo_disable(terminal_control* t);
 
             // Handler responsável por lidar com o terminal.
-            void terminal_loop_handler(terminal_control* t);
+            int terminal_loop_handler(terminal_control* t);
 
         /**
          * Mensagens e outputs formatados
