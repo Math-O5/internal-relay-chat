@@ -15,6 +15,10 @@ int main(int argc, char *argv[]){
     int res = abrir_server(&SC, MAX_CONN);
     res = info_server(&SC);
     res = fechar_server(&SC);
-
+    run_server(&SC);
+    
+    res = info_server(sv);
+    msg_inicio(res);
+    
     return 0;
 }

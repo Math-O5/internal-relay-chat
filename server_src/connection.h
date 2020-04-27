@@ -10,8 +10,9 @@
     #include <sys/socket.h>
     #include <sys/types.h>
 
-    /* Informacoes do Server */
-
+/**
+ * Informacoes do Server 
+ */
     typedef struct _server_conn{
         // Dados de conexão
         int     port;
@@ -22,10 +23,6 @@
         // Buffers de conexão
         char *send_buff, *recv_buff;
         int  send_buff_size, recv_buff_size;
-
-        // Mutexes
-        pthread_mutex_t* send_mutex;
-        pthread_mutex_t* recv_mutex;
     }server_conn;
 
 /**
