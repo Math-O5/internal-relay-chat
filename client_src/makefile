@@ -1,4 +1,4 @@
 all:
-	g++ -o client chat.cpp main.cpp
+	g++ -o client terminal.cpp chat.cpp main.cpp -pthread
 run:
 	./client

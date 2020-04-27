@@ -1,6 +1,10 @@
 #include <iostream>
 #include <stdlib.h>
-#include "chat.h" /* relay_chat */
+#include <string.h>     /* memset, strcmp */
+#include <pthread.h>    /* pthread_create, pthread_mutex_t */
+
+#include "terminal.h"   /* terminal_control */
+#include "chat.h"       /* relay_chat */
 
 using namespace std;
 
@@ -14,22 +18,44 @@ using namespace std;
 /**
  * VARIÁVEIS DE ESTADO
  */   
-    relay_chat RC;
+    relay_chat          RC;
+    terminal_control    terminal;
+
+
+    pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t recv_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    pthread_t send_msg_thread;
+    pthread_t recv_msg_thread;
 
 
 int main(int argc, char *argv[]){
 
-    RC = criar_relay_chat();
+    // RC = criar_relay_chat(&send_mutex, &recv_mutex);
+    // abrir_conexao(&RC);
 
-    int ret = abrir_conexao(&RC);
+    // abrindo a thread de leitura
+    // if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &RC) != 0)
+	// 	printf("ERRO ao iniciar a thread\n");
 
-    char server_response[6000];
-    recv(RC.network_socket, &server_response, sizeof(server_response), 0);
-    printf("SERVER's: %s\n", server_response);
-    
+    // Loop verificando se algo chegou no buffer de entrada
+    // while(1){
+    //     if(RC.recv_buff_size > 0){
+    //         pthread_mutex_lock(RC.recv_mutex);
+    //         printf("%s\n",RC.recv_buff);
+    //         int it = 0;
+    //         while(RC.recv_buff[it] != '\0'){
+    //             RC.recv_buff[it++] = '\0';
+    //         }
+    //         RC.recv_buff_size = 0;
+    //         pthread_mutex_unlock(RC.recv_mutex);
+    //     }
+    // }
+    //fechar_conexao(&RC);
+    //destruir_relay_chat(&RC);
 
-    fechar_conexao(&RC);
-    destruir_relay_chat(&RC);
+    terminal_loop_handler(&terminal);
 
     return 0;
 }
