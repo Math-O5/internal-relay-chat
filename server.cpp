@@ -12,9 +12,12 @@
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros  
 #include <string>
 
+#include<pthread.h>
+
 #define TRUE   1  
 #define FALSE  0  
 #define STREAM_SIZE 4096
+#define THREAD_POOL_SIZE 20
 
 using namespace std;
 
@@ -26,6 +29,7 @@ int client_socket[30];
         
 char buffer[STREAM_SIZE];      // data buffer of 1K   
 char server_response[STREAM_SIZE] = "[+] Server: Welcome !!!";  // Serve message  
+
 
 void error(const char *msg) {
     perror(msg);
@@ -119,6 +123,30 @@ void send_all_message(const int from_id, const char *from_name, char *msg) {
     }
 }
 
+#include<queue>
+queue<int*> q;
+pthread_mutex_t mutex  = PTHREAD_MUTEX_INITIALIZER;
+pthread_t thread_local[THREAD_POOL_SIZE];
+pthread_cond_t condition_var = PTHREAD_MUTEX_INITIALIZER;
+
+void* thread_init(void *args) {
+    while(TRUE) {
+        int *pclient;
+        pthread_mutex_lock(&mutex);
+        if(p.empty()) {
+            pthread_cond_wait(&condition_var, &mutex);
+        }
+
+        if(!q.empty()) {
+            *pclient; = q.front();
+        }
+        q.pop();
+        pthread_mutex_unlock(&mutex);
+        handle_connection(pclient);
+    }
+}
+
+
 int main(int argc , char *argv[])   
 {   
     int master_socket, sd, new_socket,
@@ -127,6 +155,10 @@ int main(int argc , char *argv[])
         addrlen;
     struct sockaddr_in address;   
     
+    for(int i = 0; i < THREAD_POOL_SIZE; ++i) {
+        pthread_create(&thread_local[i], NULL, thread_init,NULL);
+    } 
+
     if(argc < 3)
     {
         error("[x] No port given. Set PORT=[INT] nLISTEN=[INT]");
@@ -143,91 +175,106 @@ int main(int argc , char *argv[])
     }   
 
     while(TRUE)   
-    {      
-        build_sets(master_socket);
+    {
+            pthread_mutex_lock(&mutex);      
+            int *pclient = malloc(sizeof(int)); // point socket client id
+            q.push(pclient);
+            pthread_cond_signal(&condition_var);
+            pthread_mutex_unlock(&mutex);
 
-        //wait for an activity on one of the sockets , timeout is NULL ,  
-        //so wait indefinitely  
-        activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
+    //     build_sets(master_socket);
+
+    //     //wait for an activity on one of the sockets , timeout is NULL ,  
+    //     //so wait indefinitely  
+    //     activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);   
        
-        if ((activity < 0) && (errno!=EINTR))   
-        {   
-            error("[x] Select error");  
-        }   
+    //     if ((activity < 0) && (errno!=EINTR))   
+    //     {   
+    //         error("[x] Select error");  
+    //     }   
              
-        //If something happened on the master socket ,  
-        //then its an incoming connection  
-        if (FD_ISSET(master_socket, &readfds))   
-        {   
-            if ((new_socket = accept(master_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
-            {   
-                error("[x] accept");     
-            }   
+    //     //If something happened on the master socket ,  
+    //     //then its an incoming connection  
+    //     if (FD_ISSET(master_socket, &readfds))   
+    //     {   
+    //         if ((new_socket = accept(master_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)   
+    //         {   
+    //             error("[x] accept");     
+    //         }   
 
-            //inform user of socket number - used in send and receive commands  
-            printf("[x] New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));   
-            fflush(stdout);
+    //         //inform user of socket number - used in send and receive commands  
+    //         printf("[x] New connection , socket fd is %d , ip is : %s , port : %d\n" , new_socket , inet_ntoa(address.sin_addr) , ntohs (address.sin_port));   
+    //         fflush(stdout);
 
-            //send new connection greeting server_response  
-            if((size_t)send(new_socket, server_response, strlen(server_response), 0) != (size_t)strlen(server_response))   
-            {   
-                error("[x] On send");   
-            }   
+    //         //send new connection greeting server_response  
+    //         if((size_t)send(new_socket, server_response, strlen(server_response), 0) != (size_t)strlen(server_response))   
+    //         {   
+    //             error("[x] On send");   
+    //         }   
                  
-            sucess("Welcome server_response sent successfully");   
+    //         sucess("Welcome server_response sent successfully");   
                  
-            //add new socket to array of sockets  
-            for(index = 0; index < max_clients; ++index)   
-            {   
-                //if position is empty  
-                if(client_socket[index] == 0)   
-                {   
-                    client_socket[index] = new_socket;   
-                    printf("Adding to list of sockets as %d\n", index);   
-                    fflush(stdout);
-                    break;   
-                }   
-            }   
-        }   
+    //         //add new socket to array of sockets  
+    //         for(index = 0; index < max_clients; ++index)   
+    //         {   
+    //             //if position is empty  
+    //             if(client_socket[index] == 0)   
+    //             {   
+    //                 client_socket[index] = new_socket;   
+    //                 printf("Adding to list of sockets as %d\n", index);   
+    //                 fflush(stdout);
+    //                 break;   
+    //             }   
+    //         }   
+    //     }   
              
-        //else its some IO operation on some other socket 
-        for(index = 0; index < max_clients; ++index)   
-        {   
-            sd = client_socket[index];   
+    //     //else its some IO operation on some other socket 
+    //     for(index = 0; index < max_clients; ++index)   
+    //     {   
+    //         sd = client_socket[index];   
 
-            if(sd == master_socket) continue;
+    //         if(sd == master_socket) continue;
                  
-            if(FD_ISSET(sd , &readfds))   
-            {    
-                //Check if it was for closing , and also read the  
-                //incoming server_response  
-                if ((valread = read(sd , &buffer, sizeof(buffer))) == 0)   
-                {   
-                    //Somebody disconnected , get his details and print  
-                    getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
-                    string addr = inet_ntoa(address.sin_addr);
-                    string s = "Host disconnected, client: " + to_string(sd) + " ip: " + addr + " port: " + to_string(ntohs(address.sin_port)) + "\n\0";
+    //         if(FD_ISSET(sd , &readfds))   
+    //         {    
+    //             //Check if it was for closing , and also read the  
+    //             //incoming server_response  
+    //             if ((valread = read(sd , &buffer, sizeof(buffer))) == 0)   
+    //             {   
+    //                 //Somebody disconnected , get his details and print  
+    //                 getpeername(sd, (struct sockaddr*)&address, (socklen_t*)&addrlen);   
+    //                 string addr = inet_ntoa(address.sin_addr);
+    //                 string s = "Host disconnected, client: " + to_string(sd) + " ip: " + addr + " port: " + to_string(ntohs(address.sin_port)) + "\n\0";
 
-                    send_all_message(0, "Server", &s[0]);
+    //                 send_all_message(0, "Server", &s[0]);
 
-                    //Close the socket and mark as 0 in list for reuse  
-                    close(sd);   
-                    client_socket[index] = 0;   
-                }   
+    //                 //Close the socket and mark as 0 in list for reuse  
+    //                 close(sd);   
+    //                 client_socket[index] = 0;   
+    //             }   
                      
-                //Echo back the server_response that came in  
-                else 
-                {   
-                    //set the string terminating NULL byte on the end of the data read  
-                    for(int index = valread; index <= STREAM_SIZE; ++index){
-                        buffer[index] = '\0';
-                    }  
+    //             //Echo back the server_response that came in  
+    //             else 
+    //             {   
+    //                 //set the string terminating NULL byte on the end of the data read  
+    //                 for(int index = valread; index <= STREAM_SIZE; ++index){
+    //                     buffer[index] = '\0';
+    //                 }  
 
-                    send_all_message(sd, "Client", buffer);
-                }   
-            }   
-        }   
+    //                 send_all_message(sd, "Client", buffer);
+    //             }   
+    //         }   
+        }  
+
+        // p_thread_t t;
+        // pthread_create(&t, NULL, &handle_connecton, pclient); 
     }   
          
-    return 0;   
 }   
+
+void* handle_connection(int* p_client_socket) {
+    int client_socket = *p_client_socket; 
+    free(p_client_socket);
+    return NULL;
+
+}
