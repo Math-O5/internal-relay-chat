@@ -34,16 +34,21 @@
             char *send_buff, *recv_buff;
             int  send_buff_size, recv_buff_size;
 
-            // Mutexes
+            // Mutexes e Condições
             pthread_mutex_t* send_mutex;
             pthread_mutex_t* recv_mutex;
+            
+            pthread_cond_t*  cond_send_waiting;
+            pthread_cond_t*  cond_recv_waiting;
+            
         } relay_chat;
 
     /**
      * Funções de estância
      */
         // Função para inicializar o struct
-        relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_mutex);
+        relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_mutex, 
+            pthread_cond_t* cond_send_waiting, pthread_cond_t* cond_recv_waiting);
 
         // Função para destruir o struct
         int destruir_relay_chat(relay_chat* rc);

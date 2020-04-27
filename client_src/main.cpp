@@ -30,6 +30,10 @@ using namespace std;
     pthread_mutex_t recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+    // Otimização das threads - condições para acordar do sleep
+    pthread_cond_t  cond_recv_waiting = PTHREAD_COND_INITIALIZER;
+    pthread_cond_t  cond_send_waiting = PTHREAD_COND_INITIALIZER;
+
     pthread_t send_msg_thread;
     pthread_t recv_msg_thread;
 
@@ -55,9 +59,12 @@ int main(int argc, char *argv[]){
         recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
         terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-        chat = criar_relay_chat(&send_mutex, &recv_mutex);        
-        terminal.terminal_mutex = &terminal_mutex;
+        cond_recv_waiting = PTHREAD_COND_INITIALIZER;
+        cond_send_waiting = PTHREAD_COND_INITIALIZER;
 
+        chat = criar_relay_chat(&send_mutex, &recv_mutex, &cond_send_waiting, &cond_recv_waiting);        
+        terminal.terminal_mutex = &terminal_mutex;
+        
         printf("   [+] Variáveis iniciadas com sucesso.\n"); 
 
     /**
@@ -162,6 +169,8 @@ void* input_terminal_handler(void*) {
                 // pthread_mutex_unlock(terminal.terminal_mutex);
 
                 pthread_mutex_lock(chat.send_mutex);
+                    pthread_cond_signal(chat.cond_send_waiting); 
+
                     if(chat.connection_status == CONNECTION_OPEN){
                         
                         if(chat.send_buff_size <= 0){
@@ -174,6 +183,11 @@ void* input_terminal_handler(void*) {
                         chat.send_buff_size = strlen(chat.send_buff);
                     }
                 pthread_mutex_unlock(chat.send_mutex);
+                
+                // garante que a thread de envio vai conseguir rodar antes de o while
+                // de input travar tudo novamente. 
+                sleep(1);
+
                 break;
         }
 
@@ -194,6 +208,10 @@ void* output_terminal_handler(void*){
         // 1º - Verifica se existe algo no buffer de received.
         //      Se sim, copia para o buffer de output.
         pthread_mutex_lock(chat.recv_mutex);
+            
+            if(chat.recv_buff_size <= 0)
+                pthread_cond_wait(chat.cond_recv_waiting, chat.recv_mutex); 
+
             // printf("\n %d, %d\n", chat.connection_status, chat.recv_buff_size);
             if( chat.connection_status == CONNECTION_OPEN && chat.recv_buff_size > 0 ){
                 
@@ -219,7 +237,7 @@ void* output_terminal_handler(void*){
             if(terminal.buffer_size > 0){
 
                 // Exibe o que foi acumulado no buffer e em seguida o limpa
-                printf("%s\n", terminal.output_buffer);
+                printf("   %s\n", terminal.output_buffer);
 
                 int it = 0;
                 while(it < terminal.buffer_size){
@@ -232,29 +250,3 @@ void* output_terminal_handler(void*){
     }
     
 }
-
-// EXEMPLO DE TESTE DE CONEXÂO APENAS RECEBENDO AS MENSAGENS DO SERVIDOR
-
-// relay_chat RC = criar_relay_chat(&send_mutex, &recv_mutex);
-// abrir_conexao(&RC);
-
-// // abrindo a thread de leitura
-// if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &RC) != 0)
-// 	printf("ERRO ao iniciar a thread\n");
-
-// // Loop verificando se algo chegou no buffer de entrada
-// while(1){
-//     if(RC.recv_buff_size > 0){
-//         pthread_mutex_lock(RC.recv_mutex);
-//         printf("%s\n",RC.recv_buff);
-//         int it = 0;
-//         while(RC.recv_buff[it] != '\0'){
-//             RC.recv_buff[it++] = '\0';
-//         }
-//         RC.recv_buff_size = 0;
-//         pthread_mutex_unlock(RC.recv_mutex);
-//     }
-// }
-// fechar_conexao(&RC);
-// destruir_relay_chat(&RC);
-

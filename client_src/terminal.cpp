@@ -36,7 +36,7 @@ int terminal_input_iteration(terminal_control* t){
         pthread_mutex_lock(t->terminal_mutex);
             echo_enable(t);
 
-            printf("  >> ");
+            printf("   >> <MSG>: ");
             fflush(stdout); fflush(stdin);
 
             scanf("%[^\n]", t->input);

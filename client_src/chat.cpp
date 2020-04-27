@@ -4,7 +4,8 @@
 #include <string.h> /* memset, */
 
 // Função para inicializar o struct
-relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_mutex) {
+relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_mutex, 
+                                pthread_cond_t* cond_send_waiting, pthread_cond_t* cond_recv_waiting) {
     relay_chat rc;
     // Dados de conexão
     sprintf(rc.sserver, "127.0.0.1");
@@ -23,6 +24,9 @@ relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_m
     // Mutexes
     rc.send_mutex = send_mutex;
     rc.recv_mutex = recv_mutex; 
+
+    rc.cond_send_waiting   = cond_send_waiting;
+    rc.cond_recv_waiting = cond_recv_waiting;
     return rc;
 }
 
@@ -105,6 +109,7 @@ void* recv_msg_handler(void* vrc){
             
             // Mutex protege o buffer de mensagens recebidas
             pthread_mutex_lock(rc->recv_mutex);
+                pthread_cond_signal(rc->cond_recv_waiting); 
 
                 if(strlen(rc->recv_buff) == 0){
                     strcpy(rc->recv_buff, server_response);
@@ -118,7 +123,6 @@ void* recv_msg_handler(void* vrc){
             memset(server_response,0,strlen(server_response));
         }
 
-        sleep(2);
     }
 
 }
@@ -132,10 +136,13 @@ void* send_msg_handler(void* vrc){
     
     while(rc->connection_status == CONNECTION_OPEN) {
         
-        if(rc->send_buff_size > 0){
-            it = 0;
+        pthread_mutex_lock(rc->send_mutex);
+            
+            if(rc->send_buff_size <= 0){}
+                pthread_cond_wait(rc->cond_send_waiting, rc->send_mutex); 
 
-            pthread_mutex_lock(rc->send_mutex);
+            if(rc->send_buff_size > 0){
+                it = 0;
 
                 // Percorre todo o buffer enviando as mensagens na fila
                 // ps: lembrando que as mensagens no protocolo são finalizadas
@@ -155,10 +162,13 @@ void* send_msg_handler(void* vrc){
                     it++;
                 }
 
-        //     rc->send_buff_size  = 0;
-            pthread_mutex_unlock(rc->send_mutex);
-        }
+                rc->send_buff_size  = 0;
+            
+            } else {
+
+            }
+
+        pthread_mutex_unlock(rc->send_mutex);
         
-        sleep(2);
     }
 }
