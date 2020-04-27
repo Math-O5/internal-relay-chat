@@ -26,28 +26,29 @@ void echo_disable(terminal_control* t){
 }
 
 // Handler responsável por lidar com uma iteração de loop no terminal.
-int terminal_loop_handler(terminal_control* t){
+int terminal_input_iteration(terminal_control* t){
 
-    t->input[0] = '\0';
-    scanf("%c", t->input);
-
-    if( t->input[0] == '\n' && t->input_enabled == 0 ){
-
-        echo_enable(t);
-        t->input[0] = '\0';
-
-        printf("  >> ");
-        fflush(stdout); fflush(stdin);
-        scanf("%[^\n]", t->input);
-
-        if(strlen(t->input) > 0)
-            return 1;
+    memset(t->input, 0, sizeof(t->input));
+    t->input[0]  = getchar(); 
+    // scanf("%c", t->input);
     
-    } else if(t->input[0] == '\n' && t->input_enabled == 1){
-        echo_disable(t);
+    if( t->input[0] == '\n'){
+        
+        pthread_mutex_lock(t->terminal_mutex);
+            echo_enable(t);
+
+            printf("  >> ");
+            fflush(stdout); fflush(stdin);
+
+            scanf("%[^\n]", t->input);
+            getchar(); // Consome o \n restante do input
+
+            echo_disable(t);
+
+        pthread_mutex_unlock(t->terminal_mutex);
     }
 
-    return 0;
+    return (strlen(t->input) >= 3);
 }
 
 void msg_inicio(terminal_control* t){

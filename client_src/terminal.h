@@ -15,10 +15,17 @@
 
         #define LINE_BUFFER 8192 // 8 KB
 
+        #define MAX_MESSAGE_LENGHT 4096
+        #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
+
         typedef struct _terminal_control {
             char                input[LINE_BUFFER];
-            pthread_mutex_t*    terminal_mutex;
             int                 input_enabled;
+            pthread_mutex_t*    terminal_mutex;
+
+            char    output_buffer[BUFFER_SIZE];
+            int     buffer_size;
+
         } terminal_control;
 
 
@@ -33,7 +40,7 @@
             void echo_disable(terminal_control* t);
 
             // Handler responsável por lidar com o terminal.
-            int terminal_loop_handler(terminal_control* t);
+            int terminal_input_iteration(terminal_control* t);
 
         /**
          * Mensagens e outputs formatados
@@ -41,8 +48,6 @@
 
             // Mensagem enviada assim que o programa inicia, dando os comandos básicos.
             void msg_inicio(terminal_control* t);
-
-
 
 
 #endif

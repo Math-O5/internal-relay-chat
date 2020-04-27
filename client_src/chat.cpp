@@ -14,9 +14,9 @@ relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_m
     rc.network_socket = -1;
     rc.connection_status = CONNECTION_CLOSED;
 
-    // Buffers de Conexão
-    rc.send_buff = NULL;
-    rc.recv_buff = NULL;
+    // Abrindo os Buffers Conexão
+    rc.send_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
+    rc.recv_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
     rc.recv_buff_size = 0;
     rc.send_buff_size = 0;
 
@@ -33,7 +33,16 @@ int destruir_relay_chat(relay_chat* rc){
             return 1;
         }
 
-    (*rc) = criar_relay_chat(rc->send_mutex, rc->recv_mutex);
+    // Excluindo os buffers utilizados
+    if(rc->send_buff != NULL){
+        free(rc->send_buff);
+        rc->send_buff == NULL;
+    }
+    if(rc->recv_buff != NULL){
+        free(rc->recv_buff);
+        rc->recv_buff == NULL;
+    }
+
     return 0;
 }
 
@@ -58,10 +67,6 @@ int abrir_conexao(relay_chat* rc){
     bcopy((char *) rc->server->h_addr, (char *) &server_address.sin_addr.s_addr, rc->server->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(rc->port);
 
-    // Abrindo os buffers
-    rc->send_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
-    rc->recv_buff = (char*) calloc(BUFFER_SIZE, sizeof(char));
-
     if(rc->send_buff == NULL || rc->recv_buff == NULL){
         fechar_conexao(rc);
         return 4;
@@ -83,16 +88,6 @@ int fechar_conexao(relay_chat* rc){
     close(rc->network_socket);
     rc->connection_status = CONNECTION_CLOSED;
     rc->network_socket    = -1;
-
-    // Excluindo os buffers utilizados
-    if(rc->send_buff != NULL){
-        free(rc->send_buff);
-        rc->send_buff == NULL;
-    }
-    if(rc->recv_buff != NULL){
-        free(rc->recv_buff);
-        rc->recv_buff == NULL;
-    }
 
     return 0;
 }
@@ -119,6 +114,7 @@ void* recv_msg_handler(void* vrc){
                 rc->recv_buff_size = strlen(rc->recv_buff); 
 
             pthread_mutex_unlock(rc->recv_mutex);
+            
             memset(server_response,0,strlen(server_response));
         }
 
