@@ -3,13 +3,14 @@
 #include <stdlib.h> /* atoi, */
 #include <string.h> /* memset, */
 
-// Função para inicializar o struct
+// @Comentários em "chat.h"
 relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_mutex, 
                                 pthread_cond_t* cond_send_waiting, pthread_cond_t* cond_recv_waiting) {
     relay_chat rc;
+    
     // Dados de conexão
-    sprintf(rc.sserver, "127.0.0.1");
-    sprintf(rc.sport, "9002");
+    sprintf(rc.sserver, DEFAULT_SERVER_HOST);
+    sprintf(rc.sport, DEFAULT_SERVER_PORT);
     rc.server = NULL;
     rc.port   = -1;
     rc.network_socket = -1;
@@ -27,10 +28,11 @@ relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_m
 
     rc.cond_send_waiting   = cond_send_waiting;
     rc.cond_recv_waiting = cond_recv_waiting;
+
     return rc;
 }
 
-// Função para destruir o struct
+// @Comentários em "chat.h"
 int destruir_relay_chat(relay_chat* rc){
     if(rc->connection_status == CONNECTION_OPEN && rc->network_socket >= 0)
         if(fechar_conexao(rc)){
@@ -50,19 +52,29 @@ int destruir_relay_chat(relay_chat* rc){
     return 0;
 }
 
-// Abre uma conexão baseada nos dados definidso em shost e sport
+// @Comentários em "chat.h"
 int abrir_conexao(relay_chat* rc){
+    // variável não existe ou já há uma conexão ativa.
+    if(rc == NULL || rc->connection_status == CONNECTION_OPEN)
+        return 1;
+    
+    // Se o buffer não tiver sido alocado então essa variável ainda não foi inicializada.
+    if(rc->send_buff == NULL || rc->recv_buff == NULL){
+        return 2;
+    }
 
     // Buscando dados do servidor
     rc->port = atoi(rc->sport);
     rc->server = gethostbyname(rc->sserver);
-    if(rc->server == NULL)
-        return 1;
-    
+    if(rc->server == NULL){
+        return 3;
+    }
+
     // Criando o socket
     rc->network_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if(rc->network_socket < 0)
-        return 2;
+    if(rc->network_socket < 0){
+        return 4;
+    }
 
     // Definindo endereço para conexão
     struct sockaddr_in server_address;
@@ -71,20 +83,16 @@ int abrir_conexao(relay_chat* rc){
     bcopy((char *) rc->server->h_addr, (char *) &server_address.sin_addr.s_addr, rc->server->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(rc->port);
 
-    if(rc->send_buff == NULL || rc->recv_buff == NULL){
-        fechar_conexao(rc);
-        return 4;
-    }
-
     // Abrindo conexão com o servidor
     rc->connection_status = connect(rc->network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
-    if(rc->connection_status == CONNECTION_CLOSED) 
+    if(rc->connection_status == CONNECTION_CLOSED){ 
         return 3;
+    }
 
     return 0;
 }
 
-// Fecha a conexão e muda o status corretamente.
+// @Comentários em "chat.h"
 int fechar_conexao(relay_chat* rc){
     if(rc->connection_status == CONNECTION_CLOSED || rc->network_socket < 0)
         return 1;
@@ -96,21 +104,25 @@ int fechar_conexao(relay_chat* rc){
     return 0;
 }
 
-// Verifica o buffer do socket e salva no buffer de input
+// @Comentários em "chat.h"
 void* recv_msg_handler(void* vrc){
     relay_chat* rc = (relay_chat*) vrc;
 
+    // Variável auxiliar temporária.
     char server_response[MAX_MESSAGE_LENGHT+1];
     memset(server_response,0,strlen(server_response));
 
+    // Verifica se há uma conexão ativa
     while(rc->connection_status == CONNECTION_OPEN){
         
+        // Verifica se há mensagens para ler no buffer do socket.
         if(recv(rc->network_socket, &server_response, sizeof(server_response), 0) > 0){
             
-            // Mutex protege o buffer de mensagens recebidas
+            // Mutex protege orecv_buffer e cond_recv_sinaliza a thread de Output
             pthread_mutex_lock(rc->recv_mutex);
                 pthread_cond_signal(rc->cond_recv_waiting); 
 
+                // Concatenando os dados no buffer.
                 if(strlen(rc->recv_buff) == 0){
                     strcpy(rc->recv_buff, server_response);
                 } else {
@@ -120,6 +132,7 @@ void* recv_msg_handler(void* vrc){
 
             pthread_mutex_unlock(rc->recv_mutex);
 
+            // limpando a variável auxiliar.
             memset(server_response,0,strlen(server_response));
         }
 
@@ -127,7 +140,7 @@ void* recv_msg_handler(void* vrc){
 
 }
 
-// Verifica o buffer de envio e escreve as mensagens no socket
+// @Comentários em "chat.h"
 void* send_msg_handler(void* vrc){
     relay_chat* rc = (relay_chat*) vrc;
 

@@ -1,3 +1,24 @@
+/**
+ * Internet Relay Chat - Client Application
+ * ----------------------------------------
+ * 
+ * Aplicação utilizada para prática e aprendizado de protocolos, sockets
+ * e threads utilizando o ambiente POSIX.
+ * 
+ * documentação: a esquemática geral do projeto está definida no README.md
+ *               incluso na raíz do cliente, já as especificações de cada
+ *               struct e função declarada se encontra respectivos arquivos.
+ *               
+ * data: 27/abril/2020 
+ * 
+ * autores: Gabriel Van Loon (@GabrielVanLoon)
+ *          Mathias Fernandes ()
+ *          João Nagasava
+ * 
+ * Universidade de São Paulo - Campus São Carlos
+ * Instituto de Ciências Matemáticas e de Computação.
+ */
+
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>     /* memset, strcmp */
