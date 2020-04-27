@@ -1,5 +1,13 @@
 #ifndef SERVER_CONN_H
     #define SERVER_CONN_H 8080
+    #define MAX_CLIENTS 30
+
+    #define ERRO_MAX_CLIENTS 1
+    #define ERRO_SOCKET 2
+    #define ERRO_MULTIPLE_CONNECTION 3
+    #define ERRO_BIND 4
+    #define ERRO_LISTEN 5
+    #define ERRO_PORT 7
     
     #include <stdio.h> /* sprintf */
     #include <string.h> /* memset */
@@ -18,6 +26,7 @@
         int     port;
         int     sv_socket;
         int     max_conn;
+        int     client_socket[30];   
         char    sport[24];
 
         // Buffers de conexão

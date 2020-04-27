@@ -17,6 +17,10 @@ void destruir_server(server_conn* sv){
 // Abre e configura o server
 int abrir_server(server_conn* sv, int max_conn){
 
+    if(max_conn > MAX_CLIENTS) {
+        return ERRO_MAX_CLIENTS
+    }
+
     // Buscando dados do servidor
     sv->port = atoi(sv->sport);
     sv->max_conn = max_conn;
@@ -24,7 +28,7 @@ int abrir_server(server_conn* sv, int max_conn){
     // Cria o socket do servidor
     sv->sv_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(sv->sv_socket < 0)
-        return 2;
+        return ERRO_SOCKET;
 
     // Definicao do endereco da conexao com o servidor
     struct sockaddr_in server_address;
@@ -36,28 +40,36 @@ int abrir_server(server_conn* sv, int max_conn){
     /* enable multiple connections (options) */
     int option = 1;
     if(setsockopt(sv->sv_socket, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0){
-    	return 3;
+    	return ERRO_MULTIPLE_CONNECTION;
 	}
 
     /* Bind */
     if(bind(sv->sv_socket, (struct sockaddr*)&server_address, sizeof(server_address)) < 0){
-        return 4;
+        return ERRO_BIND;
     }
 
     /* Listen */
     sv->max_conn = max_conn;
     if(listen(sv->sv_socket, max_conn) < 0){
-        return 5;
+        return ERRO_LISTEN;
     }
 
-    // printf("=== CHATROOM IS OPEN !!! ===\n");
+    /* Inicia os clients connectados */
+    for (index = 0; index < MAX_CLIENTS; ++index)   
+    {   
+        sv->client_socket[index] = 0;   
+    }   
+
     return 0;
 }
 
 // Fecha a conexao do server e atualiza o seu socket
 int fechar_server(server_conn* sv){
+    if(sv == NULL)
+      return ERRO_SOCKET;
+
     if(sv->sv_socket < 0)
-        return 1;
+        return ERRO_SOCKET;
     close(sv->sv_socket);
     sv->sv_socket = -1;
     return 0;
@@ -67,10 +79,10 @@ int fechar_server(server_conn* sv){
 int info_server(server_conn* sv){
 
     if(sv == NULL)
-        return 1;
+        return ERRO_SOCKET;
 
     if(sv->port < 0)
-        return 2;
+        return ERRO_PORT;
 
     printf("[+] Listener on port %d\n", sv->port);
     printf("[+] Socket Server: %d\n", sv->sv_socket);
@@ -82,8 +94,9 @@ int info_server(server_conn* sv){
 // Roda o servidor
 int run_server(server_conn* sv){
 
-    while(1){
-       sleep(2); 
+    while(true){
        info_server(sv);
+        p_thread_t t;
+        pthread_create(&t, NULL, &handle_connecton, pclient); 
     }
 }
