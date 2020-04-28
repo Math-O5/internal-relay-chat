@@ -49,11 +49,13 @@ int terminal_input_iteration(terminal_control* t){
             echo_disable(t);
 
         pthread_mutex_unlock(t->terminal_mutex);
+
+        return (strlen(t->input) >= 1);
     }
     // Fim do uso do console. Caso o usuário envie uma mensagem de tamanho
     // nulo a iteração é ignorada.
 
-    return (strlen(t->input) >= 1);
+    return 0;
 }
 
 // @Comentários em "terminal.h"
