@@ -11,9 +11,9 @@
  *               
  * data: 27/abril/2020 
  * 
- * autores: Gabriel Van Loon (@GabrielVanLoon)
- *          Mathias Fernandes ()
- *          João Nagasava
+ * autores: Gabriel Van Loon    (@GabrielVanLoon)
+ *          Mathias Fernandes   ()
+ *          João Nagasava       ()
  * 
  * Universidade de São Paulo - Campus São Carlos
  * Instituto de Ciências Matemáticas e de Computação.
@@ -47,6 +47,12 @@ using namespace std;
     relay_chat          chat;
     terminal_control    terminal;
 
+    pthread_t send_msg_thread;
+    pthread_t recv_msg_thread;
+
+    pthread_t in_terminal_thread;
+    pthread_t out_terminal_thread;
+
     pthread_mutex_t send_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -54,12 +60,6 @@ using namespace std;
     // Otimização das threads - condições para acordar do sleep
     pthread_cond_t  cond_recv_waiting = PTHREAD_COND_INITIALIZER;
     pthread_cond_t  cond_send_waiting = PTHREAD_COND_INITIALIZER;
-
-    pthread_t send_msg_thread;
-    pthread_t recv_msg_thread;
-
-    pthread_t in_terminal_thread;
-    pthread_t out_terminal_thread;
 
 /**
  * Threads de I/O com o Terminal

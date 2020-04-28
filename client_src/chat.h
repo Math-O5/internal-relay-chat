@@ -232,8 +232,4 @@
      */
     void* send_msg_handler(void* rc);
 
-
-
-
-
 #endif

@@ -4,52 +4,59 @@
 
 #include "terminal.h"
 
-// Habilita a propriedade ECHO do terminal.
+// @Comentários em "terminal.h"
 void echo_enable(terminal_control* t){
     struct termios termInfo;
     tcgetattr(0, &termInfo);
     termInfo.c_lflag |= ECHO; 
     tcsetattr(0, TCSANOW, &termInfo);
 
-    t->input_enabled = 1;
+    t->input_enabled = INPUT_ENABLED;
 }
 
-// Disabilita a propriedade ECHO do terminal.
+// @Comentários em "terminal.h"
 void echo_disable(terminal_control* t){
     struct termios termInfo;
     tcgetattr(0, &termInfo);
     termInfo.c_lflag &= ~ECHO;
     tcsetattr(0, TCSANOW, &termInfo); 
 
-    t->input_enabled = 0;
+    t->input_enabled = INPUT_DISABLED;
 }
 
-// Handler responsável por lidar com uma iteração de loop no terminal.
+// @Comentários em "terminal.h"
 int terminal_input_iteration(terminal_control* t){
 
     memset(t->input, 0, sizeof(t->input));
     t->input[0]  = getchar(); 
-    // scanf("%c", t->input);
     
+    // O usuário está requisitando o uso do console.
     if( t->input[0] == '\n'){
-        
         pthread_mutex_lock(t->terminal_mutex);
             echo_enable(t);
 
+            // Exibindo o console de input
             printf("   >> <MSG>: ");
             fflush(stdout); fflush(stdin);
 
+            // resetando primeiro caracter de t->input
+            t->input[0] = '\0';
+
+            // Lê o input do usuário e consome o \n enviado logo após o fim do input.
             scanf("%[^\n]", t->input);
-            getchar(); // Consome o \n restante do input
+            getchar();
 
             echo_disable(t);
 
         pthread_mutex_unlock(t->terminal_mutex);
     }
+    // Fim do uso do console. Caso o usuário envie uma mensagem de tamanho
+    // nulo a iteração é ignorada.
 
-    return (strlen(t->input) >= 3);
+    return (strlen(t->input) >= 1);
 }
 
+// @Comentários em "terminal.h"
 void msg_inicio(terminal_control* t){
 
     system("clear");
