@@ -37,15 +37,15 @@
      * 
      * MAX_MESSAGE_LENGHT
      * Valor replicado de chat.h apenas para manter uma consistencia dos
-     * buffers utilizados ao longo do programa 
+     * buffers utilizados ao longo do programa.
      *  
      * BUFFER_SIZE
      * Tamanho máximo que o buffer de output pode ocupar.
      */
 
-        #define LINE_BUFFER 8192 // 8 KB
-
         #define MAX_MESSAGE_LENGHT 4096
+
+        #define LINE_BUFFER ((MAX_MESSAGE_LENGHT * 5) + 1) // 8192 // 8 KB
 
         #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
 

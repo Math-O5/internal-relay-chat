@@ -185,3 +185,41 @@ void* send_msg_handler(void* vrc){
         
     }
 }
+
+// @COmentários em "chat.h"
+char** encode_message(relay_chat *rc, const char* raw_str, int raw_str_len){
+    if(rc == NULL || rc->connection_status != CONNECTION_OPEN || raw_str == NULL || raw_str_len <= 0){
+        return NULL;
+    }
+
+    /** 1ª Etapa - Calculando quantos pacotes serão necessários
+     *  @TODO: Nas próximas etapas deverá ser levado em conta o prefixo e outros
+     *  strings obrigatórias como definido no protocolo. Por enquanto só quebrar as
+     *  strings em blocos ja é o suficiente.
+     * 
+     * 
+     * Obs: (MAX_MESSAGE_LENGHT-1) é necessário porque temos que descontar o espaço 
+     * consumido pelo \n que é adicionado ao fim de cada mensagem do protocolo.
+     */
+    
+    int qtd_mensagens  = raw_str_len / (MAX_MESSAGE_LENGHT - 1); 
+    qtd_mensagens     += (raw_str_len % (MAX_MESSAGE_LENGHT - 1) > 0) ? 1 : 0;
+
+    /**
+     * 2ª Gerando os blocos e populando-os
+     */
+    
+    int raw_it = 0;
+
+    char** mensagem = (char**) calloc(qtd_mensagens+1, sizeof(char*));
+    for(int i = 0; i < qtd_mensagens; i++){
+        mensagem[i] = (char*) calloc(MAX_MESSAGE_LENGHT+1, sizeof(char));
+
+        int msg_it = 0;
+        while(raw_it < raw_str_len && msg_it < (MAX_MESSAGE_LENGHT - 1))
+            mensagem[i][msg_it++] = raw_str[raw_it++];
+        mensagem[i][msg_it] = '\n';
+    }
+
+    return mensagem;
+}
