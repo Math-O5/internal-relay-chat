@@ -1,8 +1,10 @@
 #include "clients.h"
 #include "message.h"
 
+client *cl_arr[MAX_CLIENTS];
+
 /* Cria um novo cliente */
-client* criar_cliente(struct sockaddr_in address, int socket, int id, int sv_socket){
+client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
     cl->cl_address = address;
     cl->cl_socket = socket;
@@ -12,12 +14,12 @@ client* criar_cliente(struct sockaddr_in address, int socket, int id, int sv_soc
 }
 
 /* Destroi o cliente */
-void destruir_cliente(client* cl){
+void clt_destruir(client* cl){
     free(cl);
 }
 
 /* Adiciona um cliente na queue de clientes */
-int add_queue_client(client** cl_arr, client* cl, int max_cl, pthread_mutex_t* mutex){
+int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 
     pthread_mutex_lock(mutex);
 
@@ -39,8 +41,18 @@ int add_queue_client(client** cl_arr, client* cl, int max_cl, pthread_mutex_t* m
     return 0;
 }
 
+void clt_destruir_clientes() {
+    for(int i = 0; i < MAX_CLIENTS; ++i) {
+        if(cl_arr[i] != NULL) {
+            close(cl_arr[i]->cl_socket);
+            free(cl_arr[i]);
+        }
+    }
+    // free(cl_arr);
+}
+
 /* Remove um cliente da queue de clientes*/
-client* remove_queue_client(client** cl_arr, int id, int max_cl, pthread_mutex_t* mutex){
+client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex){
     
     pthread_mutex_lock(mutex);  
 
@@ -60,19 +72,18 @@ client* remove_queue_client(client** cl_arr, int id, int max_cl, pthread_mutex_t
 }
 
 /* Recuperar o cliente pelo id */
-client* get_client_by_id(client** cl_arr, int id, int max_clients){
+client* clt_get_by_id(int id, int max_clients){
 
     for(int i = 0; i < max_clients; i++){
         if(cl_arr[i] && cl_arr[i]->cl_id == id){
             return cl_arr[i];
         }
     }
-
     return NULL;
 }
 
 /* Envia a mensagem para todos os clientes */
-void send_message(client** cl_arr, int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer){
+void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer){
 
     /* Configuracao da mensagem a ser enviada (adiciona que enviou a mensagem no conteudo) */
     char msg_buffer[BUFFER_SIZE];
@@ -92,14 +103,14 @@ void send_message(client** cl_arr, int id_cur, int max_conn, pthread_mutex_t* mu
 }
 
 /* Gerencia o cliente */
-void run_client(client** cl_arr, int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
+void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
     /* Buffer com as mensagens dos clientes */    
     char buffer[BUFFER_SIZE];
     memset(buffer, '\0', BUFFER_SIZE);
 
     /* Recupera as informacoes do cliente... */
-    client* cl = get_client_by_id(cl_arr, id_cur, max_conn);
+    client* cl = clt_get_by_id(id_cur, max_conn);
 
     /* Mensagem com as informacoes do cliente */
     msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
@@ -109,7 +120,7 @@ void run_client(client** cl_arr, int sv_socket, int id_cur, int max_conn, pthrea
         /* Mensagem recebida ! */
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
             msg_recv_cliente(id_cur, buffer);
-            send_message(cl_arr, id_cur, max_conn, mutex, buffer);
+            clt_send_message(id_cur, max_conn, mutex, buffer);
             bzero(buffer, BUFFER_SIZE);
         }
         /* Ocorreu um erro na conexao... */

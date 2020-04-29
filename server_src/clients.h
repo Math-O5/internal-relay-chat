@@ -1,6 +1,6 @@
 #ifndef CLIENTS_H
     #define CLIENTS_H 4040
-
+	#define MAX_CLIENTS 30	
 	#define BUFFER_SIZE 4096
 
 	#include <iostream>
@@ -10,6 +10,8 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <string.h> /* strlen */
+	#include <unistd.h> /* close */
+
 
 	using namespace std;
 
@@ -22,24 +24,27 @@
 	}client;
 
 	/* Funcao que cria clientes (cria threads e soh utiliza elas quando necessario) */
-	client* criar_cliente(struct sockaddr_in address, int socket, int id, int sv_socket);
+	client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket);
 
 	/* Destroi o cliente */
-	void destruir_cliente(client* cl);
+	void clt_destruir_cliente(client* cl);
+
+	/* Libera todos clients e limpa e memória */ 
+	void clt_destruir_clientes();
 
 	/* Adiociona o cliente na "queue" */
-	int add_queue_client(client** cl_arr, client* cl, int max_cl, pthread_mutex_t* mutex);
+	int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex);
 
 	/* Remove um cliente da queue de clientes*/
-	client* remove_queue_client(client** cl_arr, int id, int max_cl, pthread_mutex_t* mutex);
+	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
 
 	/* Envia a mensagem para todos os clientes */
-	void send_message(client** cl_arr, int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
+	void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
 
 	/* Recuperar o cliente pelo id */
-	client* get_client_by_id(client** cl_arr, int id, int max_clients);
+	client* clt_get_by_id(int id, int max_clients);
 
 	/* Funcao que gerencia o cliente */
-	void run_client(client** cl_arr, int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex);
+	void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex);
 
 #endif

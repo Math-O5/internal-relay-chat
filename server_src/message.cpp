@@ -40,6 +40,7 @@ void msg_info_server(int port, int sv_socket, int max_conn, int cl_count){
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] Clientes conectados: %d\n", t_log, cl_count); 
     printf("  [ ]\n"); 
+    fflush(stdout);
 }
 
 /* Informacoes do cliente */
@@ -104,6 +105,7 @@ void msg_cliente_desconexao(int id){
 }
 
 /* Mensagem de erro ao atingir o numero maximo de clientes no server */
+// TODO: Spam
 void msg_max_client(struct sockaddr_in cl_addr){
     char t_log[20];
     printf("  [ ]\n");

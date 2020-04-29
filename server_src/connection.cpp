@@ -4,13 +4,20 @@ pthread_mutex_t mutex  = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 vector<int> clients_wait;
-client *cl_arr[MAX_CLIENTS];
 
 int _server_socket = 0;
 int cl_count = 0;
 
 pthread_t t[MAX_CLIENTS];
 int t_status[MAX_CLIENTS];
+
+void catch_ctrl_c_and_exit(int sig){
+    clt_destruir_clientes();
+    // clear_server();
+    //message out
+    exit(EXIT_SUCCESS);
+
+}
 
 // Cria o Server sem nenhuma configuracao
 server_conn criar_server(){
@@ -68,11 +75,10 @@ int abrir_server(server_conn* sv, int max_conn){
 
     /* Inicia os clients connectados */
     // sv->cl = (client**) malloc(max_conn * sizeof(client*));
-    for (int index = 0; index < MAX_CLIENTS; index++)   
-    {   
-        sv->client_socket[index] = 0;  
-        // sv->cl[index] = (client*) malloc(sizeof(client));
-    }   
+    // for (int index = 0; index < MAX_CLIENTS; index++)   
+    // {   
+    //     sv->client_socket[index] = 0;  
+    // }   
 
     return 0;
 }
@@ -111,20 +117,21 @@ void* client_thread(void *args){
     int id_client = clients_wait.back();
     clients_wait.pop_back();
 
-    pthread_mutex_unlock(&mutex);
-
     /* Aumenta a quantidade de clientes no servidor */
     cl_count++;
+    
+    pthread_mutex_unlock(&mutex);
 
     /* Fica rodando o client */
-    run_client(cl_arr, _server_socket, id_client, MAX_CLIENTS, &mutex);
+    clt_run(_server_socket, id_client, MAX_CLIENTS, &mutex);
 
     /* Atualizacao do status do cliente (removido) */
-    client* temp = get_client_by_id(cl_arr, id_client, MAX_CLIENTS);
-    remove_queue_client(cl_arr, id_client, MAX_CLIENTS, &mutex);
-    if(temp){
-        destruir_cliente(temp);
-    }
+
+    // client* temp = get_client_by_id(cl_arr, id_client, MAX_CLIENTS);
+    // remove_queue_client(cl_arr, id_client, MAX_CLIENTS, &mutex);
+    // if(temp){
+    //     destruir_cliente(temp);
+    // }
 
     /* Mensagem de desconexao do cliente */
     msg_cliente_desconexao(id_client);
@@ -135,10 +142,12 @@ void* client_thread(void *args){
     /* Novo status da thread(finalizada)... */
     int* status = (int*) args;
     *status = pthread_detach(pthread_self());
+
+    return NULL;
 }
 
-// Inicializa as threads dos clientes
-void inicializar_threads(){
+// Inicializa as threads pooolings dos clientes
+void client_pooling(){
     for(int i = 0; i < MAX_CLIENTS; i++){
         t_status[i] = 1;
         pthread_create(&t[i], NULL, client_thread, &t_status[i]);
@@ -155,6 +164,7 @@ void atualizar_threads(){
     }
 }
 
+
 // Roda o servidor
 int run_server(server_conn* sv){
     
@@ -166,7 +176,7 @@ int run_server(server_conn* sv){
     _server_socket = sv->sv_socket;
 
     // Inicializa as threads dos clientes
-    inicializar_threads();
+    client_pooling();
 
     while(true){
 
@@ -191,14 +201,14 @@ int run_server(server_conn* sv){
         atualizar_threads();
 
         /* Adiciona um novo cliente (atualizando atributos) */
-        client* cl = criar_cliente(cl_addr, cl_conn, id, sv->sv_socket);
+        client* cl = clt_criar(cl_addr, cl_conn, id, sv->sv_socket);
         clients_wait.push_back(id++);
-        add_queue_client(cl_arr, cl, MAX_CLIENTS, &mutex);
+        clt_add_queue(cl, MAX_CLIENTS, &mutex);
 
         /* Liberar uma thread para o cliente */
         pthread_cond_signal(&condition_var);
     }
     
-   
+
     return 1;
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <signal.h>
 #include "connection.h" /* server_conn */
 #include "message.h"
 #include "clients.h"
@@ -11,6 +12,8 @@ using namespace std;
 server_conn SC;
 
 int main(int argc, char *argv[]){
+
+    signal(SIGINT, catch_ctrl_c_and_exit);
 
     /* Criacao do servidor (e inicializacao de suas variaveis) */
     SC = criar_server();
@@ -28,7 +31,7 @@ int main(int argc, char *argv[]){
     run_server(&SC);
 
     /* Fechamento do server... */
-    status = fechar_server(&SC);
+    // status = fechar_server(&SC);
     
     return 0;
 }

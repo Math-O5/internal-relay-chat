@@ -38,7 +38,6 @@
         int     port;
         int     sv_socket;
         int     max_conn;
-        int     client_socket[MAX_CLIENTS];   
         char    sport[24];
         struct sockaddr_in server_address;
 
@@ -63,13 +62,14 @@
     int abrir_server(server_conn* sv, int max_conn);
     
     // Função para destruir o struct server
-    int fechar_server(server_conn* sv);
+    void catch_ctrl_c_and_exit(int sig);
+    // int fechar_server(server_conn* sv);
 
 /**
  * Threads dos clientes 
  */
     // Inicializa as threads dos clientes
-    void inicializar_threads();
+    void client_pooling();
 
     // Verifica se alguma threads foi finalizada para inicia-la novamente (alem de atualizar seu status)
     void atualizar_threads();
