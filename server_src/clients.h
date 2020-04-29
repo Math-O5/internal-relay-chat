@@ -12,7 +12,6 @@
 	#include <string.h> /* strlen */
 	#include <unistd.h> /* close */
 
-
 	using namespace std;
 
 	typedef struct _client{
