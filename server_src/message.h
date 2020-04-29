@@ -29,6 +29,9 @@
     /* Conexao de um novo cliente */
     void msg_cliente_conexao();
 
+    /* Não recebeu resposta do client */
+    void msg_client_no_response(int id);
+
     /* Desconexao do cliente */
     void msg_cliente_desconexao(int id);
 

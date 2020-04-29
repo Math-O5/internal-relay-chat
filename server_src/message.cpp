@@ -29,7 +29,7 @@ void msg_info_ping(int id) {
     char t_log[20];
     printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
-    printf("[+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
+    printf("  [+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
     printf("  [ ]\n");
     fflush(stdout);
 } 
@@ -105,6 +105,7 @@ void msg_send_cliente(int id_emissor, int id_receptor){
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] A mensagem do cliente %d foi entregue ao cliente %d...\n", t_log, id_emissor, id_receptor);
     printf("  [ ]\n");
+    fflush(stdout);
 }
 
 /* Conexao de um novo cliente */
@@ -114,6 +115,17 @@ void msg_cliente_conexao(){
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] Novo cliente no servidor...\n", t_log);
     printf("  [ ]\n");    
+    fflush(stdout);
+}
+
+/* Cliente não responde e será desconectado. */
+void msg_client_no_response(int id) {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [x] - [%s] O cliente %d não responde...\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stderr);
 }
 
 /* Desconexao do cliente */
@@ -123,6 +135,7 @@ void msg_cliente_desconexao(int id){
     time_log(t_log, sizeof(t_log));
     printf("  [x] - [%s] O cliente %d se desconectou...\n", t_log, id);
     printf("  [ ]\n");
+    fflush(stderr);
 }
 
 /* Mensagem de erro ao atingir o numero maximo de clientes no server */

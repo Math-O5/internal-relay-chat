@@ -13,10 +13,6 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
     return cl;
 }
 
-/* Destroi o cliente */
-void clt_destruir(client* cl){
-    free(cl);
-}
 
 /* Adiciona um cliente na queue de clientes */
 int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
@@ -39,6 +35,11 @@ int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
         return 1;
 
     return 0;
+}
+
+/* Destroi o cliente */
+void clt_destruir(client* cl){
+    free(cl);
 }
 
 void clt_destruir_clientes() {
@@ -82,8 +83,18 @@ client* clt_get_by_id(int id, int max_clients){
     return NULL;
 }
 
+// Envia mensagem para cl_socket, se falhar tenta mais 5 vezes.
+// Returna true se conseguiu enviar a mensagem.
+bool clt_send_message(int cl_socket, char* buffer) {
+    int try_send = 0;
+    while(send(cl_socket, buffer, strlen(buffer) - 1, 0) != MSG_CONFIRM && try_send < 6) {
+        try_send += 1;
+    }
+    return (try_send == 6)? false : true;
+}
+
 /* Envia a mensagem para todos os clientes */
-void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer){
+void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer){
 
     /* Configuracao da mensagem a ser enviada (adiciona que enviou a mensagem no conteudo) */
     char msg_buffer[BUFFER_SIZE];
@@ -93,9 +104,13 @@ void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* bu
 
     /* Envio da mensagem aos clientes */
     for(int i = 0; i < max_conn; i++){
-        if(cl_arr[i] && cl_arr[i]->cl_id != id_cur){
-            send(cl_arr[i]->cl_socket, msg_buffer, strlen(msg_buffer) - 1, 0);
-            msg_send_cliente(id_cur, cl_arr[i]->cl_id);
+        if(cl_arr[i]){
+            if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) {
+                msg_send_cliente(id_cur, cl_arr[i]->cl_id);
+            } else {
+                msg_client_no_response(cl_arr[i]->cl_id);
+                close(cl_arr[i]->cl_socket);
+            } 
         }
     }
 
@@ -105,15 +120,19 @@ void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* bu
 /* Read commands of user */ 
 bool clt_read_msg(int clsocket, char* buffer) {
     if(strncmp(buffer, "/ping", 5)) {
+        printf("%s\n", buffer);
+        printf("%d", strncmp(buffer, "/ping", 4));
+        printf("%d", strncmp(buffer, "/ping", 5));
+
         msg_info_ping(clsocket);
-        if(send(clsocket, "pong", 5, 0) == MSG_CONFIRM) {
+        if(send(clsocket, "pong", 4, 0) == MSG_CONFIRM) {
             msg_info_pong(clsocket);
         } 
         return false;
-    } else if(strncmp(buffer, "/quit", 5)) {
+    } else if(strncmp(buffer, "/quit", 4)) {
         msg_cliente_desconexao(clsocket);
         return false;
-    }
+    } 
 
     return true;
 }
@@ -134,10 +153,12 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     while(true){
 
         /* Mensagem recebida ! */
-        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0 && clt_read_msg(cl->cl_socket, buffer)){
-            msg_recv_cliente(id_cur, buffer);
-            clt_send_message(id_cur, max_conn, mutex, buffer);
-            bzero(buffer, BUFFER_SIZE);
+        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
+            if(clt_read_msg(cl->cl_id, buffer)) {
+                msg_recv_cliente(id_cur, buffer);
+                clt_send_message_all(id_cur, max_conn, mutex, buffer);
+                bzero(buffer, BUFFER_SIZE);
+            }
         }
         /* Ocorreu um erro na conexao... */
         else{

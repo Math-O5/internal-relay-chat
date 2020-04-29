@@ -38,7 +38,7 @@
 	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
 
 	/* Envia a mensagem para todos os clientes */
-	void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
+	void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
 
 	/* Recuperar o cliente pelo id */
 	client* clt_get_by_id(int id, int max_clients);
