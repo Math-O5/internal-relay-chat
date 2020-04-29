@@ -124,7 +124,6 @@ void msg_client_no_response(int id) {
     printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [x] - [%s] O cliente %d não responde...\n", t_log, id);
-    printf("  [ ]\n");
     fflush(stderr);
 }
 

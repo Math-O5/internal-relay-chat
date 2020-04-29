@@ -87,7 +87,9 @@ client* clt_get_by_id(int id, int max_clients){
 // Returna true se conseguiu enviar a mensagem.
 bool clt_send_message(int cl_socket, char* buffer) {
     int try_send = 0;
-    while(send(cl_socket, buffer, strlen(buffer) - 1, 0) != MSG_CONFIRM && try_send < 6) {
+
+    // Tenta enviar a mensagem até receber confirmação. Se após 
+    while(send(cl_socket, buffer, strlen(buffer) - 1, 0) < 0 && try_send < 6) {
         try_send += 1;
     }
     return (try_send == 6)? false : true;
@@ -119,17 +121,18 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 
 /* Read commands of user */ 
 bool clt_read_msg(int clsocket, char* buffer) {
-    if(strncmp(buffer, "/ping", 5)) {
-        printf("%s\n", buffer);
-        printf("%d", strncmp(buffer, "/ping", 4));
-        printf("%d", strncmp(buffer, "/ping", 5));
+  
+    if(strncmp(buffer, "/ping", 5) == 0) {
 
         msg_info_ping(clsocket);
-        if(send(clsocket, "pong", 4, 0) == MSG_CONFIRM) {
+        strcpy(buffer, "pong\n");
+        
+        if(clt_send_message(clsocket, buffer)) {
             msg_info_pong(clsocket);
         } 
         return false;
-    } else if(strncmp(buffer, "/quit", 4)) {
+
+    } else if(strncmp(buffer, "/quit", 5) == 0) {
         msg_cliente_desconexao(clsocket);
         return false;
     } 
@@ -154,7 +157,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
         /* Mensagem recebida ! */
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
-            if(clt_read_msg(cl->cl_id, buffer)) {
+            if(clt_read_msg(cl->cl_socket, buffer)) {
                 msg_recv_cliente(id_cur, buffer);
                 clt_send_message_all(id_cur, max_conn, mutex, buffer);
                 bzero(buffer, BUFFER_SIZE);
