@@ -34,5 +34,11 @@
 
     /* Mensagem de erro ao atingir o numero maximo de clientes no server */
     void msg_max_client(struct sockaddr_in cl_addr);
+    
+    /* Receive a ping from user */ 
+    void msg_info_ping(int id);
+
+    /* Send a pong to user */
+    void msg_info_pong(int id);
 
 #endif

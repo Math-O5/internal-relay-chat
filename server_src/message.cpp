@@ -24,6 +24,27 @@ void msg_inicio(int status) {
     }
 }
 
+// Receive a ping to user
+void msg_info_ping(int id) {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("[+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stdout);
+} 
+
+// Sended a pong to user
+void msg_info_pong(int id) {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("[+] - [%s]  Sending pong to Client %d.\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stdout);
+} 
+
+
 // Informacoes do servidor
 void msg_info_server(int port, int sv_socket, int max_conn, int cl_count){
 

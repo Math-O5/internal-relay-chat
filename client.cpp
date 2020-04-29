@@ -75,7 +75,7 @@ void* send_msg_handler(void* args)
 // argv[1] server_ipaddress
 // argv[2] port_num
 void load_const(char *argv[]) {
-    PORT = atoi(argv[2]);
+    PORT = 9002
     SERVER = gethostbyname(argv[1]);
     if(SERVER == NULL)
     {

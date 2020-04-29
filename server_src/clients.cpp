@@ -102,6 +102,22 @@ void clt_send_message(int id_cur, int max_conn, pthread_mutex_t* mutex, char* bu
     pthread_mutex_unlock(mutex);
 }
 
+/* Read commands of user */ 
+bool clt_read_msg(int clsocket, char* buffer) {
+    if(strncmp(buffer, "/ping", 5)) {
+        msg_info_ping(clsocket);
+        if(send(clsocket, "pong", 5, 0) == MSG_CONFIRM) {
+            msg_info_pong(clsocket);
+        } 
+        return false;
+    } else if(strncmp(buffer, "/quit", 5)) {
+        msg_cliente_desconexao(clsocket);
+        return false;
+    }
+
+    return true;
+}
+
 /* Gerencia o cliente */
 void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
@@ -118,7 +134,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     while(true){
 
         /* Mensagem recebida ! */
-        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
+        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0 && clt_read_msg(cl->cl_socket, buffer)){
             msg_recv_cliente(id_cur, buffer);
             clt_send_message(id_cur, max_conn, mutex, buffer);
             bzero(buffer, BUFFER_SIZE);
