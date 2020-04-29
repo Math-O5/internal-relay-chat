@@ -4,6 +4,7 @@ pthread_mutex_t mutex  = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 vector<int> clients_wait;
+server_conn *SV;
 
 int _server_socket = 0;
 int cl_count = 0;
@@ -13,10 +14,10 @@ int t_status[MAX_CLIENTS];
 
 void catch_ctrl_c_and_exit(int sig){
     clt_destruir_clientes();
-    // clear_server();
-    //message out
-    exit(EXIT_SUCCESS);
+    conn_destruir_server(SV);
 
+    //TODO message out msg_encerrar_server();
+    exit(EXIT_SUCCESS);
 }
 
 // Cria o Server sem nenhuma configuracao
@@ -84,7 +85,7 @@ int abrir_server(server_conn* sv, int max_conn){
 }
 
 // Fecha a conexao do server e atualiza o seu socket
-int fechar_server(server_conn* sv){
+int conn_destruir_server(server_conn* sv){
     if(sv == NULL)
       return ERRO_SOCKET;
     if(sv->sv_socket < 0)
@@ -167,7 +168,7 @@ void atualizar_threads(){
 
 // Roda o servidor
 int run_server(server_conn* sv){
-    
+    SV = sv;
     /* Mensagem com as informacoes do servidor */
     msg_info_server(sv->port, sv->sv_socket, sv->max_conn, cl_count);
 

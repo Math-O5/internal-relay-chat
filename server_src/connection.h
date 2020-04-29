@@ -63,7 +63,8 @@
     
     // Função para destruir o struct server
     void catch_ctrl_c_and_exit(int sig);
-    // int fechar_server(server_conn* sv);
+    
+    int conn_destruir_server(server_conn* sv);
 
 /**
  * Threads dos clientes 

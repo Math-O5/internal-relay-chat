@@ -49,7 +49,7 @@ void clt_destruir_clientes() {
             free(cl_arr[i]);
         }
     }
-    // free(cl_arr);
+    free(*cl_arr);
 }
 
 /* Remove um cliente da queue de clientes*/
