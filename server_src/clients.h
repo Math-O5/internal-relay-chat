@@ -1,6 +1,6 @@
 #ifndef CLIENTS_H
     #define CLIENTS_H 4040
-	#define MAX_CLIENTS 30
+	#define MAX_CLIENTS 3
 	#define BUFFER_SIZE 4096
 
 	#include <iostream>
@@ -26,7 +26,7 @@
 	client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket);
 
 	/* Destroi o cliente */
-	void clt_destruir_cliente(client* cl);
+	void clt_destruir(int id);
 
 	/* Libera todos clients e limpa e memória */ 
 	void clt_destruir_clientes();

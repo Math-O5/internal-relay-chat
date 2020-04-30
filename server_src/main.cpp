@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define MAX_CONN 30
+#define MAX_CONN 3
 
 server_conn SC;
 

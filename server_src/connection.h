@@ -1,7 +1,7 @@
 #ifndef SERVER_CONN_H
     #define SERVER_CONN_H 8080
 
-    #define MAX_CLIENTS 30
+    #define MAX_CLIENTS 3
 
     #define ERRO_MAX_CLIENTS 1
     #define ERRO_SOCKET 2

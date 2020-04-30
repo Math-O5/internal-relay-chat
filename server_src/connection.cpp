@@ -79,7 +79,7 @@ int conn_destruir_server(server_conn* sv){
         return ERRO_SOCKET;
     close(sv->sv_socket);
 
-    for(int i = 0; i < MAX_CLIENTS; ++i) {
+    for(int i = 0; i < MAX_CLIENTS; i++) {
         pthread_cancel(t[i]);  
     }
 
@@ -89,7 +89,7 @@ int conn_destruir_server(server_conn* sv){
 // Funcao que checa se o limite de clientes foi excedido
 int conn_check_max_clients(server_conn* sv, int cl_count){
 
-    if((cl_count + 1) >= sv->max_conn){
+    if(cl_count == sv->max_conn){
         return ERRO_MAX_CLIENT_REACHED;
     }
     return 0;
@@ -116,6 +116,9 @@ void* conn_client_thread(void *args){
         /* Fica rodando o client */
         clt_run(_server_socket, id_client, MAX_CLIENTS, &mutex);
 
+        /* Destroi o cliente (fecha a conexao e desaloca) */
+        clt_destruir(id_client);
+
         /* Mensagem de desconexao do cliente */
         msg_cliente_desconexao(id_client);
 
@@ -127,7 +130,7 @@ void* conn_client_thread(void *args){
 
 // Inicializa as threads pooolings dos clientes
 void conn_client_pooling(){
-    for(int i = 0; i < MAX_CLIENTS; ++i) {
+    for(int i = 0; i < MAX_CLIENTS; i++) {
         pthread_create(&t[i], NULL, conn_client_thread, NULL);
     } 
 }

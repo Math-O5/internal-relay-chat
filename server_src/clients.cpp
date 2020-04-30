@@ -38,12 +38,18 @@ int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 }
 
 /* Destroi o cliente */
-void clt_destruir(client* cl){
-    free(cl);
+void clt_destruir(int id){
+    for(int i = 0; i < MAX_CLIENTS; i++) {
+        if(cl_arr[i]->cl_id == id) {
+            close(cl_arr[i]->cl_socket);
+            free(&(*cl_arr[i]));
+            break;
+        }
+    }
 }
 
 void clt_destruir_clientes() {
-    for(int i = 0; i < MAX_CLIENTS; ++i) {
+    for(int i = 0; i < MAX_CLIENTS; i++) {
         if(cl_arr[i] != NULL) {
             close(cl_arr[i]->cl_socket);
             free(&(*cl_arr[i]));
@@ -91,7 +97,7 @@ bool clt_send_message(int cl_socket, char* buffer) {
     while(send(cl_socket, buffer, strlen(buffer), 0) < 0 && try_send < 6) {
         try_send += 1;
     }
-    return (try_send == 6)? false : true;
+    return (try_send == 6) ? false : true;
 }
 
 /* Envia a mensagem para todos os clientes */
