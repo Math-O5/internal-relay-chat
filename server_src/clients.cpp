@@ -40,9 +40,10 @@ int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 /* Destroi o cliente */
 void clt_destruir(int id){
     for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i]->cl_id == id) {
+        if(cl_arr[i] != NULL && cl_arr[i]->cl_id == id) {
             close(cl_arr[i]->cl_socket);
-            free(&(*cl_arr[i]));
+            cl_arr[i] = NULL;
+            free(cl_arr[i]);
             break;
         }
     }
@@ -111,12 +112,12 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 
     /* Envio da mensagem aos clientes */
     for(int i = 0; i < max_conn; i++){
-        if(cl_arr[i]){
+        if(cl_arr[i] != NULL){
             if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) {
                 msg_send_cliente(id_cur, cl_arr[i]->cl_id);
             } else {
                 msg_client_no_response(cl_arr[i]->cl_id);
-                close(cl_arr[i]->cl_socket);
+                clt_destruir(cl_arr[i]->cl_id);
             } 
         }
     }
@@ -125,7 +126,7 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 }
 
 /* Read commands of user */ 
-bool clt_read_msg(client* cl, char* buffer) {
+int clt_read_msg(client* cl, char* buffer) {
   
     if(strncmp(buffer, "/ping", 5) == 0) {
 
@@ -136,15 +137,14 @@ bool clt_read_msg(client* cl, char* buffer) {
         if(clt_send_message(cl->cl_socket, buffer)) {
             msg_info_pong(cl->cl_id);
         } 
-        memset(buffer, '\0', BUFFER_SIZE);
-        return false;
+        return 1;
 
     } else if(strncmp(buffer, "/quit", 5) == 0) {
-        msg_cliente_desconexao(cl->cl_id);
-        return false;
+        memset(buffer, '\0', BUFFER_SIZE);
+        return 2;
     } 
 
-    return true;
+    return 0;
 }
 
 /* Gerencia o cliente */
@@ -157,10 +157,10 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     /* Recupera as informacoes do cliente... */
     client* cl = clt_get_by_id(id_cur, max_conn);
 
-    // No clients avaible
-    // if(cl == NULL) {
-    //     return;
-    // }
+    //No clients avaible
+    if(cl == NULL) {
+        return;
+    }
 
     /* Mensagem com as informacoes do cliente */
     msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
@@ -169,15 +169,23 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
         /* Mensagem recebida ! */
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
-            if(clt_read_msg(cl, buffer)) {
-                msg_recv_cliente(id_cur, buffer);
-                clt_send_message_all(id_cur, max_conn, mutex, buffer);
-                bzero(buffer, BUFFER_SIZE);
+            int input = clt_read_msg(cl, buffer);
+            switch(input) {
+                case 0:
+                    msg_recv_cliente(id_cur, buffer);
+                    clt_send_message_all(id_cur, max_conn, mutex, buffer);
+                    bzero(buffer, BUFFER_SIZE);
+                    break;
+                case 2:
+                    // clt_remove_queue(cl->cl_id, max_conn, mutex);
+                    msg_cliente_desconexao(cl->cl_id);
+                    return;
+                default: break;
             }
         }
         /* Ocorreu um erro na conexao... */
         else{
-            break;
+            return;
         }
     }
 }
