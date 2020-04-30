@@ -27,7 +27,7 @@
     void msg_send_cliente(int id_emissor, int id_receptor);
 
     /* Conexao de um novo cliente */
-    void msg_cliente_conexao();
+    void msg_cliente_conexao(void);
 
     /* Não recebeu resposta do client */
     void msg_client_no_response(int id);
@@ -43,5 +43,8 @@
 
     /* Send a pong to user */
     void msg_info_pong(int id);
+    
+    /* output: Mensagem de finalização do servidor */ 
+    void msg_encerrar_server(void);
 
 #endif

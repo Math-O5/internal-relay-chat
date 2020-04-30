@@ -46,10 +46,9 @@ void clt_destruir_clientes() {
     for(int i = 0; i < MAX_CLIENTS; ++i) {
         if(cl_arr[i] != NULL) {
             close(cl_arr[i]->cl_socket);
-            free(cl_arr[i]);
+            free(&(*cl_arr[i]));
         }
     }
-    free(*cl_arr);
 }
 
 /* Remove um cliente da queue de clientes*/
@@ -89,7 +88,7 @@ bool clt_send_message(int cl_socket, char* buffer) {
     int try_send = 0;
 
     // Tenta enviar a mensagem até receber confirmação. Se após 
-    while(send(cl_socket, buffer, strlen(buffer) - 1, 0) < 0 && try_send < 6) {
+    while(send(cl_socket, buffer, strlen(buffer), 0) < 0 && try_send < 6) {
         try_send += 1;
     }
     return (try_send == 6)? false : true;
@@ -100,7 +99,7 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 
     /* Configuracao da mensagem a ser enviada (adiciona que enviou a mensagem no conteudo) */
     char msg_buffer[BUFFER_SIZE];
-    sprintf(msg_buffer, ">> <CLIENTE %d>: %s", id_cur, buffer);
+    sprintf(msg_buffer, ">> <CLIENTE %d>: %s\n", id_cur, buffer);
 
     pthread_mutex_lock(mutex);
 
@@ -120,20 +119,22 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 }
 
 /* Read commands of user */ 
-bool clt_read_msg(int clsocket, char* buffer) {
+bool clt_read_msg(client* cl, char* buffer) {
   
     if(strncmp(buffer, "/ping", 5) == 0) {
 
-        msg_info_ping(clsocket);
-        strcpy(buffer, "pong\n");
+        msg_info_ping(cl->cl_id);
+        memset(buffer, '\0', BUFFER_SIZE);
+        strcpy(buffer, ">> <SERVER>: pong\n\0");
         
-        if(clt_send_message(clsocket, buffer)) {
-            msg_info_pong(clsocket);
+        if(clt_send_message(cl->cl_socket, buffer)) {
+            msg_info_pong(cl->cl_id);
         } 
+        memset(buffer, '\0', BUFFER_SIZE);
         return false;
 
     } else if(strncmp(buffer, "/quit", 5) == 0) {
-        msg_cliente_desconexao(clsocket);
+        msg_cliente_desconexao(cl->cl_id);
         return false;
     } 
 
@@ -150,6 +151,11 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     /* Recupera as informacoes do cliente... */
     client* cl = clt_get_by_id(id_cur, max_conn);
 
+    // No clients avaible
+    // if(cl == NULL) {
+    //     return;
+    // }
+
     /* Mensagem com as informacoes do cliente */
     msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
 
@@ -157,7 +163,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
         /* Mensagem recebida ! */
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
-            if(clt_read_msg(cl->cl_socket, buffer)) {
+            if(clt_read_msg(cl, buffer)) {
                 msg_recv_cliente(id_cur, buffer);
                 clt_send_message_all(id_cur, max_conn, mutex, buffer);
                 bzero(buffer, BUFFER_SIZE);

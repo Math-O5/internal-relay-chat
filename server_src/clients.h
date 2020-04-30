@@ -1,6 +1,6 @@
 #ifndef CLIENTS_H
     #define CLIENTS_H 4040
-	#define MAX_CLIENTS 30	
+	#define MAX_CLIENTS 30
 	#define BUFFER_SIZE 4096
 
 	#include <iostream>
@@ -36,6 +36,9 @@
 
 	/* Remove um cliente da queue de clientes*/
 	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
+
+	/* Check if it is a command /ping or a message */
+	bool clt_read_msg(client* cl, char* buffer);
 
 	/* Envia a mensagem para todos os clientes */
 	void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);

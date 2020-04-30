@@ -46,46 +46,64 @@
         int  send_buff_size, recv_buff_size;
     }server_conn;
 
-/**
- *  Funções de estância
- */
+    /**
+     *  Funções de estância
+     */
     //Funcoes de Criacao
-    server_conn criar_server();
+    server_conn conn_criar_server();
 
-    //Destruicao de Server
-    void destruir_server(server_conn* sv);
-
-/**
- *  Funcoes de Conexao do Server 
- */
+    /**
+     *  @Funcoes de Conexao do Server 
+     */
     // Função para inicializar o struct server
-    int abrir_server(server_conn* sv, int max_conn);
+    int conn_abrir_server(server_conn* sv, int max_conn);
     
-    // Função para destruir o struct server
-    void catch_ctrl_c_and_exit(int sig);
+    // Função que chama todas funções necessarias para finalizar o programa com sucesso.
+    void conn_catch_ctrl_c_and_exit(int sig);
     
+    // Função Finaliza thread ativas e limpa memória alocada pelo servidor.
     int conn_destruir_server(server_conn* sv);
 
-/**
- * Threads dos clientes 
- */
-    // Inicializa as threads dos clientes
-    void client_pooling();
+    /**
+     * @Funcao
+     * Inicializa todas as threads do servidor com a thread client_thread (void* client_thread(void* args)). 
+     * Cada thread atende um cliente.
+     */
+    void conn_client_pooling();
 
-    // Verifica se alguma threads foi finalizada para inicia-la novamente (alem de atualizar seu status)
-    void atualizar_threads();
+     /**
+     * @Funcao
+     * Funcao que checa se o limite de clientes foi excedido
+     * 
+     * return: 
+     *          ERRO_MAX_CLIENT_REACHED     : número de clients no limite;
+     *          0                           : número de clients abaixo do limite;
+     */
+    int conn_check_max_clients(server_conn* sv, int cl_count);
 
-/**
- * Roda o Servidor 
- */
-    // Funcao que checa se o limite de clientes foi excedido
-    int check_max_clients(server_conn* sv, int cl_count);
+     /**
+     * @Thread
+     * Thread que executa umm cliente. Primeiro checa se há cliente para atender na fila de 
+     * clientes (clients_wait). Se está estiver vazia, a thread fica em WAIT.
+     * Quando clientes são atribuidos a fila, um sinal é enviado para WAKE UP a thread, ela
+     * retira o cliente da fila e fica excutando ele em clt_run(). Quando clt_run() retorna
+     * ela atende outro cliente.
+     * 
+     * return: 
+     *          NULL     : em caso de erro inesperado;
+     */
+    void* conn_client_thread(void *args);
 
-    // Thread do cliente
-    void* client_thread(void *args);
-
-    // Função deixa o struct sv pronto para receber conexão. 
-    int run_server(server_conn* sv);
+    /**
+     * @Funcao
+     * Funcao aceita conexões com clientes. Ela inicializa as threads e adiciona o cliente a fila quando
+     * ele tenta uma conexão. O número de clientes será MAX_CLIENTS - 1, pois o ultimo socket
+     * está reservado com responder aos outros clients que o servidor está em máxima capidade no momento.
+     * 
+     * return: 1 interrompido por algum sinal ou erro inesperado.
+     *          
+     */
+    int conn_run_server(server_conn* sv);
 
 
 #endif

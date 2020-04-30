@@ -24,25 +24,6 @@ void msg_inicio(int status) {
     }
 }
 
-// Receive a ping to user
-void msg_info_ping(int id) {
-    char t_log[20];
-    printf("  [ ]\n");
-    time_log(t_log, sizeof(t_log));
-    printf("  [+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
-    printf("  [ ]\n");
-    fflush(stdout);
-} 
-
-// Sended a pong to user
-void msg_info_pong(int id) {
-    char t_log[20];
-    printf("  [ ]\n");
-    time_log(t_log, sizeof(t_log));
-    printf("[+] - [%s]  Sending pong to Client %d.\n", t_log, id);
-    printf("  [ ]\n");
-    fflush(stdout);
-} 
 
 
 // Informacoes do servidor
@@ -157,3 +138,34 @@ void msg_max_client(struct sockaddr_in cl_addr){
     printf("  [x] - [%s] Port: %d\n", t_log, cl_addr.sin_port);
     printf("  [ ]\n");
 }
+
+    // Receive a ping to user
+    void msg_info_ping(int id) {
+        char t_log[20];
+        printf("  [ ]\n");
+        time_log(t_log, sizeof(t_log));
+        printf("  [+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
+        printf("  [ ]\n");
+        fflush(stdout);
+    } 
+
+    // Sended a pong to user
+    void msg_info_pong(int id) {
+        char t_log[20];
+        printf("  [ ]\n");
+        time_log(t_log, sizeof(t_log));
+        printf("  [+] - [%s]  Sending pong to Client %d.\n", t_log, id);
+        printf("  [ ]\n");
+        fflush(stdout);
+    } 
+
+    void msg_encerrar_server(void) {
+        char t_log[20];
+        printf("  [ ]\n");
+        time_log(t_log, sizeof(t_log));
+        printf("  [-] Servidor finalizado com sucesso.\n");
+        printf("  [ ]\n");
+        fflush(stdout);
+    }
+
+    

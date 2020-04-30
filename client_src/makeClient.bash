@@ -2,5 +2,5 @@
 
  for N in {1..10}
  do
-    ./client < teste1.in &
+    $1 -e bash runClient.bash &
  done
