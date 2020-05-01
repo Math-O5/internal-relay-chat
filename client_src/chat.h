@@ -63,7 +63,7 @@
         #define CONNECTION_CLOSED -1
         #define CONNECTION_OPEN    0
 
-        #define MAX_MESSAGE_LENGHT 4096
+        #define MAX_MESSAGE_LENGHT 11
         #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
 
         #define DEFAULT_SERVER_HOST "127.0.0.1"
@@ -105,6 +105,7 @@
      * - send_mutex(*): mutex utilizado para impedir acesso de escrita simultânea ao 
      *               send_buff.
      * - recv_mutex(*): idem para controle do recv_buff
+     * -  state_mutex(*): caso alguma das variáveis de estado tenha que ser alterada.
      * 
      * - cond_send_waiting(*): utilizada para indicar que uma nova mensagem foi
      *                      adicionada no send_buff. É utilizada pela thread de Input
@@ -133,6 +134,8 @@
             // mutexes e conditionals
             pthread_mutex_t* send_mutex;
             pthread_mutex_t* recv_mutex;
+            pthread_mutex_t* state_mutex;
+
             
             pthread_cond_t*  cond_send_waiting;
             pthread_cond_t*  cond_recv_waiting;

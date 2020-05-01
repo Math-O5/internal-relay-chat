@@ -43,9 +43,9 @@
      * Tamanho máximo que o buffer de output pode ocupar.
      */
 
-        #define MAX_MESSAGE_LENGHT 4096
+        #define MAX_MESSAGE_LENGHT 11
 
-        #define LINE_BUFFER ((MAX_MESSAGE_LENGHT * 5) + 1) // 8192 // 8 KB
+        #define LINE_BUFFER ((MAX_MESSAGE_LENGHT * 5) + 1)
 
         #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
 

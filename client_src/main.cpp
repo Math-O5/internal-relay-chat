@@ -87,7 +87,10 @@ using namespace std;
 
     pthread_mutex_t send_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t state_mutex     = PTHREAD_MUTEX_INITIALIZER;
+
     pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
+    
 
     // Otimização das threads - condições para acordar do sleep
     pthread_cond_t  cond_recv_waiting = PTHREAD_COND_INITIALIZER;
@@ -134,6 +137,7 @@ using namespace std;
         signal(SIGINT, sigint_handler); 
         
         system("clear");
+        echo_enable(&terminal);
         
         /**
          * Iniciando as variáveis globais necessárias;
@@ -142,12 +146,15 @@ using namespace std;
             
             send_mutex     = PTHREAD_MUTEX_INITIALIZER;
             recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
+            state_mutex    = PTHREAD_MUTEX_INITIALIZER;
+
             terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
 
             cond_recv_waiting = PTHREAD_COND_INITIALIZER;
             cond_send_waiting = PTHREAD_COND_INITIALIZER;
 
-            chat = criar_relay_chat(&send_mutex, &recv_mutex, &cond_send_waiting, &cond_recv_waiting);        
+            chat = criar_relay_chat(&send_mutex, &recv_mutex, &cond_send_waiting, &cond_recv_waiting);
+            chat.state_mutex = &state_mutex;        
             terminal.terminal_mutex = &terminal_mutex;
             
             printf("   [+] Variáveis iniciadas com sucesso.\n"); 
@@ -210,6 +217,8 @@ using namespace std;
         
         fechar_conexao(&chat);
         destruir_relay_chat(&chat);
+        
+        echo_enable(&terminal);
 
         exit(EXIT_SUCCESS);
     }
@@ -249,7 +258,7 @@ using namespace std;
         int action_code;
         int repeat_loop = 1;
 
-        while(repeat_loop){
+        while(repeat_loop && chat.connection_status == CONNECTION_OPEN){
             
             action_code = ACTION_NONE;
 
@@ -309,9 +318,6 @@ using namespace std;
                  * envio do chat (chat.send_buff).
                  */
                 case ACTION_MESSAGE:
-                    // pthread_mutex_lock(terminal.terminal_mutex);
-                    //    printf("  [input]: \"%s\" %d\n", terminal.input, chat.send_buff_size);
-                    // pthread_mutex_unlock(terminal.terminal_mutex);
 
                     pthread_mutex_lock(chat.send_mutex);
                         pthread_cond_signal(chat.cond_send_waiting); 
@@ -326,8 +332,10 @@ using namespace std;
                                 while(encoded[it] != NULL){
                                     if(chat.send_buff_size <= 0){
                                         strcpy(chat.send_buff, encoded[it]);
+                                        chat.send_buff_size = strlen(encoded[it]);
                                     } else{
                                         strcat(chat.send_buff, encoded[it]);
+                                        chat.send_buff_size += strlen(encoded[it]);
                                     }
 
                                     free(encoded[it++]);
@@ -335,11 +343,15 @@ using namespace std;
                                 free(encoded);
                             }
 
-                            chat.send_buff_size = strlen(chat.send_buff);
                         }
 
+                        // pthread_mutex_lock(terminal.terminal_mutex);
+                        //     printf("  [input]: \"%s\" %d \n%s \n", terminal.input, chat.send_buff_size, chat.send_buff);
+                        // pthread_mutex_unlock(terminal.terminal_mutex);
+
                     pthread_mutex_unlock(chat.send_mutex);
-                    
+
+
                     // garante que a thread de envio vai conseguir rodar antes de o while
                     // de input travar tudo novamente. 
                     // sleep(1);
@@ -391,8 +403,9 @@ using namespace std;
                 
                 // Caso o buffer esteja vazio, a thread dorme até que exista algo 
                 // novo para ser processado pela mesma.
-                if(chat.recv_buff_size <= 0)
+                if(chat.recv_buff_size <= 0){ 
                     pthread_cond_wait(chat.cond_recv_waiting, chat.recv_mutex); 
+                }
 
                 // printf("\n %d, %d\n", chat.connection_status, chat.recv_buff_size);
                 if( chat.connection_status == CONNECTION_OPEN && chat.recv_buff_size > 0 ){
@@ -412,7 +425,6 @@ using namespace std;
                     }
                     chat.recv_buff_size = 0;
                 }
-
             pthread_mutex_unlock(chat.recv_mutex);
             
             // 2º - Verifica se existe algo no buffer de output para ser exibido.

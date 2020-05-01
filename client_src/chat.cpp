@@ -110,13 +110,17 @@ void* recv_msg_handler(void* vrc){
 
     // Variável auxiliar temporária.
     char server_response[MAX_MESSAGE_LENGHT+1];
-    memset(server_response,0,strlen(server_response));
 
     // Verifica se há uma conexão ativa
     while(rc->connection_status == CONNECTION_OPEN){
         
+        // limpando a variável auxiliar.
+        memset(server_response,0,sizeof(server_response));
+
+        int recv_return = recv(rc->network_socket, &server_response, MAX_MESSAGE_LENGHT, 0);
+
         // Verifica se há mensagens para ler no buffer do socket.
-        if(recv(rc->network_socket, &server_response, sizeof(server_response), 0) > 0){
+        if( recv_return > 0){
             
             // Mutex protege orecv_buffer e cond_recv_sinaliza a thread de Output
             pthread_mutex_lock(rc->recv_mutex);
@@ -131,9 +135,11 @@ void* recv_msg_handler(void* vrc){
                 rc->recv_buff_size = strlen(rc->recv_buff); 
 
             pthread_mutex_unlock(rc->recv_mutex);
-
-            // limpando a variável auxiliar.
-            memset(server_response,0,strlen(server_response));
+        
+        } else if(recv_return < 0){
+            pthread_mutex_lock(rc->state_mutex);
+                rc->connection_status = CONNECTION_CLOSED;
+            pthread_mutex_unlock(rc->state_mutex);
         }
 
     }
@@ -151,8 +157,9 @@ void* send_msg_handler(void* vrc){
         
         pthread_mutex_lock(rc->send_mutex);
             
-            if(rc->send_buff_size <= 0){}
+            if(rc->send_buff_size <= 0){
                 pthread_cond_wait(rc->cond_send_waiting, rc->send_mutex); 
+            }
 
             if(rc->send_buff_size > 0){
                 it = 0;
@@ -160,30 +167,37 @@ void* send_msg_handler(void* vrc){
                 // Percorre todo o buffer enviando as mensagens na fila
                 // ps: lembrando que as mensagens no protocolo são finalizadas
                 // não por um \0, mas por um \r\n (CR-LF).
-                while( it < BUFFER_SIZE && rc->send_buff[it] != '\0'){
+                while( it < rc->send_buff_size ){
                     
                     memset(client_message, '\0', sizeof(client_message));
                     it_message = 0;
 
-                    while( it < BUFFER_SIZE && rc->send_buff[it] != '\n' && rc->send_buff[it] != '\0') {
-                        client_message[it_message++] = rc->send_buff[it];
-                        rc->send_buff[it++] = '\0';
-                    };
+                    while( it < rc->send_buff_size && rc->send_buff[it] != '\n' && rc->send_buff[it] != '\0') {
+                        client_message[it_message++] = rc->send_buff[it++];
+                    }
                     client_message[it_message] = '\n';
-
-                    write(rc->network_socket, client_message, strlen(client_message));
                     it++;
+
+                    // int write_return = write(rc->network_socket, client_message, strlen(client_message));
+                    int send_return = send(rc->network_socket, client_message, strlen(client_message), 0);
+
+                    if(send_return < 0){
+                        pthread_mutex_lock(rc->state_mutex);
+                            rc->connection_status = CONNECTION_CLOSED;
+                        pthread_mutex_unlock(rc->state_mutex);
+                        break;
+                    }
+
                 }
 
                 rc->send_buff_size  = 0;
-            
-            } else {
-
-            }
+                memset(rc->send_buff, 0, sizeof(rc->send_buff));
+            } 
 
         pthread_mutex_unlock(rc->send_mutex);
         
     }
+
 }
 
 // @COmentários em "chat.h"
