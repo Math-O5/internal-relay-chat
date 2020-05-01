@@ -3,6 +3,13 @@
 	#define MAX_CLIENTS 3
 	#define BUFFER_SIZE 4096
 
+    #define SUCCESS 0
+    #define FAIL 1
+
+	#define CONTINUE 0
+	#define QUIT 1
+	#define PING 2
+	
 	#include <iostream>
 	#include <netinet/in.h> /* struct sockaddr_in */
 	#include <pthread.h> /* pthread_cond_t */
@@ -38,7 +45,12 @@
 	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
 
 	/* Check if it is a command /ping or a message */
-	int clt_read_msg(client* cl, char* buffer);
+	int clt_read_buffer(client* cl, char* buffer);
+
+	/* Envia uma mensage para cl_socket, o qual cl_socket é um id de um socket conectado (são feitas 5 tentativas se não receber 
+	 * confirmação. Se a mensagem não for recebida retorna FAIL, ou caso contrário, SUCCESS.
+	*/
+	bool clt_send_message(int cl_socket, char* buffer);
 
 	/* Envia a mensagem para todos os clientes */
 	void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);

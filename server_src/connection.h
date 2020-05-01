@@ -12,6 +12,9 @@
 
     #define ERRO_MAX_CLIENT_REACHED 7
 
+    #define SUCCESS 0
+    #define FAIL 1
+
     #define ID_INITIALAZED 10
     
     #include <stdio.h> /* sprintf */

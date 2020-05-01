@@ -68,7 +68,7 @@ int conn_abrir_server(server_conn* sv, int max_conn){
         return ERRO_LISTEN;
     }
 
-    return 0;
+    return SUCCESS;
 }
 
 // Fecha a conexao do server e atualiza o seu socket
@@ -83,7 +83,7 @@ int conn_destruir_server(server_conn* sv){
         pthread_cancel(t[i]);  
     }
 
-    return 0;
+    return SUCCESS;
 }
 
 // Funcao que checa se o limite de clientes foi excedido
@@ -92,7 +92,7 @@ int conn_check_max_clients(server_conn* sv, int cl_count){
     if(cl_count == sv->max_conn){
         return ERRO_MAX_CLIENT_REACHED;
     }
-    return 0;
+    return SUCCESS;
 }
 
 /* Thread do cliente */
@@ -181,5 +181,5 @@ int conn_run_server(server_conn* sv){
         pthread_cond_signal(&condition_var);
     }
 
-    return 1;
+    return FAIL;
 }

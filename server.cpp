@@ -25,7 +25,8 @@ int max_sd, max_clients;
 int client_socket[30];   
         
 char buffer[STREAM_SIZE];      // data buffer of 1K   
-char server_response[STREAM_SIZE] = "[+] Server: Welcome !!!";  // Serve message  
+const char server_response[STREAM_SIZE] = "[+] Server: Welcome !!!";  // Serve message  
+
 
 void error(const char *msg) {
     perror(msg);

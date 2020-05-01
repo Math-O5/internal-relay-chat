@@ -32,9 +32,9 @@ int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 
     /* Numero maximo de clientes ja foi atingido... */
     if(index == max_cl)
-        return 1;
+        return FAIL;
 
-    return 0;
+    return SUCCESS;
 }
 
 /* Destroi o cliente */
@@ -126,25 +126,25 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 }
 
 /* Read commands of user */ 
-int clt_read_msg(client* cl, char* buffer) {
+int clt_read_buffer(client* cl, char* buffer) {
   
     if(strncmp(buffer, "/ping", 5) == 0) {
+        char log[] = ">> <SERVER>: pong\n";
 
-        msg_info_ping(cl->cl_id);
         memset(buffer, '\0', BUFFER_SIZE);
-        strcpy(buffer, ">> <SERVER>: pong\n\0");
+        msg_info_ping(cl->cl_id);
         
-        if(clt_send_message(cl->cl_socket, buffer)) {
+        if(clt_send_message(cl->cl_socket, log)) {
             msg_info_pong(cl->cl_id);
         } 
-        return 1;
+        return PING;
 
     } else if(strncmp(buffer, "/quit", 5) == 0) {
         memset(buffer, '\0', BUFFER_SIZE);
-        return 2;
+        return QUIT;
     } 
 
-    return 0;
+    return CONTINUE;
 }
 
 /* Gerencia o cliente */
@@ -169,15 +169,14 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
         /* Mensagem recebida ! */
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
-            int input = clt_read_msg(cl, buffer);
+            int input = clt_read_buffer(cl, buffer);
             switch(input) {
-                case 0:
+                case CONTINUE:
                     msg_recv_cliente(id_cur, buffer);
                     clt_send_message_all(id_cur, max_conn, mutex, buffer);
                     bzero(buffer, BUFFER_SIZE);
                     break;
-                case 2:
-                    // clt_remove_queue(cl->cl_id, max_conn, mutex);
+                case QUIT:
                     msg_cliente_desconexao(cl->cl_id);
                     return;
                 default: break;
