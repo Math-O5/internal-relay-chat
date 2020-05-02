@@ -210,11 +210,17 @@ using namespace std;
             }
 
             printf("   [+] THREADS  de I/O iniciadas com SUCESSO.\n"); 
-            
+
+
+         // Na primeira entrega, como a conexão é feita por padrão então 
+        // o join é feito até que o usuário saia ou o 
+        pthread_join(recv_msg_thread, NULL);
+        printf("   [x] Aviso: perda de conexão com o servidor, utilize /quit para sair.\n");
+
         // O programa é finalizado quando o usuário
         // finaliza o input por meio de um /quit ou EOF
         pthread_join(in_terminal_thread, NULL);
-        
+
         fechar_conexao(&chat);
         destruir_relay_chat(&chat);
         
@@ -361,6 +367,7 @@ using namespace std;
         }
         
         echo_enable(&terminal);
+        return NULL;
     }
 
 
@@ -395,7 +402,7 @@ using namespace std;
         pthread_mutex_unlock(terminal.terminal_mutex);
 
         int repeat_loop = 1;
-        while(repeat_loop){
+        while(repeat_loop && chat.connection_status == CONNECTION_OPEN){
             
             // 1º - Verifica se existe algo no buffer de received.
             //      Se sim, copia para o buffer de output.
@@ -419,10 +426,7 @@ using namespace std;
                     terminal.buffer_size = strlen(terminal.output_buffer);
 
                     // Remove elementos retirados do buffer do chat
-                    int it = 0;
-                    while(it < chat.recv_buff_size){
-                        chat.recv_buff[it++] = '\0';
-                    }
+                    memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
                     chat.recv_buff_size = 0;
                 }
             pthread_mutex_unlock(chat.recv_mutex);
@@ -432,18 +436,18 @@ using namespace std;
                 if(terminal.buffer_size > 0){
 
                     // Exibe o que foi acumulado no buffer e em seguida o limpa
-                    printf("   %s\n", terminal.output_buffer);
-
-                    int it = 0;
-                    while(it < terminal.buffer_size){
-                        terminal.output_buffer[it++] = '\0';
-                    }
+                    printf("%s", terminal.output_buffer);
+                    fflush(stdout);
+                    
+                    memset(terminal.output_buffer, 0, sizeof(terminal.output_buffer));
                     terminal.buffer_size = 0;
+                    
                 }
             pthread_mutex_unlock(terminal.terminal_mutex);
 
         }
         
+        return NULL;
     }
 
 /**
