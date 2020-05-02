@@ -117,7 +117,11 @@ void* recv_msg_handler(void* vrc){
         // limpando a variável auxiliar.
         memset(server_response,0,sizeof(server_response));
 
+        // Obs: Recv é uma chamada bloqueante que retorna 0 caso a conexão com o servidor
+        // tenha caido. Caso contrário ela irá aguardar até que de fato haja algo no buffer
+        // para ser lido.
         int recv_return = recv(rc->network_socket, &server_response, MAX_MESSAGE_LENGHT, 0);
+        // printf("return [%d]\n", recv_return);
 
         // Verifica se há mensagens para ler no buffer do socket.
         if( recv_return > 0){
@@ -136,14 +140,18 @@ void* recv_msg_handler(void* vrc){
 
             pthread_mutex_unlock(rc->recv_mutex);
         
-        } else if(recv_return < 0){
+        } else if(recv_return <= 0){
             pthread_mutex_lock(rc->state_mutex);
-                rc->connection_status = CONNECTION_CLOSED;
+                pthread_cond_signal(rc->cond_recv_waiting);
+                // rc->connection_status = CONNECTION_CLOSED;
+                fechar_conexao(rc);
             pthread_mutex_unlock(rc->state_mutex);
         }
 
+        // sleep(2);
     }
 
+    return NULL;
 }
 
 // @Comentários em "chat.h"
@@ -177,16 +185,17 @@ void* send_msg_handler(void* vrc){
                     }
                     client_message[it_message] = '\n';
                     it++;
+                    // printf("Mensagem: '%s'", client_message);
 
                     // int write_return = write(rc->network_socket, client_message, strlen(client_message));
                     int send_return = send(rc->network_socket, client_message, strlen(client_message), 0);
 
-                    if(send_return < 0){
+                    if(send_return <= 0){
                         pthread_mutex_lock(rc->state_mutex);
                             rc->connection_status = CONNECTION_CLOSED;
                         pthread_mutex_unlock(rc->state_mutex);
                         break;
-                    }
+                    } 
 
                 }
 
@@ -198,6 +207,7 @@ void* send_msg_handler(void* vrc){
         
     }
 
+    return NULL;
 }
 
 // @COmentários em "chat.h"
