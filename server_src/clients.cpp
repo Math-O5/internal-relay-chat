@@ -1,9 +1,9 @@
 #include "clients.h"
-#include "message.h"
 
+// Array com os structs dos clientes
 client *cl_arr[MAX_CLIENTS];
 
-/* Cria um novo cliente */
+// @Comentários em "clients.h"
 client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
     cl->cl_address = address;
@@ -14,12 +14,12 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
 }
 
 
-/* Adiciona um cliente na queue de clientes */
+// @Comentários em "clients.h"
 int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 
     pthread_mutex_lock(mutex);
 
-    /* Adiciona o cliente no primeiro espaco disponivel */
+    // Adiciona o cliente no primeiro espaco disponivel
     int index;
     for(index = 0; index < max_cl; index++){
         if(!cl_arr[index]){
@@ -30,14 +30,14 @@ int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
 
     pthread_mutex_unlock(mutex);
 
-    /* Numero maximo de clientes ja foi atingido... */
+    // Numero maximo de clientes ja foi atingido...
     if(index == max_cl)
         return FAIL;
 
     return SUCCESS;
 }
 
-/* Destroi o cliente */
+// @Comentários em "clients.h"
 void clt_destruir(int id){
     for(int i = 0; i < MAX_CLIENTS; i++) {
         if(cl_arr[i] != NULL && cl_arr[i]->cl_id == id) {
@@ -49,6 +49,7 @@ void clt_destruir(int id){
     }
 }
 
+// @Comentários em "clients.h"
 void clt_destruir_clientes() {
     for(int i = 0; i < MAX_CLIENTS; i++) {
         if(cl_arr[i] != NULL) {
@@ -58,12 +59,12 @@ void clt_destruir_clientes() {
     }
 }
 
-/* Remove um cliente da queue de clientes*/
+// @Comentários em "clients.h"
 client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex){
     
     pthread_mutex_lock(mutex);  
 
-    /* Procura pelo cliente, atraves de seu id, e o retira do array */
+    // Procura pelo cliente, atraves de seu id, e o retira do array
     client* temp = NULL;
     for(int i = 0; i < max_cl; i++){
         if(cl_arr[i] && cl_arr[i]->cl_id == id){
@@ -78,7 +79,7 @@ client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex){
     return temp;
 }
 
-/* Recuperar o cliente pelo id */
+// @Comentários em "clients.h"
 client* clt_get_by_id(int id, int max_clients){
 
     for(int i = 0; i < max_clients; i++){
@@ -89,8 +90,7 @@ client* clt_get_by_id(int id, int max_clients){
     return NULL;
 }
 
-// Envia mensagem para cl_socket, se falhar tenta mais 5 vezes.
-// Returna true se conseguiu enviar a mensagem.
+// @Comentários em "clients.h"
 bool clt_send_message(int cl_socket, char* buffer) {
     int try_send = 0;
 
@@ -101,16 +101,16 @@ bool clt_send_message(int cl_socket, char* buffer) {
     return (try_send == 6) ? false : true;
 }
 
-/* Envia a mensagem para todos os clientes */
+// @Comentários em "clients.h"
 void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer){
 
-    /* Configuracao da mensagem a ser enviada (adiciona que enviou a mensagem no conteudo) */
+    // Configuracao da mensagem a ser enviada (adiciona que enviou a mensagem no conteudo)
     char msg_buffer[BUFFER_SIZE];
     sprintf(msg_buffer, ">> <CLIENTE %d>: %s\n", id_cur, buffer);
 
     pthread_mutex_lock(mutex);
 
-    /* Envio da mensagem aos clientes */
+    // Envio da mensagem aos clientes
     for(int i = 0; i < max_conn; i++){
         if(cl_arr[i] != NULL){
             if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) {
@@ -125,49 +125,52 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
     pthread_mutex_unlock(mutex);
 }
 
-/* Read commands of user */ 
+// @Comentários em "clients.h"
 int clt_read_buffer(client* cl, char* buffer) {
-  
+    
+    // Comando: /ping
     if(strncmp(buffer, "/ping", 5) == 0) {
+        
         char log[] = ">> <SERVER>: pong\n";
-
         memset(buffer, '\0', BUFFER_SIZE);
         msg_info_ping(cl->cl_id);
-        
+
         if(clt_send_message(cl->cl_socket, log)) {
             msg_info_pong(cl->cl_id);
         } 
         return PING;
 
+    // Comando: /quit
     } else if(strncmp(buffer, "/quit", 5) == 0) {
         memset(buffer, '\0', BUFFER_SIZE);
         return QUIT;
     } 
 
+    // Mensagem a ser enviada para os outros clientes
     return CONTINUE;
 }
 
-/* Gerencia o cliente */
+// @Comentários em "clients.h"
 void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
-    /* Buffer com as mensagens dos clientes */    
+    // Buffer com as mensagens dos clientes 
     char buffer[BUFFER_SIZE];
     memset(buffer, '\0', BUFFER_SIZE);
 
-    /* Recupera as informacoes do cliente... */
+    // Recupera as informacoes do cliente...
     client* cl = clt_get_by_id(id_cur, max_conn);
 
-    //No clients avaible
+    // Cliente indisponível
     if(cl == NULL) {
         return;
     }
 
-    /* Mensagem com as informacoes do cliente */
+    // Mensagem com as informacoes do cliente
     msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
 
     while(true){
 
-        /* Mensagem recebida ! */
+        // Mensagem recebida !
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
             int input = clt_read_buffer(cl, buffer);
             switch(input) {
@@ -182,7 +185,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                 default: break;
             }
         }
-        /* Ocorreu um erro na conexao... */
+        // Ocorreu um erro na conexao...
         else{
             return;
         }

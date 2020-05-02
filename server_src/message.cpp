@@ -1,6 +1,6 @@
 #include "message.h"
 
-/* Data e Horario (atuais)*/
+// @Comentários em "message.h"
 void time_log(char* t_log, int t_log_size){
     struct tm *sTime;
     time_t cur_time = time(0);
@@ -8,6 +8,7 @@ void time_log(char* t_log, int t_log_size){
     strftime(t_log, t_log_size, "%d-%m-%Y %H:%M:%S", sTime);
 }
 
+// @Comentários em "message.h"
 void msg_inicio(int status) {
     if(status == CONNECT) {
         // system("clear");
@@ -26,7 +27,7 @@ void msg_inicio(int status) {
 
 
 
-// Informacoes do servidor
+// @Comentários em "message.h"
 void msg_info_server(int port, int sv_socket, int max_conn, int cl_count){
 
     char t_log[20];
@@ -45,7 +46,7 @@ void msg_info_server(int port, int sv_socket, int max_conn, int cl_count){
     fflush(stdout);
 }
 
-/* Informacoes do cliente */
+// @Comentários em "message.h"
 void msg_info_client(int id, int socket, struct sockaddr_in cl_addr){
 
     char t_log[20];
@@ -68,7 +69,7 @@ void msg_info_client(int id, int socket, struct sockaddr_in cl_addr){
     printf("  [ ]\n");
 }
 
-/* Mensagem recebida pelo cliente */
+// @Comentários em "message.h"
 void msg_recv_cliente(int id, char* buffer){
     char t_log[20];
     printf("  [ ]\n");
@@ -79,7 +80,7 @@ void msg_recv_cliente(int id, char* buffer){
     printf("  [ ]\n");
 }
 
-/* Mensagem entregue ao(s) cliente(s) */
+// @Comentários em "message.h"
 void msg_send_cliente(int id_emissor, int id_receptor){
     char t_log[20];
     printf("  [ ]\n");
@@ -89,7 +90,7 @@ void msg_send_cliente(int id_emissor, int id_receptor){
     fflush(stdout);
 }
 
-/* Conexao de um novo cliente */
+// @Comentários em "message.h"
 void msg_cliente_conexao(){
     char t_log[20];
     printf("  [ ]\n");
@@ -99,16 +100,17 @@ void msg_cliente_conexao(){
     fflush(stdout);
 }
 
-/* Cliente não responde e será desconectado. */
+// @Comentários em "message.h"
 void msg_client_no_response(int id) {
     char t_log[20];
     printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [x] - [%s] O cliente %d não responde...\n", t_log, id);
+    printf("  [ ]\n");
     fflush(stderr);
 }
 
-/* Desconexao do cliente */
+// @Comentários em "message.h"
 void msg_cliente_desconexao(int id){
     char t_log[20];
     printf("  [ ]\n");
@@ -118,8 +120,7 @@ void msg_cliente_desconexao(int id){
     fflush(stderr);
 }
 
-/* Mensagem de erro ao atingir o numero maximo de clientes no server */
-// TODO: Spam
+// @Comentários em "message.h"
 void msg_max_client(struct sockaddr_in cl_addr){
     char t_log[20];
     printf("  [ ]\n");
@@ -139,33 +140,34 @@ void msg_max_client(struct sockaddr_in cl_addr){
     printf("  [ ]\n");
 }
 
-    // Receive a ping to user
-    void msg_info_ping(int id) {
-        char t_log[20];
-        printf("  [ ]\n");
-        time_log(t_log, sizeof(t_log));
-        printf("  [+] - [%s]  Receive a ping from Client %d.\n", t_log, id);
-        printf("  [ ]\n");
-        fflush(stdout);
-    } 
+// @Comentários em "message.h"
+void msg_info_ping(int id) {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] Recebido o ping do cliente %d.\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stdout);
+} 
 
-    // Sended a pong to user
-    void msg_info_pong(int id) {
-        char t_log[20];
-        printf("  [ ]\n");
-        time_log(t_log, sizeof(t_log));
-        printf("  [+] - [%s]  Sending pong to Client %d.\n", t_log, id);
-        printf("  [ ]\n");
-        fflush(stdout);
-    } 
+// @Comentários em "message.h"
+void msg_info_pong(int id) {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] Foi enviado pong para o cliente %d.\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stdout);
+} 
 
-    void msg_encerrar_server(void) {
-        char t_log[20];
-        printf("  [ ]\n");
-        time_log(t_log, sizeof(t_log));
-        printf("  [-] Servidor finalizado com sucesso.\n");
-        printf("  [ ]\n");
-        fflush(stdout);
-    }
+// @Comentários em "message.h"
+void msg_encerrar_server() {
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] Servidor finalizado com sucesso.\n", t_log);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
 
     
