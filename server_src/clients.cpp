@@ -153,6 +153,9 @@ int clt_read_buffer(client* cl, char* buffer) {
 // @Comentários em "clients.h"
 void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
+    int shift;
+    char* pack; 
+    
     // Buffer com as mensagens dos clientes 
     char buffer[BUFFER_SIZE];
     memset(buffer, '\0', BUFFER_SIZE);
@@ -176,7 +179,16 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
             switch(input) {
                 case CONTINUE:
                     msg_recv_cliente(id_cur, buffer);
-                    clt_send_message_all(id_cur, max_conn, mutex, buffer);
+
+                    shift = 0;
+                    pack = (char*)malloc(sizeof(char)*BUFFER_SIZE);
+                    while((shift = decode_message(buffer, pack, shift)) > 0) {
+                        clt_send_message_all(id_cur, max_conn, mutex, pack);
+                        printf("%d\n", shift);
+                        fflush(stdout);
+                    }
+                    
+                    free(pack);
                     bzero(buffer, BUFFER_SIZE);
                     break;
                 case QUIT:
@@ -190,4 +202,26 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
             return;
         }
     }
+}
+
+
+// @Comentários em "client.h"
+int decode_message(char* buffer, char* pack, int index) {
+
+    if(buffer == NULL || *buffer == '\n' || *buffer == '\0')
+        return 0;
+    
+    bzero(pack, BUFFER_SIZE);
+
+    int i = 0, j = 0;
+    for(i = index; buffer[i] != '\n' && i < BUFFER_SIZE-1; ++i) {
+        pack[j++] = buffer[i];
+    }
+
+    pack[j] = '\n';
+    pack[j+1] = '\0';
+
+    if(buffer[i] != '\n' || i >= BUFFER_SIZE) 
+        return 0;
+    return i + 1;
 }

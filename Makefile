@@ -1,11 +1,11 @@
 all:
 	server
 
-server: server.cpp
-	g++ -Wall server.cpp -o server
+server: server_src/server.cpp
+	g++ -Wall server_src/server.cpp -o server
 
 client: client.cpp
-	g++ -Wall client.cpp -lpthread -o client
+	g++ -Wall client_src/client.cpp -lpthread -o client
 
 run_server:
 	echo "Server running on " $(shell pwd)

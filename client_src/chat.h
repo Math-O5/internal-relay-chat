@@ -63,7 +63,7 @@
         #define CONNECTION_CLOSED -1
         #define CONNECTION_OPEN    0
 
-        #define MAX_MESSAGE_LENGHT 11
+        #define MAX_MESSAGE_LENGHT 512
         #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
 
         #define DEFAULT_SERVER_HOST "127.0.0.1"
