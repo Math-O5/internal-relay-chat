@@ -66,7 +66,7 @@ longo tempo sem receber nenhum dado para ser processado/exibido.
 
 O Esquemático o projeto pode ser então visto abaixo:
 
-@INSERIR IMAGEM AQUI
+![Fluxograma do Client](../assets/Client_Arquitetura.png)
 
 ## Considerações finais e definições
 
