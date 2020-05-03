@@ -184,8 +184,6 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     pack = (char*)malloc(sizeof(char)*BUFFER_SIZE);
                     while((shift = decode_message(buffer, pack, shift)) > 0) {
                         clt_send_message_all(id_cur, max_conn, mutex, pack);
-                        printf("%d\n", shift);
-                        fflush(stdout);
                     }
                     
                     free(pack);
