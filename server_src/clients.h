@@ -213,4 +213,7 @@
 	*/
 	void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex);
 
+	// Lê até o '\n' o '\0' e retorna a posição que parou
+	int decode_message(char* buffer, char* pack, int index);
+
 #endif

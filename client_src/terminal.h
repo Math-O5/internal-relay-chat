@@ -43,7 +43,7 @@
      * Tamanho máximo que o buffer de output pode ocupar.
      */
 
-        #define MAX_MESSAGE_LENGHT 11
+        #define MAX_MESSAGE_LENGHT 512
 
         #define LINE_BUFFER ((MAX_MESSAGE_LENGHT * 5) + 1)
 
