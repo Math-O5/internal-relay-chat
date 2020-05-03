@@ -5,6 +5,13 @@ epic trabalhinho redes
 <h2>Descrição</h2>
 <p>Implementação dos antigos <strong>Internal Relay Chat (IRC)</strong>, o qual pode ser chamado também de antigo Telegram.</br>O protocolo de comunicação seguido foi o IRC 1459, o qual estabelece um padrão de comunicação client-server.</p>
 
+<h3>Desenvolvido por:</h3>
+<p>
+Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
+Mathias Fernandes Duarte Coelho</br>
+joao Ricardo Minoru Nagasava</br>
+</p>
+
 ## Compilando e Executando
 Em <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente,
 Ou para facilitar, utilize os comandos `make server` `make server_run` e  `make client` `make client_run` a partir da pasta root.
