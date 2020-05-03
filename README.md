@@ -14,9 +14,9 @@ Ou facilitar, utiliza os comandos `make server` `make server_run` e  `make clien
 <p>A seguir demo e imagens <strong>inéditas</strong> de testes e dados para.</p>
 <h2>Demo</h2>
 <div style="display:inline-block;">
-	<img src="assets/primeiro_client.png" width="50%" heigth="50%" alt="client"></img>
-	<img src="assets/segundo_client.png" width="50%" heigth="50%" alt="client"></img>
-	<img src="assets/terceiro_client.png" width="50%" heigth="50%" alt="client"></img>
+	<img src="assets/primeiro_client.png" alt="client"></img>
+	<img src="assets/segundo_client.png" alt="client"></img>
+	<img src="assets/terceiro_client.png" alt="client"></img>
 </div>
 
 <h2>Testando com htop</h2>
