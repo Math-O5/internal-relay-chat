@@ -1,16 +1,16 @@
 all:
 	server
 
-server: server_src/server.cpp
-	g++ -Wall server_src/server.cpp -o server
+server:
+	g++ -o server server_src/message.cpp server_src/clients.cpp server_src/connection.cpp server_src/main.cpp -lpthread
 
-client: client.cpp
-	g++ -Wall client_src/client.cpp -lpthread -o client
+client:
+	g++ -o client client_src/terminal.cpp client_src/chat.cpp client_src/main.cpp -pthread
 
-run_server:
+server_run:
 	echo "Server running on " $(shell pwd)
 	./server ${PORT} ${nLISTEN}
 
-run_client:
+client_run:
 	echo "Client running on " $(shell pwd)
 	./client ${host} ${PORT}
