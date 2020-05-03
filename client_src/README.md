@@ -20,6 +20,7 @@ Veja a seguir uma introdução geral dos arquivos que compõem o projeto:
 | -- chat.h      Responsável por controlar o protocolo e as conexões/trocas de dados com o servidor.
 | -- termina.h   Responsável por lidar com algumas configurações necessárias para o bom funcionamento do console.
 | -- makefile    Script auxiliar para compilar e executar o programa adequadamente.
+| -- makeClient  Abre multiplos terminais para teste.
 ```
 
 Todos os arquivos .h também possuem uma documentação detalhada de todas as structs e funções declaradas e devem 
@@ -28,6 +29,11 @@ ser consultados caso seja desejado um compreendimento mais profundo dos mesmos.
 ## Compilando e Executando
 
 Utilize os comandos `make all` para buildar e `make run` para executar o projeto no console.
+
+## Facilitando Teste (CUIDADO, vários clientes serão executados).
+
+Utilize ocomando `bash makeClient.bash <nome-do-console>`.
+Exemplo `bash makeClient.bash konsole` ou `bash makeClient.bash gnome-terminal`
 
 ## Threads e Arquitetura do projeto
 

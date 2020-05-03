@@ -9,8 +9,8 @@ client:
 
 server_run:
 	echo "Server running on " $(shell pwd)
-	./server ${PORT} ${nLISTEN}
+	./server ${PORT} ${nLISTEN} || true
 
 client_run:
-	echo "Client running on " $(shell pwd)
-	./client ${host} ${PORT}
+	echo "Client running on " $(shell pwd) 
+	./client ${host} ${PORT} || true

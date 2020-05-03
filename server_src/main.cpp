@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 
     // Criacao do servidor (e inicializacao de suas variaveis)
     SC = conn_criar_server();
-
+  
     // Abertura do servidor
     int status = conn_abrir_server(&SC, MAX_CONN);
     if(status != 0){

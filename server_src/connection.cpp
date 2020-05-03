@@ -51,9 +51,9 @@ void conn_catch_ctrl_c_and_exit(int sig){
 server_conn conn_criar_server(){
     server_conn sv;
     sv.sv_socket = -1;
+    sprintf(sv.sport, "9002");
     sv.port = -1;
     sv.max_conn = 0;
-    sprintf(sv.sport, "9002");
     return sv;
 }
 
