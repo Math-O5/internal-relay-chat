@@ -1,5 +1,4 @@
 <h1 style="color=red;">internal_relay_chat  :speech_balloon:</h1>
-</br>
 epic trabalhinho redes
 
 <h2>Descrição</h2>
@@ -7,9 +6,9 @@ epic trabalhinho redes
 
 <h3>Desenvolvido por:</h3>
 <p>
-Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
-Mathias Fernandes Duarte Coelho</br>
-joao Ricardo Minoru Nagasava</br>
+<a href="https://github.com/GabrielVanLoon">Glove</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
+<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
+<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
 </p>
 
 ## Compilando e Executando
@@ -26,9 +25,7 @@ Ou para facilitar, utilize os comandos `make server` `make server_run` e  `make 
 <p>A seguir demo e imagens <strong>inéditas</strong> de testes e dados.</p>
 <h2>Demo</h2>
 <div style="display:inline-block;">
-	<img src="assets/primeiro_client.png" alt="client"></img>
-	<img src="assets/segundo_client.png" alt="client"></img>
-	<img src="assets/terceiro_client.png" alt="client"></img>
+	<img src="assets/chat.gif" alt="chat-client"></img>
 </div>
 
 <h2>Testando com htop</h2>
