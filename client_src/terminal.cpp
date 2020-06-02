@@ -30,8 +30,14 @@ int terminal_input_iteration(terminal_control* t){
     memset(t->input, 0, sizeof(t->input));
     t->input[0]  = getchar(); 
     
+    // O sinal EOF indica que o usuário que sair
+    if( t->input[0] == EOF) {
+
+        strcpy(t->input,"/quit");
+        return (strlen(t->input) >= 1);
+
     // O usuário está requisitando o uso do console.
-    if( t->input[0] == '\n'){
+    } else if( t->input[0] == '\n'){
         pthread_mutex_lock(t->terminal_mutex);
             echo_enable(t);
 

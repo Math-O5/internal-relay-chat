@@ -429,6 +429,7 @@ using namespace std;
                     memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
                     chat.recv_buff_size = 0;
                 }
+                
             pthread_mutex_unlock(chat.recv_mutex);
             
             // 2º - Verifica se existe algo no buffer de output para ser exibido.
