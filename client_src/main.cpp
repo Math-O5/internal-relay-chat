@@ -339,6 +339,19 @@ using namespace std;
                     break;
 
                 /**
+                 * ACTION_QUIT (/quit)
+                 * --------------------
+                 * O usuário pretende finalizar a aplicação. Neste caso basta que
+                 * a flag seja iterrompida para a thread ser finalizada e a main iniciar
+                 * então os processos de encerramento do programa.
+                 * 
+                 * Obs: Não precisa de Break, pois vai ter que fazer as mesmas etapas 
+                 *      do ACTION_DISCONNECT
+                 */
+                case ACTION_QUIT:
+                    repeat_loop = 0;
+
+                /**
                  * ACTION_DISCONNECT (/disconnect)
                  * --------------------
                 * É utilizada para caso o cliente queira desconectar do servidor sem necessáriamente
@@ -349,7 +362,7 @@ using namespace std;
 
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
-                        printf("[+]   ERRO ao desconectar, nenhuma conexão aberta.\n");
+                        printf("[+]   AVISO: Nenhuma conexão aberta.\n");
                         break;
                     }
 
@@ -377,20 +390,6 @@ using namespace std;
                     pthread_mutex_unlock(chat.send_mutex);
                     
                     printf("[+]   Conexão com o SERVIDOR finalizada com SUCESSO!\n"); 
-                    break;
-                
-                /**
-                 * ACTION_QUIT (/quit)
-                 * --------------------
-                 * O usuário pretende finalizar a aplicação. Neste caso basta que
-                 * a flag seja iterrompida para a thread ser finalizada e a main iniciar
-                 * então os processos de encerramento do programa.
-                 */
-                case ACTION_QUIT:
-                    if(recv_msg_thread >= 0) pthread_cancel(recv_msg_thread);
-                    if(send_msg_thread >= 0) pthread_cancel(send_msg_thread);
-                    fechar_conexao(&chat);
-                    repeat_loop = 0;
                     break;
 
                 /**
