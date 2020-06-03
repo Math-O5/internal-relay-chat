@@ -12,8 +12,8 @@
  * data: 27/abril/2020 
  * 
  * autores: Gabriel Van Loon    (@GabrielVanLoon)
- *          Mathias Fernandes   ()
- *          João Nagasava       ()
+ *          Mathias Fernandes   (@Math-O5)
+ *          João Nagasava       (@JNagasava)
  * 
  * Universidade de São Paulo - Campus São Carlos
  * Instituto de Ciências Matemáticas e de Computação.
@@ -39,12 +39,10 @@ using namespace std;
  * TRUE e FALSE
  * Macros apenas para tornar valores booleanos mais semânticos.
  * 
- * ACTION_*****
+ * ACTION_***** (ver: codec.h)
  * Valores utilizados para identificar a ação que o usuário deseja
  * realizar durante cada input. A descrição de cada ação está melhor 
  * definida na devida thread de input.
- *  
- *  
  */
     #define TRUE  1
     #define FALSE 0 
@@ -88,7 +86,7 @@ using namespace std;
 
     pthread_mutex_t send_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_t state_mutex     = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t state_mutex    = PTHREAD_MUTEX_INITIALIZER;
 
     pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
     
