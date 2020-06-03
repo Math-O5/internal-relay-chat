@@ -361,7 +361,7 @@ using namespace std;
                 case ACTION_DISCONNECT:
 
                     // 0º Verifica se já não está desconectado
-                    if(chat.connection_status == CONNECTION_CLOSED){
+                    if(action_code == ACTION_DISCONNECT && chat.connection_status == CONNECTION_CLOSED){
                         printf("[+]   AVISO: Nenhuma conexão aberta.\n");
                         break;
                     }
@@ -390,6 +390,11 @@ using namespace std;
                     pthread_mutex_unlock(chat.send_mutex);
                     
                     printf("[+]   Conexão com o SERVIDOR finalizada com SUCESSO!\n"); 
+                    
+                    if(action_code == ACTION_QUIT){
+                        printf("[+]   Até a próxima =D\n"); 
+                    }
+
                     break;
 
                 /**
