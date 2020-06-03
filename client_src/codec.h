@@ -29,6 +29,26 @@
       // Retorna: 1 caso algum parametro esteja errado 
       int cdc_encode_connect(const char* cmd, char* host, char* port);
 
-
+    /**
+     * @function
+     * char** encode_message(&rc, raw_str, raw_str_len)
+     * -------------------------------
+     * 
+     * Utilizada na ACTION_MESSAGE para converter a string desejada para o 
+     * formato definido no protocolo RFC 1459. Caso a mensagem ultrapasse o limite
+     * de caracteres definido pelo protocolo a mesma é separada em multiplas 
+     * mensagens distintas.
+     * 
+     * rc: referencia ao objeto relay_chat com os estados do chat.
+     * 
+     * raw_str: string que será codificada.
+     * 
+     * raw_str_len: tamanho de raw_str
+     * 
+     * return: array de strings que representam as mensagens codificadas a partir de
+     *         raw. O ponteiro NULL indica o fim do array e deve ser desalocado após 
+     *         seu uso.
+     */
+    char** cdc_encode_client_message(const char* raw_str, int raw_str_len);
 
 #endif 

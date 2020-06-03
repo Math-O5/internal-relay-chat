@@ -396,30 +396,33 @@ using namespace std;
                  */
                 case ACTION_MESSAGE:
 
+                    // 0º Verifica se já não está desconectado
+                    if(chat.connection_status == CONNECTION_CLOSED){
+                        printf("   [+] ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        break;
+                    }
+
                     pthread_mutex_lock(chat.send_mutex);
                         pthread_cond_signal(chat.cond_send_waiting); 
 
-                        if(chat.connection_status == CONNECTION_OPEN){
-                            
-                            // Encode Input -> Protocol
-                            char** encoded = encode_message(&chat, terminal.input, strlen(terminal.input));
+                        // 1º Codificando a mensagem em 1 ou mais mensagens no formato
+                        //    definido pelo protocolo.
+                        char** encoded = cdc_encode_client_message(terminal.input, strlen(terminal.input));
 
-                            if(encoded != NULL){
-                                int it = 0;
-                                while(encoded[it] != NULL){
-                                    if(chat.send_buff_size <= 0){
-                                        strcpy(chat.send_buff, encoded[it]);
-                                        chat.send_buff_size = strlen(encoded[it]);
-                                    } else{
-                                        strcat(chat.send_buff, encoded[it]);
-                                        chat.send_buff_size += strlen(encoded[it]);
-                                    }
-
-                                    free(encoded[it++]);
+                        if(encoded != NULL){
+                            int it = 0;
+                            while(encoded[it] != NULL){
+                                if(chat.send_buff_size <= 0){
+                                    strcpy(chat.send_buff, encoded[it]);
+                                    chat.send_buff_size = strlen(encoded[it]);
+                                } else{
+                                    strcat(chat.send_buff, encoded[it]);
+                                    chat.send_buff_size += strlen(encoded[it]);
                                 }
-                                free(encoded);
-                            }
 
+                                free(encoded[it++]);
+                            }
+                            free(encoded);
                         }
 
                         // pthread_mutex_lock(terminal.terminal_mutex);
@@ -428,10 +431,6 @@ using namespace std;
 
                     pthread_mutex_unlock(chat.send_mutex);
 
-
-                    // garante que a thread de envio vai conseguir rodar antes de o while
-                    // de input travar tudo novamente. 
-                    // sleep(1);
                     break;
             }
 
