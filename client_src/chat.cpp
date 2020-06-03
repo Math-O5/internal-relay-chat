@@ -56,8 +56,9 @@ int destruir_relay_chat(relay_chat* rc){
 // @Comentários em "chat.h"
 int abrir_conexao(relay_chat* rc){
     // variável não existe ou já há uma conexão ativa.
-    if(rc == NULL || rc->connection_status == CONNECTION_OPEN)
+    if(rc == NULL || rc->connection_status == CONNECTION_OPEN){
         return 1;
+    }
     
     // Se o buffer não tiver sido alocado então essa variável ainda não foi inicializada.
     if(rc->send_buff == NULL || rc->recv_buff == NULL){
@@ -65,17 +66,20 @@ int abrir_conexao(relay_chat* rc){
     }
 
     // Buscando dados do servidor
-    rc->port = atoi(rc->sport);
+    rc->port   = atoi(rc->sport);
     rc->server = gethostbyname(rc->sserver);
     if(rc->server == NULL){
         return 3;
     }
+    // printf("[x]   | --- Convertendo hostname and port.\n");
+
 
     // Criando o socket
     rc->network_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(rc->network_socket < 0){
         return 4;
     }
+    // printf("[x]   | --- Abrindo socket de conexão.\n");
 
     // Definindo endereço para conexão
     struct sockaddr_in server_address;
@@ -83,9 +87,12 @@ int abrir_conexao(relay_chat* rc){
     server_address.sin_family = AF_INET;
     bcopy((char *) rc->server->h_addr, (char *) &server_address.sin_addr.s_addr, rc->server->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(rc->port);
+    // printf("[x]   | --- Configurando endereços de conexão.\n");
 
     // Abrindo conexão com o servidor
     rc->connection_status = connect(rc->network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
+    // printf("[x]   | --- Conectand ao servidor...\n");
+    
     if(rc->connection_status == CONNECTION_CLOSED){ 
         return 3;
     }
