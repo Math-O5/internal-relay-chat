@@ -4,6 +4,7 @@
 
 #include "terminal.h"
 
+
 // @Comentários em "terminal.h"
 void echo_enable(terminal_control* t){
     struct termios termInfo;

@@ -49,8 +49,6 @@ using namespace std;
     #define TRUE  1
     #define FALSE 0 
 
-
-
 /**
  * Variáveis Globais
  * -----------------
@@ -61,9 +59,14 @@ using namespace std;
  * I/O com o usuário.
  * 
  * Mais detalhes dessas structs podem ser encontrados em "chat.h" e "terminal.h"
+ * 
+ * Obs: terminal_backup é utilizada para salvar as configurações do terminal do usuário
+ *      antes do programa começar a alterar as configurações. Assim, é possível retornar
+ *      tudo ao normal logo ao fim da execução do programa.
  */   
     relay_chat          chat;
     terminal_control    terminal;
+    struct termios      terminal_backup;
 
 /**
  * Threads, Mutexes e Conditionals
@@ -133,8 +136,10 @@ using namespace std;
         // O programa ignora SIGINT
         signal(SIGINT, sigint_handler); 
         
+        // Fazendo Backup das configurações do terminal do usuário
+        tcgetattr(0, &terminal_backup);
+
         system("clear");
-        echo_enable(&terminal);
         
         /**
          * Iniciando as variáveis globais necessárias;
@@ -221,8 +226,11 @@ using namespace std;
         // finaliza o input por meio de um /quit ou EOF
         pthread_join(in_terminal_thread, NULL);
 
-        destruir_relay_chat(&chat);        
-        echo_enable(&terminal);
+        // Liberando a variável chat
+        destruir_relay_chat(&chat); 
+
+        // Resetando as configurações do terminal do usuário       
+        tcsetattr(0, TCSANOW, &terminal_backup);
 
         exit(EXIT_SUCCESS);
     }
@@ -409,6 +417,8 @@ using namespace std;
                         //    definido pelo protocolo.
                         char** encoded = cdc_encode_client_message(terminal.input, strlen(terminal.input));
 
+                        // 2º Copia as mensagens uma à uma para o send_buffer do chat.
+                        //    e vai atualizando o tamanho do buffer.
                         if(encoded != NULL){
                             int it = 0;
                             while(encoded[it] != NULL){
@@ -419,7 +429,6 @@ using namespace std;
                                     strcat(chat.send_buff, encoded[it]);
                                     chat.send_buff_size += strlen(encoded[it]);
                                 }
-
                                 free(encoded[it++]);
                             }
                             free(encoded);
@@ -439,7 +448,6 @@ using namespace std;
         echo_enable(&terminal);
         return NULL;
     }
-
 
 /**
  * @thread 
