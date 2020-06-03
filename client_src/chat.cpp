@@ -44,6 +44,7 @@ int destruir_relay_chat(relay_chat* rc){
         free(rc->send_buff);
         rc->send_buff == NULL;
     }
+    
     if(rc->recv_buff != NULL){
         free(rc->recv_buff);
         rc->recv_buff == NULL;
@@ -55,8 +56,9 @@ int destruir_relay_chat(relay_chat* rc){
 // @Comentários em "chat.h"
 int abrir_conexao(relay_chat* rc){
     // variável não existe ou já há uma conexão ativa.
-    if(rc == NULL || rc->connection_status == CONNECTION_OPEN)
+    if(rc == NULL || rc->connection_status == CONNECTION_OPEN){
         return 1;
+    }
     
     // Se o buffer não tiver sido alocado então essa variável ainda não foi inicializada.
     if(rc->send_buff == NULL || rc->recv_buff == NULL){
@@ -64,17 +66,20 @@ int abrir_conexao(relay_chat* rc){
     }
 
     // Buscando dados do servidor
-    rc->port = atoi(rc->sport);
+    rc->port   = atoi(rc->sport);
     rc->server = gethostbyname(rc->sserver);
     if(rc->server == NULL){
         return 3;
     }
+    // printf("[x]   | --- Convertendo hostname and port.\n");
+
 
     // Criando o socket
     rc->network_socket = socket(AF_INET, SOCK_STREAM, 0);
     if(rc->network_socket < 0){
         return 4;
     }
+    // printf("[x]   | --- Abrindo socket de conexão.\n");
 
     // Definindo endereço para conexão
     struct sockaddr_in server_address;
@@ -82,9 +87,12 @@ int abrir_conexao(relay_chat* rc){
     server_address.sin_family = AF_INET;
     bcopy((char *) rc->server->h_addr, (char *) &server_address.sin_addr.s_addr, rc->server->h_length); // localhost : 127.0.0.1 or any other IP
     server_address.sin_port = htons(rc->port);
+    // printf("[x]   | --- Configurando endereços de conexão.\n");
 
     // Abrindo conexão com o servidor
     rc->connection_status = connect(rc->network_socket, (struct sockaddr *) &server_address, sizeof(server_address));
+    // printf("[x]   | --- Conectand ao servidor...\n");
+    
     if(rc->connection_status == CONNECTION_CLOSED){ 
         return 3;
     }
@@ -124,7 +132,7 @@ void* recv_msg_handler(void* vrc){
         // printf("return [%d]\n", recv_return);
 
         // Verifica se há mensagens para ler no buffer do socket.
-        if( recv_return > 0){
+        if( recv_return > 0 ){
             
             // Mutex protege orecv_buffer e cond_recv_sinaliza a thread de Output
             pthread_mutex_lock(rc->recv_mutex);
@@ -140,10 +148,9 @@ void* recv_msg_handler(void* vrc){
 
             pthread_mutex_unlock(rc->recv_mutex);
         
+        // Verifica se a conexão morreu
         } else if(recv_return <= 0){
             pthread_mutex_lock(rc->state_mutex);
-                pthread_cond_signal(rc->cond_recv_waiting);
-                // rc->connection_status = CONNECTION_CLOSED;
                 fechar_conexao(rc);
             pthread_mutex_unlock(rc->state_mutex);
         }
@@ -210,40 +217,3 @@ void* send_msg_handler(void* vrc){
     return NULL;
 }
 
-// @COmentários em "chat.h"
-char** encode_message(relay_chat *rc, const char* raw_str, int raw_str_len){
-    if(rc == NULL || rc->connection_status != CONNECTION_OPEN || raw_str == NULL || raw_str_len <= 0){
-        return NULL;
-    }
-
-    /** 1ª Etapa - Calculando quantos pacotes serão necessários
-     *  @TODO: Nas próximas etapas deverá ser levado em conta o prefixo e outros
-     *  strings obrigatórias como definido no protocolo. Por enquanto só quebrar as
-     *  strings em blocos ja é o suficiente.
-     * 
-     * 
-     * Obs: (MAX_MESSAGE_LENGHT-1) é necessário porque temos que descontar o espaço 
-     * consumido pelo \n que é adicionado ao fim de cada mensagem do protocolo.
-     */
-    
-    int qtd_mensagens  = raw_str_len / (MAX_MESSAGE_LENGHT - 1); 
-    qtd_mensagens     += (raw_str_len % (MAX_MESSAGE_LENGHT - 1) > 0) ? 1 : 0;
-
-    /**
-     * 2ª Gerando os blocos e populando-os
-     */
-    
-    int raw_it = 0;
-
-    char** mensagem = (char**) calloc(qtd_mensagens+1, sizeof(char*));
-    for(int i = 0; i < qtd_mensagens; i++){
-        mensagem[i] = (char*) calloc(MAX_MESSAGE_LENGHT+1, sizeof(char));
-
-        int msg_it = 0;
-        while(raw_it < raw_str_len && msg_it < (MAX_MESSAGE_LENGHT - 1))
-            mensagem[i][msg_it++] = raw_str[raw_it++];
-        mensagem[i][msg_it] = '\n';
-    }
-
-    return mensagem;
-}

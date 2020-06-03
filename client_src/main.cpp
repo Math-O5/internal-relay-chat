@@ -12,8 +12,8 @@
  * data: 27/abril/2020 
  * 
  * autores: Gabriel Van Loon    (@GabrielVanLoon)
- *          Mathias Fernandes   ()
- *          João Nagasava       ()
+ *          Mathias Fernandes   (@Math-O5)
+ *          João Nagasava       (@JNagasava)
  * 
  * Universidade de São Paulo - Campus São Carlos
  * Instituto de Ciências Matemáticas e de Computação.
@@ -28,6 +28,7 @@
 
 #include "terminal.h"   /* terminal_control */
 #include "chat.h"       /* relay_chat */
+#include "codec.h"    /* encoder/decoder */
 
 using namespace std;
 
@@ -38,20 +39,13 @@ using namespace std;
  * TRUE e FALSE
  * Macros apenas para tornar valores booleanos mais semânticos.
  * 
- * ACTION_*****
+ * ACTION_***** (ver: codec.h)
  * Valores utilizados para identificar a ação que o usuário deseja
  * realizar durante cada input. A descrição de cada ação está melhor 
  * definida na devida thread de input.
- *  
- *  
  */
     #define TRUE  1
     #define FALSE 0 
-
-    #define ACTION_NONE     999
-    #define ACTION_CONNECT  900
-    #define ACTION_QUIT     901
-    #define ACTION_MESSAGE  902
 
 /**
  * Variáveis Globais
@@ -63,9 +57,14 @@ using namespace std;
  * I/O com o usuário.
  * 
  * Mais detalhes dessas structs podem ser encontrados em "chat.h" e "terminal.h"
+ * 
+ * Obs: terminal_backup é utilizada para salvar as configurações do terminal do usuário
+ *      antes do programa começar a alterar as configurações. Assim, é possível retornar
+ *      tudo ao normal logo ao fim da execução do programa.
  */   
     relay_chat          chat;
     terminal_control    terminal;
+    struct termios      terminal_backup;
 
 /**
  * Threads, Mutexes e Conditionals
@@ -87,11 +86,10 @@ using namespace std;
 
     pthread_mutex_t send_mutex     = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_t recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_t state_mutex     = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_t state_mutex    = PTHREAD_MUTEX_INITIALIZER;
 
     pthread_mutex_t terminal_mutex = PTHREAD_MUTEX_INITIALIZER;
     
-
     // Otimização das threads - condições para acordar do sleep
     pthread_cond_t  cond_recv_waiting = PTHREAD_COND_INITIALIZER;
     pthread_cond_t  cond_send_waiting = PTHREAD_COND_INITIALIZER;
@@ -136,13 +134,15 @@ using namespace std;
         // O programa ignora SIGINT
         signal(SIGINT, sigint_handler); 
         
+        // Fazendo Backup das configurações do terminal do usuário
+        tcgetattr(0, &terminal_backup);
+
         system("clear");
-        echo_enable(&terminal);
         
         /**
          * Iniciando as variáveis globais necessárias;
          */ 
-            printf("   [+] Inicializando variáveis....\n"); 
+            printf("[+]   Inicializando variáveis....\n"); 
             
             send_mutex     = PTHREAD_MUTEX_INITIALIZER;
             recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
@@ -157,74 +157,78 @@ using namespace std;
             chat.state_mutex = &state_mutex;        
             terminal.terminal_mutex = &terminal_mutex;
             
-            printf("   [+] Variáveis iniciadas com sucesso.\n"); 
+            printf("[+]   Variáveis iniciadas com sucesso.\n"); 
 
         /**
          * Abrindo conexão com servidor padrão
+         * 
+         * (*) Descomente para iniciar o programa conectando por padrão
+         *     no servidor local em 127.0.0.1:9002 
          */
-            printf("   [+] Abrindo conexão com o servidor 127.0.0.1:9002...\n"); 
-            
-            if(abrir_conexao(&chat) != 0){
-                destruir_relay_chat(&chat);
-                printf("   [X] ERRO ao abrir conexão com o servidor.\n");
-                exit(EXIT_FAILURE);
-            } 
-            
-            printf("   [+] Conexão com o SERVIDOR estabelecida com SUCESSO.\n"); 
+            // printf("[+]   Abrindo conexão com o servidor 127.0.0.1:9002...\n"); 
+            // if(abrir_conexao(&chat) != 0){
+            //     destruir_relay_chat(&chat);
+            //     printf("[X]   ERRO ao abrir conexão com o servidor.\n");
+            //     exit(EXIT_FAILURE);
+            // } 
+            // printf("[+]   Conexão com o SERVIDOR estabelecida com SUCESSO.\n"); 
 
         /**
          * Iniciando as Threads do Servidor
+         * 
+         * (*) Descomente para iniciar o programa conectando por padrão
+         *     no servidor local em 127.0.0.1:9002 
          */ 
 
-            printf("   [+] Iniciando Threads de Conexão...\n"); 
-
-            if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
-                destruir_relay_chat(&chat);
-                printf("   [x] ERRO ao inicializar o 'Receive Messages Handler'.\n");
-                exit(EXIT_FAILURE);
-            }
+            // printf("[+]   Iniciando Threads de Conexão...\n"); 
+            // if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
+            //     destruir_relay_chat(&chat);
+            //     printf("[x]   ERRO ao inicializar o 'Receive Messages Handler'.\n");
+            //     exit(EXIT_FAILURE);
+            // }
             
-            if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
-                destruir_relay_chat(&chat);
-                printf("   [x] Erro ao inicializar o 'Send Messages Handler'\n");
-                exit(EXIT_FAILURE);
-            }
-
-            printf("   [+] THREADS de Conexão iniciadas com SUCESSO.\n"); 
+            // if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
+            //     destruir_relay_chat(&chat);
+            //     printf("[x]   Erro ao inicializar o 'Send Messages Handler'\n");
+            //     exit(EXIT_FAILURE);
+            // }
+            // printf("[+]   THREADS de Conexão iniciadas com SUCESSO.\n"); 
 
         /**
          * Iniciando as Threads de I/O
          */ 
-            printf("   [+] Iniciando THREADS  de I/O...\n"); 
+            printf("[+]   Iniciando THREADS  de I/O...\n"); 
             
             if(pthread_create(&out_terminal_thread, NULL, &output_terminal_handler, NULL) != 0){
                 destruir_relay_chat(&chat);
-                printf("   [x] Erro ao inicializar o 'Output Terminal Handler'.\n");
+                printf("[x]   Erro ao inicializar o 'Output Terminal Handler'.\n");
                 exit(EXIT_FAILURE);
             }
 
             if(pthread_create(&in_terminal_thread, NULL, &input_terminal_handler, NULL) != 0) {
                 destruir_relay_chat(&chat);
-                printf("   [x] Erro ao inicializar o 'Input Terminal Handler'.\n");
+                printf("[x]   Erro ao inicializar o 'Input Terminal Handler'.\n");
                 exit(EXIT_FAILURE);
             }
 
-            printf("   [+] THREADS  de I/O iniciadas com SUCESSO.\n"); 
+            printf("[+]   THREADS  de I/O iniciadas com SUCESSO.\n"); 
 
 
-         // Na primeira entrega, como a conexão é feita por padrão então 
-        // o join é feito até que o usuário saia ou o 
-        pthread_join(recv_msg_thread, NULL);
-        printf("   [x] Aviso: perda de conexão com o servidor, utilize /quit para sair.\n");
+        // Na primeira entrega, como a conexão é feita por padrão então 
+        // o join é feita com a RECV para sinalizar que a conexão com o
+        // servidor em 127.0.0.1:9002 caiu.
+        // pthread_join(recv_msg_thread, NULL);
+        // printf("[x]   Aviso: perda de conexão com o servidor, utilize /quit para sair.\n");
 
         // O programa é finalizado quando o usuário
         // finaliza o input por meio de um /quit ou EOF
         pthread_join(in_terminal_thread, NULL);
 
-        fechar_conexao(&chat);
-        destruir_relay_chat(&chat);
-        
-        echo_enable(&terminal);
+        // Liberando a variável chat
+        destruir_relay_chat(&chat); 
+
+        // Resetando as configurações do terminal do usuário       
+        tcsetattr(0, TCSANOW, &terminal_backup);
 
         exit(EXIT_SUCCESS);
     }
@@ -264,42 +268,75 @@ using namespace std;
         int action_code;
         int repeat_loop = 1;
 
-        while(repeat_loop && chat.connection_status == CONNECTION_OPEN){
+        while(repeat_loop){
             
             action_code = ACTION_NONE;
 
             /**
              * Verificando se o usuário realizou algum input. Em caso afirmativo
-             * verifica o tipo de ação pretendida.
+             * verifica o tipo de ação pretendida por meio do CODEC
              */
             if(terminal_input_iteration(&terminal)){
-                
-                // Verificando qual ação o input expressa.
-                if ( strstr(terminal.input, "/connect") != NULL ){
-                    action_code = ACTION_CONNECT;
-                } else if ( strstr(terminal.input, "/quit") != NULL ) {
-                    action_code = ACTION_QUIT;
-                } else {
-                    action_code = ACTION_MESSAGE;
-                }
+                action_code = cdc_detectar_act(terminal.input);
             }
             
             /**
-             * Definindo qual sequência de ações tomar baseada na ação pretendida 
-             * no input do usuário.
+             * Definindo qual sequência de ações tomar baseada na ação  
+             * pretendida no input do usuário.
              */
             switch (action_code) {
-
-                // @TODO: Para a entrega 2 será necessário realizar a conexão aqui.
-                // case ACTION_CONNECT:
-                //     if(abrir_conexao(&chat) != 0){
-                //         printf("   [x] Erro ao abrir conexão com o servidor.\n");
-                //         repeat_loop = 0;
-                //     } else {
-                //         printf("   [+] Conexão estabelecida com o servidor.\n");
-                //     }
-                //     break;
                 
+                /**
+                 * ACTION_CONNECT (/connect)
+                 * --------------------
+                * Responsável por abrir a conexão do client com um servidor IRC.
+                * Existem duas possíveis opções de comando que ativam a ACTION_CONNECT
+                * 
+                * /connect >> Conecta no endereço e porta padrão definido em chat.h
+                * /connect <host> <port> >> Conecta no endereço e porta definida pelo
+                *                           próprio usuario.
+                * 
+                * Caso a conexão seja estabelecida com sucesso, as Threads do Servidor 
+                * são iniciadas.
+                 */
+                case ACTION_CONNECT:
+                    
+                    // 0º Verifica se já não está conectado em algo
+                    if(chat.connection_status == CONNECTION_OPEN){
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf("[+]   ERRO ao conectar, já existe uma CONEXẪO ABERTA.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
+                        break;
+                    }
+
+                    // 1ª Interpretando a mensagem /connect do usuário
+                    cdc_encode_connect(terminal.input, chat.sserver , chat.sport);
+
+                    // 2º Abrindo as Conexões e Threads
+                    printf("[+]   Abrindo conexão com o servidor %s:%s...\n", chat.sserver, chat.sport); 
+            
+                    if( abrir_conexao(&chat) != 0 ){
+                        printf("[x]   | --- Erro ao abrir conexão com o servidor.\n");
+                        printf("[x]   | --- Verifique se os dados de HOST e PORT foram inseridos corretamente.\n");
+                        break;
+                    } 
+
+                    printf("[+]   | --- Iniciando Threads de Conexão...\n"); 
+                    if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
+                        fechar_conexao(&chat);
+                        printf("[x]   | --- ERRO ao inicializar o 'Receive Messages Handler'.\n");
+                        break;
+                    }
+                    if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
+                        fechar_conexao(&chat);
+                        printf("[x]   | --- Erro ao inicializar o 'Send Messages Handler'\n");
+                        break;
+                    }
+
+                    // Deu tudo certo
+                    printf("[+]   | --- THREADS de Conexão iniciadas com SUCESSO!\n"); 
+                    printf("[+]   | --- Conexão com o SERVIDOR estabelecida com SUCESSO!\n"); 
+                    break;
 
                 /**
                  * ACTION_QUIT (/quit)
@@ -307,48 +344,95 @@ using namespace std;
                  * O usuário pretende finalizar a aplicação. Neste caso basta que
                  * a flag seja iterrompida para a thread ser finalizada e a main iniciar
                  * então os processos de encerramento do programa.
+                 * 
+                 * Obs: Não precisa de Break, pois vai ter que fazer as mesmas etapas 
+                 *      do ACTION_DISCONNECT
+                 * 
+                 * 
+                 * ACTION_DISCONNECT (/disconnect)
+                 * --------------------
+                * É utilizada para caso o cliente queira desconectar do servidor sem necessáriamente
+                * fechar o programa. Neste caso, basta fechar a conexão, as threads de servidor e
+                * também resetar os buffers.
                  */
                 case ACTION_QUIT:
-                    if(recv_msg_thread >= 0) pthread_cancel(recv_msg_thread);
-                    if(send_msg_thread >= 0) pthread_cancel(send_msg_thread);
-                    fechar_conexao(&chat);
                     repeat_loop = 0;
+
+                case ACTION_DISCONNECT:
+                    // 0º Verifica se já não está desconectado
+                    if(action_code == ACTION_DISCONNECT && chat.connection_status == CONNECTION_CLOSED){
+                        printf("[+]   AVISO: Nenhuma conexão aberta.\n");
+                        break;
+                    }
+
+                    // 1º Fechando a conexão
+                    fechar_conexao(&chat);
+
+                    // 2º Acorda a Thread sendo para ela morrer
+                    pthread_mutex_lock(chat.send_mutex);
+                        pthread_cond_signal(chat.cond_send_waiting);
+                    pthread_mutex_unlock(chat.send_mutex); 
+                    
+                    // 3º Cancela as threads
+                    pthread_cancel(recv_msg_thread);
+                    pthread_cancel(send_msg_thread);
+
+                    // 4º Resetando os buffers
+                    // Obs: Threads já morreram mas ainda assim preciso dar 
+                    // o lock só para via das dúvidas.
+                    pthread_mutex_lock(chat.recv_mutex);
+                        chat.recv_buff_size = 0;
+                    pthread_mutex_unlock(chat.recv_mutex);
+
+                    pthread_mutex_lock(chat.send_mutex);
+                        chat.send_buff_size = 0;
+                    pthread_mutex_unlock(chat.send_mutex);
+                    
+                    printf("[+]   Conexão com o SERVIDOR finalizada com SUCESSO!\n"); 
+                    
+                    if(action_code == ACTION_QUIT){
+                        printf("[+]   Até a próxima =D\n"); 
+                    }
+
                     break;
 
                 /**
                  * ACTION_MESSAGE (/msg)
                  * ---------------------
-                 * 
                  * O usuário pretende enviar uma mensagem ao canal em que se encontra.
                  * Neste caso a string deve ser processada e então copiada ao buffer de
                  * envio do chat (chat.send_buff).
                  */
                 case ACTION_MESSAGE:
 
+                    // 0º Verifica se já não está desconectado
+                    if(chat.connection_status == CONNECTION_CLOSED){
+                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        break;
+                    }
+
                     pthread_mutex_lock(chat.send_mutex);
                         pthread_cond_signal(chat.cond_send_waiting); 
 
-                        if(chat.connection_status == CONNECTION_OPEN){
-                            
-                            // Encode Input -> Protocol
-                            char** encoded = encode_message(&chat, terminal.input, strlen(terminal.input));
+                        // 1º Codificando a mensagem em 1 ou mais mensagens no formato
+                        //    definido pelo protocolo.
+                        char** encoded = cdc_encode_client_message(terminal.input, strlen(terminal.input));
 
-                            if(encoded != NULL){
-                                int it = 0;
-                                while(encoded[it] != NULL){
-                                    if(chat.send_buff_size <= 0){
-                                        strcpy(chat.send_buff, encoded[it]);
-                                        chat.send_buff_size = strlen(encoded[it]);
-                                    } else{
-                                        strcat(chat.send_buff, encoded[it]);
-                                        chat.send_buff_size += strlen(encoded[it]);
-                                    }
-
-                                    free(encoded[it++]);
+                        // 2º Copia as mensagens uma à uma para o send_buffer do chat.
+                        //    e vai atualizando o tamanho do buffer.
+                        if(encoded != NULL){
+                            int it = 0;
+                            while(encoded[it]   != NULL){
+                                if(chat.send_buff_size <= 0){
+                                    strcpy(chat.send_buff, encoded[it]);
+                                    chat.send_buff_size = strlen(encoded[it]);
+                                } else{
+                                    strcat(chat.send_buff, encoded[it]);
+                                    chat.send_buff_size += strlen(encoded[it]);
                                 }
-                                free(encoded);
+                                free(encoded[it++]);
                             }
-
+                            free(encoded);
                         }
 
                         // pthread_mutex_lock(terminal.terminal_mutex);
@@ -357,10 +441,6 @@ using namespace std;
 
                     pthread_mutex_unlock(chat.send_mutex);
 
-
-                    // garante que a thread de envio vai conseguir rodar antes de o while
-                    // de input travar tudo novamente. 
-                    // sleep(1);
                     break;
             }
 
@@ -369,7 +449,6 @@ using namespace std;
         echo_enable(&terminal);
         return NULL;
     }
-
 
 /**
  * @thread 
@@ -402,7 +481,7 @@ using namespace std;
         pthread_mutex_unlock(terminal.terminal_mutex);
 
         int repeat_loop = 1;
-        while(repeat_loop && chat.connection_status == CONNECTION_OPEN){
+        while(repeat_loop){
             
             // 1º - Verifica se existe algo no buffer de received.
             //      Se sim, copia para o buffer de output.
@@ -429,6 +508,7 @@ using namespace std;
                     memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
                     chat.recv_buff_size = 0;
                 }
+
             pthread_mutex_unlock(chat.recv_mutex);
             
             // 2º - Verifica se existe algo no buffer de output para ser exibido.

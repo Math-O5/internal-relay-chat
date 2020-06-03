@@ -4,6 +4,7 @@
 
 #include "terminal.h"
 
+
 // @Comentários em "terminal.h"
 void echo_enable(terminal_control* t){
     struct termios termInfo;
@@ -30,20 +31,30 @@ int terminal_input_iteration(terminal_control* t){
     memset(t->input, 0, sizeof(t->input));
     t->input[0]  = getchar(); 
     
+    // O sinal EOF indica que o usuário que sair
+    if( t->input[0] == EOF) {
+
+        strcpy(t->input,"/quit");
+        return 1;
+
     // O usuário está requisitando o uso do console.
-    if( t->input[0] == '\n'){
+    } else if( t->input[0] == '\n'){
         pthread_mutex_lock(t->terminal_mutex);
             echo_enable(t);
 
             // Exibindo o console de input
-            printf("   >> <MSG>: ");
+            printf("#INPUT: ");
             fflush(stdout); fflush(stdin);
 
             // resetando primeiro caracter de t->input
             t->input[0] = '\0';
 
             // Lê o input do usuário e consome o \n enviado logo após o fim do input.
-            scanf("%[^\n]", t->input);
+            if( scanf("%[^\n]", t->input) == EOF){
+                printf("\n"); 
+                strcpy(t->input,"/quit");
+                return 1;
+            }
             getchar();
 
             echo_disable(t);
@@ -62,14 +73,16 @@ int terminal_input_iteration(terminal_control* t){
 void msg_inicio(terminal_control* t){
 
     system("clear");
-    printf("   [+]   Relay Chat Client iniciado com sucesso.\n");
-    printf("   [ ]   \n");
-    printf("   [+]   Comandos disponíveis: \n");
-    printf("   [+]   /connect                  - conectar no servidor padrão.\n");
-    printf("   [+]   /connect <HOST_IP> <PORT> - conectar em HOST específico\n");
-    printf("   [+]   /quit                     - sair do programa\n");
-    printf("   [ ]   \n");
-    printf("   [+]   Pressione ENTER para digitar algum comando.\n");
-    printf("   [ ]   \n");
+    printf("[+]   Internet Relay Chat - Client\n");
+    printf("[ ]   \n");
+    printf("[+]   Comandos de Controle: \n");
+    printf("[+]   | --- /connect                  - Conectar em DEFAULT_HOST:DEFAULT_PORT\n");
+    printf("[+]   | --- /connect <HOST_IP> <PORT> - Conectar em <HOST_IP>:<PORT>\n");
+    printf("[+]   | --- /disconnect               - Fecha a conexão com o servidor atual\n");
+    printf("[+]   | --- /ping                     - Testa a conexão com o servidor\n");
+    printf("[+]   | --- /quit ou Ctrl+D (EOF)     - Fecha o programa\n");
+    printf("[ ]   \n");
+    printf("[+]   Pressione ENTER para habilitar/desabilitar o INPUT.\n");
+    printf("[ ]   \n");
 
 }
