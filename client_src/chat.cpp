@@ -44,6 +44,7 @@ int destruir_relay_chat(relay_chat* rc){
         free(rc->send_buff);
         rc->send_buff == NULL;
     }
+    
     if(rc->recv_buff != NULL){
         free(rc->recv_buff);
         rc->recv_buff == NULL;
@@ -124,7 +125,7 @@ void* recv_msg_handler(void* vrc){
         // printf("return [%d]\n", recv_return);
 
         // Verifica se há mensagens para ler no buffer do socket.
-        if( recv_return > 0){
+        if( recv_return > 0 ){
             
             // Mutex protege orecv_buffer e cond_recv_sinaliza a thread de Output
             pthread_mutex_lock(rc->recv_mutex);
@@ -140,10 +141,9 @@ void* recv_msg_handler(void* vrc){
 
             pthread_mutex_unlock(rc->recv_mutex);
         
+        // Verifica se a conexão morreu
         } else if(recv_return <= 0){
             pthread_mutex_lock(rc->state_mutex);
-                pthread_cond_signal(rc->cond_recv_waiting);
-                // rc->connection_status = CONNECTION_CLOSED;
                 fechar_conexao(rc);
             pthread_mutex_unlock(rc->state_mutex);
         }

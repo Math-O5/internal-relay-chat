@@ -34,7 +34,7 @@ int terminal_input_iteration(terminal_control* t){
     if( t->input[0] == EOF) {
 
         strcpy(t->input,"/quit");
-        return (strlen(t->input) >= 1);
+        return 1;
 
     // O usuário está requisitando o uso do console.
     } else if( t->input[0] == '\n'){
