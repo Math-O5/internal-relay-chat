@@ -21,13 +21,13 @@
     // ENCODER
 
       // Recebe a string e retorna o código da ação
-      int enc_detectar_act(const char* cmd);
+      int cdc_detectar_act(const char* cmd);
 
       // Recebe a string de comando connect e verifica se foram passados
       // os valores de HOST e PORTA. Se sim, salva os valores no 2º e 3º
       // parâmetro, senão salva os valores padrões definidos em chat.h
       // Retorna: 1 caso algum parametro esteja errado 
-      int enc_encode_connect(const char* cmd, char* host, char* port);
+      int cdc_encode_connect(const char* cmd, char* host, char* port);
 
 
 

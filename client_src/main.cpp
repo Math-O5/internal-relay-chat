@@ -271,7 +271,7 @@ using namespace std;
              * verifica o tipo de ação pretendida por meio do CODEC
              */
             if(terminal_input_iteration(&terminal)){
-                action_code = enc_detectar_act(terminal.input);
+                action_code = cdc_detectar_act(terminal.input);
             }
             
             /**
@@ -304,7 +304,7 @@ using namespace std;
                     }
 
                     // 1ª Interpretando a mensagem /connect do usuário
-                    enc_encode_connect(terminal.input, chat.sserver , chat.sport);
+                    cdc_encode_connect(terminal.input, chat.sserver , chat.sport);
 
                     // 2º Abrindo as Conexões e Threads
                     printf("   [+] Abrindo conexão com o servidor %s:%s...\n", chat.sserver, chat.sport); 
@@ -390,7 +390,6 @@ using namespace std;
                 /**
                  * ACTION_MESSAGE (/msg)
                  * ---------------------
-                 * 
                  * O usuário pretende enviar uma mensagem ao canal em que se encontra.
                  * Neste caso a string deve ser processada e então copiada ao buffer de
                  * envio do chat (chat.send_buff).

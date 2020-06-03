@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-int enc_detectar_act(const char* cmd){
+int cdc_detectar_act(const char* cmd){
 
     int action_code = ACTION_NONE;
 
@@ -33,7 +33,7 @@ int enc_detectar_act(const char* cmd){
     return action_code;
 }
 
-int enc_encode_connect(const char* cmd, char* host, char* port){
+int cdc_encode_connect(const char* cmd, char* host, char* port){
     if(cmd == NULL || host == NULL || port == NULL){
         return 1;
     }
