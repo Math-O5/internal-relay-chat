@@ -347,19 +347,18 @@ using namespace std;
                  * 
                  * Obs: Não precisa de Break, pois vai ter que fazer as mesmas etapas 
                  *      do ACTION_DISCONNECT
-                 */
-                case ACTION_QUIT:
-                    repeat_loop = 0;
-
-                /**
+                 * 
+                 * 
                  * ACTION_DISCONNECT (/disconnect)
                  * --------------------
                 * É utilizada para caso o cliente queira desconectar do servidor sem necessáriamente
                 * fechar o programa. Neste caso, basta fechar a conexão, as threads de servidor e
                 * também resetar os buffers.
                  */
-                case ACTION_DISCONNECT:
+                case ACTION_QUIT:
+                    repeat_loop = 0;
 
+                case ACTION_DISCONNECT:
                     // 0º Verifica se já não está desconectado
                     if(action_code == ACTION_DISCONNECT && chat.connection_status == CONNECTION_CLOSED){
                         printf("[+]   AVISO: Nenhuma conexão aberta.\n");
