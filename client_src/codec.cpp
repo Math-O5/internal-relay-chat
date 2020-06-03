@@ -43,11 +43,15 @@ int cdc_encode_connect(const char* cmd, char* host, char* port){
 
     int nro_itens = sscanf(cmd, "/connect %119s %119s", temp_host, temp_port);
 
-    if(nro_itens == 2) {
+    if(nro_itens >= 1) {
         strcpy(host, temp_host);
-        strcpy(port, temp_port);
     } else {
         strcpy(host, DEFAULT_SERVER_HOST);
+    }
+
+    if(nro_itens >= 2) {
+        strcpy(port, temp_port);
+    } else {
         strcpy(port, DEFAULT_SERVER_PORT);
     }
 

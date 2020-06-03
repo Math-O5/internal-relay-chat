@@ -50,7 +50,11 @@ int terminal_input_iteration(terminal_control* t){
             t->input[0] = '\0';
 
             // Lê o input do usuário e consome o \n enviado logo após o fim do input.
-            scanf("%[^\n]", t->input);
+            if( scanf("%[^\n]", t->input) == EOF){
+                printf("\n"); 
+                strcpy(t->input,"/quit");
+                return 1;
+            }
             getchar();
 
             echo_disable(t);
