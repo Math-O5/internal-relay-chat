@@ -41,7 +41,7 @@ using namespace std;
  * MAX_CONN
  * Número solicitado para o máximo de conexões aceitas para o servidor
 */
-#define MAX_CONN 3
+#define MAX_CONN 20
 
 /**
  * Variáveis globais

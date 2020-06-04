@@ -60,7 +60,7 @@
         
         #define ID_INITIALAZED 10
         
-        #define MAX_CLIENTS 3
+        #define MAX_CLIENTS 20
 
 
 

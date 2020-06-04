@@ -28,7 +28,7 @@
 		#define QUIT 1
 		#define PING 2
 
-		#define MAX_CLIENTS 3
+		#define MAX_CLIENTS 20
 	
 	/**
      * Bibliotecas importadas
