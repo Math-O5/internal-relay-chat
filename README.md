@@ -4,16 +4,19 @@ epic trabalhinho redes
 <h2>Descrição</h2>
 <p>Implementação dos antigos <strong>Internal Relay Chat (IRC)</strong>, o qual pode ser chamado também de antigo Telegram.</br>O protocolo de comunicação seguido foi o IRC 1459, o qual estabelece um padrão de comunicação client-server.</p>
 
-<h3>Desenvolvido por:</h3>
-<p>
-<a href="https://github.com/GabrielVanLoon">Glove</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
-<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
-<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
-</p>
-
 ## Compilando e Executando
 Em <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente,
 Ou para facilitar, utilize os comandos `make server` `make server_run` e  `make client` `make client_run` a partir da pasta root.
+<h2>Demo</h2>
+<div style="display:inline-block;">
+	<img src="assets/chat.gif" alt="chat-client"></img>
+</div>
+<h3>Desenvolvido por:</h3>
+<p>
+<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
+<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
+<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
+</p>
 
 ## Nas pastas...
 <ul>
@@ -23,11 +26,6 @@ Ou para facilitar, utilize os comandos `make server` `make server_run` e  `make 
 	<li><a href="/socket_example">socket_example</a> Outras versões feitas para testes apenas.</li>
 </ul>
 <p>A seguir demo e imagens <strong>inéditas</strong> de testes e dados.</p>
-<h2>Demo</h2>
-<div style="display:inline-block;">
-	<img src="assets/chat.gif" alt="chat-client"></img>
-</div>
-
 <h2>Testando com htop</h2>
 <p>Obs: o status R(Running) e S(Sleeping)</p>
 <p>Nas imagens é possível ver CPU, MEM e qual thread está correndo. Podemos ver resultados otimistas.</p>
