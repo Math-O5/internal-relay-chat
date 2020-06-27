@@ -72,6 +72,7 @@
 	 * - cl_id: id do cliente. Obs.: O id dos clientes sempre começa pelo 10
 	 * - name[9]: nickname(apelido) do cliente
 	*/
+	// TODO: clear unsed information
 	typedef struct _client{
 		// atributos de conexão
 		struct sockaddr_in cl_address;
