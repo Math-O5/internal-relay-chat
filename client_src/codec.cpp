@@ -60,11 +60,18 @@ int cdc_detectar_act(const char* cmd){
         action_code = ACTION_KICK;
     } 
     
+    // COMANDOS ESPECIAIS SERVIDOR >> CLIENTE
+    else if ( strstr(cmd, "/servermsg") == cmd ) {
+        action_code = ACTION_SERVERMSG;
+
+    } else if ( strstr(cmd, "/channelmsg") == cmd ) {
+        action_code = ACTION_CHANNELMSG;
+    }  
+
     // COMANDO DO CANAL
     else if ( strstr(cmd, "/list") == cmd ) {
         action_code = ACTION_LIST;
 
-    
     } else if (cmd[0] != '/') {             // Obs: (cmd[0] != '/') impede de enviar 
         action_code = ACTION_MESSAGE;       //      um comando como mensagem sem querer.
     }
@@ -201,8 +208,8 @@ int cdc_detectar_act(const char* cmd){
         return mode_message;
     }
     
-    // todas as funções de administrador abaixo possui o mesmo padrão, então encapsulei todas em
-    // uma função genérica de uso local.
+    // todas as funções de administrador abaixo possui o mesmo padrão, então 
+    // encapsulei todas em uma função genérica de uso local.
     char* _cdc_encode_admin_pattern(relay_chat* rc, const char* cmd, const char* action){
         if(cmd == NULL){
             return NULL;

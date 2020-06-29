@@ -53,10 +53,10 @@
 
       // COMANDOS DO CANAL
       #define ACTION_MESSAGE         503
-      #define ACTION_LIST            505
+      #define ACTION_LIST            504
 
       // COMANDOS ADMINISTRADOR
-      #define ACTION_MODE            601         
+      #define ACTION_MODE            601     
       #define ACTION_INVITE          602
       #define ACTION_WHOIS           603
       #define ACTION_MUTE            604
@@ -64,6 +64,9 @@
       #define ACTION_KICK            606
       #define ACTION_UNKICK          607
 
+      // MENSAGEMS SERVER -> CLIENT
+      #define ACTION_SERVERMSG       700
+      #define ACTION_CHANNELMSG      701
 
     /**
      * ENCONDER FUNCTIONS

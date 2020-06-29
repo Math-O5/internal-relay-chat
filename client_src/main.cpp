@@ -500,8 +500,9 @@ using namespace std;
                     else if(action_code == ACTION_UNMUTE)
                         message = cdc_encode_unmute(&chat, terminal.input);
                     else if(action_code == ACTION_KICK)
-                        message = cdc_encode_join(&chat, terminal.input);
-                    
+                        message = cdc_encode_kick(&chat, terminal.input);
+                    else if(action_code == ACTION_UNKICK)
+                        message = cdc_encode_unkick(&chat, terminal.input);
 
                     if(message == NULL){
                         printf("[+]   ERRO ao enviar comando. Verifique se os parâmetros foram inseridos corretamente!\n");
