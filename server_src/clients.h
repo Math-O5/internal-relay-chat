@@ -83,8 +83,8 @@
 
 		// atributos do cliente (chat)
 		int cl_id;
-		char nickname[MAX_SIZE_NAME];
-		char channel[MAX_SIZE_NAME];
+		string nickname;
+		CHANNEL_conn* channel;
 	}client;
 
 	/**
@@ -205,7 +205,7 @@
 	 * return: cliente* struct do cliente com o id passado no parâmetro da função
 	 * 		   NULL     o cliente não foi encontrado
 	*/
-	client* clt_get_by_id(int id, int max_clients);
+	client* clt_get_by_id(int cli_id);
 
 	/**
 	 * @function
