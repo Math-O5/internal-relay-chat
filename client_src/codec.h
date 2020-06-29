@@ -39,14 +39,49 @@
      * no programa.
      *  
     */
+      // COMANDOS GERAIS
       #define ACTION_NONE               0
-      #define ACTION_CONNECT          900
-      #define ACTION_DISCONNECT       901
-      #define ACTION_QUIT             902
-      #define ACTION_HELP             903
+      #define ACTION_CONNECT          300
+      #define ACTION_DISCONNECT       301
+      #define ACTION_QUIT             302
+      #define ACTION_HELP             303
+      #define ACTION_PING             304
 
-      #define ACTION_MESSAGE         1000
-      #define ACTION_PING            1001
+      // COMANDOS QUE ALTERAM ESTADO DO CLIENTE 
+      #define ACTION_NICK            401
+      #define ACTION_JOIN            402
+
+      // COMANDOS DO CANAL
+      #define ACTION_MESSAGE         503
+      #define ACTION_LIST            504
+
+      // COMANDOS ADMINISTRADOR
+      #define ACTION_MODE            601     
+      #define ACTION_INVITE          602
+      #define ACTION_WHOIS           603
+      #define ACTION_MUTE            604
+      #define ACTION_UNMUTE          605
+      #define ACTION_KICK            606
+      #define ACTION_UNKICK          607
+
+      // MENSAGEMS SERVER -> CLIENT
+      #define ACTION_SERVERMSG       700
+      #define ACTION_CHANNELMSG      701
+
+
+      #define INVALID_PROTOCOL       0
+      #define SUCCESS               200
+      
+      #define ERR_NOSUCHNICK        401
+      #define ERR_ERRONEUSNICKNAME  432
+      #define ERR_NICKNAMEINUSE     433
+      
+      #define ERR_INVITEONLYCHAN    473
+      #define ERR_BANNEDFROMCHAN    474
+
+      #define ERR_CHANOPRIVSNEEDED  482
+
+
 
     /**
      * ENCONDER FUNCTIONS
@@ -70,10 +105,6 @@
        */
         int cdc_detectar_act(const char* cmd);
 
-      // Recebe a string de comando connect e verifica se foram passados
-      // os valores de HOST e PORTA. Se sim, salva os valores no 2º e 3º
-      // parâmetro, senão salva os valores padrões definidos em chat.h
-      // Retorna: 1 caso algum parametro esteja errado 
 
       /**
        * @function
@@ -93,7 +124,6 @@
        * |    à /connect (Obs: não valida se os valores válidos, pois isso será
        * |    verificado durante o processo de conexão).
        * 
-       * 
        * cmd: ponteiro para a string à ser analisada como input de comando
        * 
        * host: aponta para a string em que será salvo o HOST
@@ -103,7 +133,11 @@
        * return: 1 caso algum dos parâmetros não tenha sido enviado corretamente.
        *         0 caso tudo ocorra nos conformes.
        */
-        int cdc_encode_connect(const char* cmd, char* host, char* port);
+        int cdc_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port);
+
+      char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
+
+      char* cdc_encode_join(relay_chat* rc, const char* cmd);
 
       /**
        * @function
@@ -115,7 +149,6 @@
        * de caracteres definido pelo protocolo a mesma é separada em multiplas 
        * mensagens distintas.
        * 
-       * 
        * raw_str: string que será codificada.
        * 
        * raw_str_len: tamanho de raw_str
@@ -124,6 +157,37 @@
        *         raw. O ponteiro NULL indica o fim do array e deve ser desalocado após 
        *         seu uso.
        */
-        char** cdc_encode_client_message(const char* raw_str, int raw_str_len);
+        char** cdc_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len);
+
+      char* cdc_encode_mode(relay_chat* rc, const char* cmd);
+      char* cdc_encode_invite(relay_chat* rc, const char* cmd);
+      char* cdc_encode_whois(relay_chat* rc, const char* cmd);
+      char* cdc_encode_mute(relay_chat* rc, const char* cmd);
+      char* cdc_encode_unmute(relay_chat* rc, const char* cmd);
+      char* cdc_encode_kick(relay_chat* rc, const char* cmd);
+      char* cdc_encode_unkick(relay_chat* rc, const char* cmd);
+
+
+      int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
+      int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin);
+
+      int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
+      int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);
+
+      int cdc_decode_mode(relay_chat* rc, const char* cmd);
+      int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
+
+      int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
+      int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
+      int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
+      int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
+      int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
+
+      int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
+      int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
+
+      int is_valid_channel_name(char* name);
+      int is_valid_nickname(char* name);
+
 
 #endif 

@@ -267,6 +267,8 @@ using namespace std;
 
         int action_code;
         int repeat_loop = 1;
+        char** messages_list = NULL;
+        char*  message = NULL;
 
         while(repeat_loop){
             
@@ -302,7 +304,7 @@ using namespace std;
                 case ACTION_CONNECT:
                     
                     // 0º Verifica se já não está conectado em algo
-                    if(chat.connection_status == CONNECTION_OPEN){
+                    if(chat.connection_status == CONNECTION_OPEN) {
                         pthread_mutex_lock(terminal.terminal_mutex);
                             printf("[+]   ERRO ao conectar, já existe uma CONEXẪO ABERTA.\n");
                         pthread_mutex_unlock(terminal.terminal_mutex);
@@ -310,7 +312,7 @@ using namespace std;
                     }
 
                     // 1ª Interpretando a mensagem /connect do usuário
-                    cdc_encode_connect(terminal.input, chat.sserver , chat.sport);
+                    cdc_encode_connect(&chat, terminal.input, chat.sserver , chat.sport);
 
                     // 2º Abrindo as Conexões e Threads
                     printf("[+]   Abrindo conexão com o servidor %s:%s...\n", chat.sserver, chat.sport); 
@@ -416,23 +418,23 @@ using namespace std;
 
                         // 1º Codificando a mensagem em 1 ou mais mensagens no formato
                         //    definido pelo protocolo.
-                        char** encoded = cdc_encode_client_message(terminal.input, strlen(terminal.input));
+                        messages_list = cdc_encode_client_message(&chat, terminal.input, strlen(terminal.input));
 
                         // 2º Copia as mensagens uma à uma para o send_buffer do chat.
                         //    e vai atualizando o tamanho do buffer.
-                        if(encoded != NULL){
+                        if(messages_list != NULL){
                             int it = 0;
-                            while(encoded[it]   != NULL){
+                            while(messages_list[it]   != NULL){
                                 if(chat.send_buff_size <= 0){
-                                    strcpy(chat.send_buff, encoded[it]);
-                                    chat.send_buff_size = strlen(encoded[it]);
+                                    strcpy(chat.send_buff, messages_list[it]);
+                                    chat.send_buff_size = strlen(messages_list[it]);
                                 } else{
-                                    strcat(chat.send_buff, encoded[it]);
-                                    chat.send_buff_size += strlen(encoded[it]);
+                                    strcat(chat.send_buff, messages_list[it]);
+                                    chat.send_buff_size += strlen(messages_list[it]);
                                 }
-                                free(encoded[it++]);
+                                free(messages_list[it++]);
                             }
-                            free(encoded);
+                            free(messages_list);
                         }
 
                         // pthread_mutex_lock(terminal.terminal_mutex);
@@ -440,10 +442,85 @@ using namespace std;
                         // pthread_mutex_unlock(terminal.terminal_mutex);
 
                     pthread_mutex_unlock(chat.send_mutex);
+                    break;
+                
+                case ACTION_PING:
+                case ACTION_LIST:
 
+                    // 0º Verifica se já não está desconectado
+                    if(chat.connection_status == CONNECTION_CLOSED){
+                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        break;
+                    }
+
+                    pthread_mutex_lock(chat.send_mutex);
+                        pthread_cond_signal(chat.cond_send_waiting);
+
+                            if(action_code == ACTION_PING){
+                                strcat(chat.send_buff, "/ping\n");
+                                chat.send_buff_size += 6;
+                            } else if(action_code == ACTION_LIST){
+                                strcat(chat.send_buff, "/list\n");
+                                chat.send_buff_size += 6;
+                            }
+                            
+                    pthread_mutex_unlock(chat.send_mutex);
+                    break;
+
+                case ACTION_NICK:
+                case ACTION_JOIN:
+                
+                case ACTION_MODE:
+                case ACTION_INVITE:
+                case ACTION_WHOIS:
+                case ACTION_MUTE:
+                case ACTION_UNMUTE:
+                case ACTION_KICK:
+
+                    // 0º Verifica se já não está desconectado
+                    if(chat.connection_status == CONNECTION_CLOSED){
+                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        break;
+                    }
+                    
+                    // 1º Decodifica o input e verifica se está tudo ok
+                    if(action_code == ACTION_NICK)
+                        message = cdc_encode_nickname(&chat, terminal.input);
+                    else if(action_code == ACTION_JOIN)
+                        message = cdc_encode_join(&chat, terminal.input);
+
+                    if(action_code == ACTION_MODE)
+                        message = cdc_encode_mode(&chat, terminal.input);
+                    else if(action_code == ACTION_INVITE)
+                        message = cdc_encode_invite(&chat, terminal.input);
+                    else if(action_code == ACTION_WHOIS)
+                        message = cdc_encode_whois(&chat, terminal.input);
+                    else if(action_code == ACTION_MUTE)
+                        message = cdc_encode_mute(&chat, terminal.input);
+                    else if(action_code == ACTION_UNMUTE)
+                        message = cdc_encode_unmute(&chat, terminal.input);
+                    else if(action_code == ACTION_KICK)
+                        message = cdc_encode_kick(&chat, terminal.input);
+                    else if(action_code == ACTION_UNKICK)
+                        message = cdc_encode_unkick(&chat, terminal.input);
+
+                    if(message == NULL){
+                        printf("[+]   ERRO ao enviar comando. Verifique se os parâmetros foram inseridos corretamente!\n");
+                        break;
+                    }
+
+                    pthread_mutex_lock(chat.send_mutex);
+                        pthread_cond_signal(chat.cond_send_waiting);
+
+                        strcat(chat.send_buff, message);
+                        chat.send_buff_size += strlen(message);
+                        
+                        free(message); 
+                        message = NULL;
+                        
+                    pthread_mutex_unlock(chat.send_mutex);
                     break;
             }
-
         }
         
         echo_enable(&terminal);
@@ -481,10 +558,22 @@ using namespace std;
         pthread_mutex_unlock(terminal.terminal_mutex);
 
         int repeat_loop = 1;
+        int buffer_it   = 0, message_it = 0;
+        int action_code = ACTION_NONE;
+        char message[MAX_MESSAGE_LENGHT+1];
+
+        int response_code = 0;
+        char temp_buffer_A[MAX_MESSAGE_LENGHT];
+        char temp_buffer_B[MAX_MESSAGE_LENGHT];
+        bool temp_bool;
+        
         while(repeat_loop){
             
             // 1º - Verifica se existe algo no buffer de received.
-            //      Se sim, copia para o buffer de output.
+            //      Se sim, faz os seguintes processos:
+            //      - Remove mensagem na frente do buffer recv.
+            //      - Decodifica a mensagem e atualiza os estados.
+            //      - Salva os outputs no buffer de output.
             pthread_mutex_lock(chat.recv_mutex);
                 
                 // Caso o buffer esteja vazio, a thread dorme até que exista algo 
@@ -493,21 +582,164 @@ using namespace std;
                     pthread_cond_wait(chat.cond_recv_waiting, chat.recv_mutex); 
                 }
 
-                // printf("\n %d, %d\n", chat.connection_status, chat.recv_buff_size);
-                if( chat.connection_status == CONNECTION_OPEN && chat.recv_buff_size > 0 ){
+                buffer_it = 0;
+                while(buffer_it < chat.recv_buff_size && chat.connection_status == CONNECTION_OPEN){
                     
-                    // @TODO: Nas próximas etapas terá que haver processamento do Protocolo -> Terminal
-                    if(terminal.buffer_size == 0){
-                        strcpy(terminal.output_buffer, chat.recv_buff);
-                    } else {
-                        strcat(terminal.output_buffer, chat.recv_buff);
-                    }
-                    terminal.buffer_size = strlen(terminal.output_buffer);
+                    memset(message, 0, sizeof(message));
+                    message_it = 0;
 
-                    // Remove elementos retirados do buffer do chat
-                    memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
-                    chat.recv_buff_size = 0;
+                    do{
+                        message[message_it++] = chat.recv_buff[buffer_it];
+                    } while(chat.recv_buff[buffer_it++] != '\n' && message_it < MAX_MESSAGE_LENGHT);
+
+                    action_code = cdc_detectar_act(message);
+                    switch(action_code){
+
+                        case ACTION_NICK:
+                            response_code = cdc_decode_nickname(&chat, message, temp_buffer_A);
+
+                            if(response_code == SUCCESS){  
+                                strcpy(chat.nickname, temp_buffer_A);
+                                chat.nick_len = strlen(temp_buffer_A);
+                                chat.has_nick = true;
+
+                                printf("[+]   Nickname %s definido com sucesso\n", temp_buffer_A);
+                            
+                            } else if( response_code == ERR_NICKNAMEINUSE){
+                                printf("[+]   Erro: nickname %s já está sendo utilizado por outro usuário.\n", temp_buffer_A);
+
+                            } else if( response_code == ERR_ERRONEUSNICKNAME){
+                                printf("[+]   Erro: nickname %s possui formato inválido.\n", temp_buffer_A);
+
+                            }
+                            break;
+
+                        case ACTION_JOIN:
+                            response_code = cdc_decode_join(&chat, message, temp_buffer_A, &temp_bool);
+
+                            if(response_code == SUCCESS){
+                                strcpy(chat.channel, temp_buffer_A);
+                                chat.channel_len = strlen(temp_buffer_A);
+                                chat.has_channel = true;
+                                chat.is_admin    = temp_bool;
+                                printf("[+]   Você entrou no canal %s.\n", temp_buffer_A);
+
+                            } else if(response_code == ERR_INVITEONLYCHAN) {
+                                printf("[+]   Erro: é necessário um CONVITE para entrar neste canal.\n");
+
+                            } else if(response_code == ERR_BANNEDFROMCHAN){
+                                printf("[+]   Erro: você foi banido deste canal.\n");
+
+                            }
+            
+                            break;
+
+                        case ACTION_LIST:
+                            response_code = cdc_decode_list(&chat, message, temp_buffer_A);
+
+                            if(response_code == SUCCESS){
+                                printf("[+]   Canais disponíveis: %s\n", temp_buffer_A);
+                            }
+                            break;
+
+                        case ACTION_MODE:
+                            response_code = cdc_decode_mode(&chat, message);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   Modo do canal alterado com sucesso!\n");
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+
+                            }
+
+                            break;
+
+                        case ACTION_WHOIS:
+                            response_code = cdc_decode_whois(&chat, message, temp_buffer_A, temp_buffer_B);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   Who is %s? IP: %s\n", temp_buffer_A, temp_buffer_B);
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                
+                            } else if(response_code == ERR_NOSUCHNICK){
+                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                                
+                            }
+
+                            break;
+
+                        case ACTION_INVITE:
+                        case ACTION_MUTE:
+                        case ACTION_UNMUTE:
+                        case ACTION_KICK:
+                        case ACTION_UNKICK:
+
+                            if(action_code == ACTION_INVITE)
+                                response_code = cdc_decode_invite(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_MUTE)
+                                response_code = cdc_decode_mute(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_UNMUTE)
+                                response_code = cdc_decode_unmute(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_KICK)
+                                response_code = cdc_decode_kick(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_UNKICK)
+                                response_code = cdc_decode_unkick(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                
+                                if(action_code == ACTION_INVITE)
+                                    printf("[+]   Convite enviado para o usuário %s.\n", temp_buffer_A);
+                                else if(action_code == ACTION_MUTE)
+                                    printf("[+]   O usuário %s foi silenciado.\n", temp_buffer_A);
+                                else if(action_code == ACTION_UNMUTE)
+                                    printf("[+]   O usuário %s foi desilenciado.\n", temp_buffer_A);
+                                else if(action_code == ACTION_KICK)
+                                    printf("[+]   O usuário %s foi banido do canal.\n", temp_buffer_A);
+                                else if(action_code == ACTION_UNKICK)
+                                    printf("[+]   O usuário %s foi perdoado pelo operador do canal.\n", temp_buffer_A);
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                
+                            } else if(response_code == ERR_NOSUCHNICK){
+                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                            }
+                            break;
+
+                        case ACTION_MESSAGE:
+                            response_code = cdc_decode_client_message(&chat, message, temp_buffer_A, temp_buffer_B);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [%s] %s\n", temp_buffer_A, temp_buffer_B);
+                            }
+                            break;
+
+                        case ACTION_SERVERMSG:
+                            response_code = cdc_decode_server_message(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [SERVER] %s\n", temp_buffer_A);
+                            }
+                            break;
+
+                        case ACTION_CHANNELMSG:
+                            response_code = cdc_decode_channel_message(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [CHANNEL] %s\n", temp_buffer_A);
+                            }
+                            
+                            break;
+
+                    }
                 }
+
+                // Se chegou aqui, recv_buffer já foi totalmente decodificado então
+                memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
+                chat.recv_buff_size = 0;
 
             pthread_mutex_unlock(chat.recv_mutex);
             

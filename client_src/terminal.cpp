@@ -56,6 +56,9 @@ int terminal_input_iteration(terminal_control* t){
                 return 1;
             }
             getchar();
+            
+            // Utilize a linha abaixo para remover a linha de output do terminal 
+            printf("\033[A\33[2K\r");
 
             echo_disable(t);
 
