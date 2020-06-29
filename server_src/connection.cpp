@@ -207,7 +207,8 @@ int conn_run_server(server_conn* sv){
         // Adiciona um novo cliente (atualizando atributos)
         client* cl = clt_criar(cl_addr, cl_conn, id, sv->sv_socket);
         clients_wait.push_back(id++);
-        clt_add_queue(cl, MAX_CLIENTS, &mutex);
+        
+        clt_add_queue(cl, &mutex);
 
         // Liberar uma thread para o cliente
         pthread_cond_signal(&condition_var);

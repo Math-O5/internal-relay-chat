@@ -15,13 +15,13 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
 
 
 // @Comentários em "clients.h"
-int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex){
+int clt_add_queue(client* cl, pthread_mutex_t* mutex){
 
     pthread_mutex_lock(mutex);
 
     // Adiciona o cliente no primeiro espaco disponivel
     int index;
-    for(index = 0; index < max_cl; index++){
+    for(index = 0; index < MAX_CLIENTS; index++){
         if(!cl_arr[index]){
             cl_arr[index] = cl;
             break;
@@ -60,7 +60,7 @@ void clt_destruir_clientes() {
 }
 
 // @Comentários em "clients.h"
-client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex){
+client* clt_remove_queue(int id, pthread_mutex_t* mutex){
     
     pthread_mutex_lock(mutex);  
 
@@ -175,6 +175,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
         // Mensagem recebida !
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
+            
             int input = clt_read_buffer(cl, buffer);
             switch(input) {
                 case CONTINUE:
