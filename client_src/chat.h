@@ -68,6 +68,12 @@
 
         #define DEFAULT_SERVER_HOST "127.0.0.1"
         #define DEFAULT_SERVER_PORT "9002"
+        
+        #define NICKNAME_MAXLENGHT       30
+        #define CHANNEL_NAME_MAXLENGHT   30
+        #define CHANNEL_NAME_SIMBOL      '&'
+        #define CHANNEL_ADMIN_SIMBOL     '#'
+        #define CHANNEL_USER_SIMBOL      '@'
 
     /**
      * @struct 
@@ -136,10 +142,16 @@
             pthread_mutex_t* recv_mutex;
             pthread_mutex_t* state_mutex;
 
-            
             pthread_cond_t*  cond_send_waiting;
             pthread_cond_t*  cond_recv_waiting;
             
+            // Variáveis de estado do cliente.
+            bool  has_channel,has_nick, is_admin;  
+            char  nickname[NICKNAME_MAXLENGHT+1];
+            int   nick_len;
+            char  channel[CHANNEL_NAME_MAXLENGHT+1];
+            int   channel_len;
+
         } relay_chat;
 
     /**

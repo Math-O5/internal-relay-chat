@@ -29,16 +29,23 @@ relay_chat criar_relay_chat(pthread_mutex_t* send_mutex, pthread_mutex_t* recv_m
     rc.cond_send_waiting   = cond_send_waiting;
     rc.cond_recv_waiting = cond_recv_waiting;
 
+    // Definindo o estado do cliente
+    rc.is_admin = rc.has_channel = rc.has_nick = false;
+    memset(rc.nickname, 0, sizeof(rc.nickname));
+    memset(rc.channel, 0, sizeof(rc.channel));
+    rc.nick_len = rc.channel_len = 0;
+
     return rc;
 }
 
 // @Comentários em "chat.h"
 int destruir_relay_chat(relay_chat* rc){
-    if(rc->connection_status == CONNECTION_OPEN && rc->network_socket >= 0)
+    if(rc->connection_status == CONNECTION_OPEN && rc->network_socket >= 0){
         if(fechar_conexao(rc)){
             return 1;
         }
-
+    }
+    
     // Excluindo os buffers utilizados
     if(rc->send_buff != NULL){
         free(rc->send_buff);
@@ -72,7 +79,6 @@ int abrir_conexao(relay_chat* rc){
         return 3;
     }
     // printf("[x]   | --- Convertendo hostname and port.\n");
-
 
     // Criando o socket
     rc->network_socket = socket(AF_INET, SOCK_STREAM, 0);
