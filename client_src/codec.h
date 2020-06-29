@@ -68,6 +68,27 @@
       #define ACTION_SERVERMSG       700
       #define ACTION_CHANNELMSG      701
 
+
+      #define INVALID_PROTOCOL       0
+      #define SUCCESS               200
+      
+      #define ERR_NOSUCHNICK        401
+      #define ERR_ERRONEUSNICKNAME  432
+      #define ERR_NICKNAMEINUSE     433
+      
+      #define ERR_INVITEONLYCHAN    473
+      #define ERR_BANNEDFROMCHAN    474
+
+      #define ERR_CHANOPRIVSNEEDED  482
+
+
+
+
+
+
+
+
+
     /**
      * ENCONDER FUNCTIONS
      */

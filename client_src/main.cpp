@@ -514,13 +514,13 @@ using namespace std;
 
                         strcat(chat.send_buff, message);
                         chat.send_buff_size += strlen(message);
+                        
+                        free(message); 
                         message = NULL;
-
+                        
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
-
             }
-
         }
         
         echo_enable(&terminal);
@@ -558,10 +558,17 @@ using namespace std;
         pthread_mutex_unlock(terminal.terminal_mutex);
 
         int repeat_loop = 1;
+        int buffer_it   = 0, message_it = 0;
+        int action_code = ACTION_NONE;
+        char message[MAX_MESSAGE_LENGHT+1];
+        
         while(repeat_loop){
             
             // 1º - Verifica se existe algo no buffer de received.
-            //      Se sim, copia para o buffer de output.
+            //      Se sim, faz os seguintes processos:
+            //      - Remove mensagem na frente do buffer recv.
+            //      - Decodifica a mensagem e atualiza os estados.
+            //      - Salva os outputs no buffer de output.
             pthread_mutex_lock(chat.recv_mutex);
                 
                 // Caso o buffer esteja vazio, a thread dorme até que exista algo 
@@ -570,21 +577,30 @@ using namespace std;
                     pthread_cond_wait(chat.cond_recv_waiting, chat.recv_mutex); 
                 }
 
-                // printf("\n %d, %d\n", chat.connection_status, chat.recv_buff_size);
-                if( chat.connection_status == CONNECTION_OPEN && chat.recv_buff_size > 0 ){
+                buffer_it = 0;
+                while(buffer_it < chat.recv_buff_size && chat.connection_status == CONNECTION_OPEN){
                     
-                    // @TODO: Nas próximas etapas terá que haver processamento do Protocolo -> Terminal
-                    if(terminal.buffer_size == 0){
-                        strcpy(terminal.output_buffer, chat.recv_buff);
-                    } else {
-                        strcat(terminal.output_buffer, chat.recv_buff);
-                    }
-                    terminal.buffer_size = strlen(terminal.output_buffer);
+                    memset(message, 0, sizeof(message));
+                    message_it = 0;
 
-                    // Remove elementos retirados do buffer do chat
-                    memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
-                    chat.recv_buff_size = 0;
+                    do{
+                        message[message_it++] = chat.recv_buff[buffer_it];
+                    } while(chat.recv_buff[buffer_it++] != '\n' && message_it < MAX_MESSAGE_LENGHT);
+
+                    action_code = cdc_detectar_act(message);
+
+                    switch(action_code){
+
+
+
+
+                    }
+
                 }
+
+                // Se chegou aqui, recv_buffer já foi totalmente decodificado então
+                memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
+                chat.recv_buff_size = 0;
 
             pthread_mutex_unlock(chat.recv_mutex);
             
