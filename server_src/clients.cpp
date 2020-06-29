@@ -10,6 +10,8 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
     cl->cl_socket = socket;
     cl->cl_id = id;
     cl->sv_socket = sv_socket;
+    cl->channel = '';
+    cl->nickname = '';
     return cl;
 }
 
@@ -80,10 +82,10 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 }
 
 // @Comentários em "clients.h"
-client* clt_get_by_id(int id, int max_clients) {
+client* clt_get_by_id(int cli_id) {
 
-    for(int i = 0; i < max_clients; i++) {
-        if(cl_arr[i] && cl_arr[i]->cl_id == id) {
+    for(int i = 0; i < MAX_CLIENTS; i++) {
+        if(cl_arr[i] && cl_arr[i]->cl_id == cli_id) {
             return cl_arr[i];
         }
     }
@@ -162,7 +164,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     memset(buffer, '\0', BUFFER_SIZE);
 
     // Recupera as informacoes do cliente...
-    client* cl = clt_get_by_id(id_cur, max_conn);
+    client* cl = clt_get_by_id(id_cur);
 
     // Cliente indisponível
     if(cl == NULL) {
