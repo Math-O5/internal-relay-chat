@@ -23,12 +23,14 @@
 
 		#define SUCCESS 0
 		#define FAIL 1
+        #define ERROR_CREATE_CHANNEL 8
 
 		#define CONTINUE 0
 		#define QUIT 1
 		#define PING 2
 
 		#define MAX_CLIENTS 20
+		#define MAX_SIZE_NAME 30
 	
 	/**
      * Bibliotecas importadas
@@ -78,9 +80,11 @@
 		struct sockaddr_in cl_address;
 		int cl_socket;
 		int sv_socket;
+
 		// atributos do cliente (chat)
 		int cl_id;
-		char name[9];
+		char nickname[MAX_SIZE_NAME];
+		char channel[MAX_SIZE_NAME];
 	}client;
 
 	/**
@@ -130,7 +134,7 @@
 	 * return: SUCCESS o cliente foi adicionado na lista com sucesso
 	 * 		   FAIL	   ocorreu um erro ao adicionar o cliente na lista (sem posição vaga na lista)
 	*/
-	int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex);
+	int clt_add_queue(client* cl, pthread_mutex_t* mutex);
 
 	/**
 	 * @function
@@ -144,7 +148,7 @@
 	 * return: client* endereço do cliente removido
 	 * 		   NULL    cliente não encontrado
 	*/
-	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
+	client* clt_remove_queue(int id, pthread_mutex_t* mutex);
 
 	/**
 	 * @function
