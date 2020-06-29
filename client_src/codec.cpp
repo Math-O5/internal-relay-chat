@@ -279,8 +279,6 @@ int cdc_detectar_act(const char* cmd){
 
         // SUCCESS -> NICKNAME DEFINIDO COM SUCESSO
         if(strcmp(response,"SUCCESS") == 0){
-            strcpy(rc->nickname, temp_nick);
-            rc->nick_len = strlen(temp_nick);
             return SUCCESS;
 
         // ERR_NICKNAMEINUSE -> NICKNAME JÁ ESTÁ EM USO
@@ -295,7 +293,7 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel){
+    int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin){
         if(rc == NULL || cmd == NULL || channel == NULL){
             return INVALID_PROTOCOL;
         }
@@ -307,8 +305,8 @@ int cdc_detectar_act(const char* cmd){
         int  nro_itens;
         
         // Decodificando o comando
-        nro_itens = sscanf(cmd, "/join %59s %30s %500[^\n]", response, temp_channel, params);
-        if(nro_itens != 2){
+        nro_itens = sscanf(cmd, "/join %59s %30s %30s", response, temp_channel, params);
+        if(nro_itens < 1){
             return INVALID_PROTOCOL;
         }
 
@@ -316,19 +314,16 @@ int cdc_detectar_act(const char* cmd){
         strcpy(channel, temp_channel);
 
         // SUCCESS -> NICKNAME DEFINIDO COM SUCESSO
-        if(strcmp(response,"SUCCESS") == 0){
+        if(strcmp(response,"SUCCESS") == 0 && nro_itens == 3){
 
-            if( strstr(params, "user") == params ){
-                rc->is_admin = false;
-            } else if( strstr(params, "admin") == params ){
-                rc->is_admin = true;
+            if( strcmp(params, "user") == 0 ){
+                (*is_admin) = false;
+            } else if( strcmp(params, "admin") == 0 ){
+                (*is_admin) = true;
             } else {
                 return INVALID_PROTOCOL;
             }
 
-            strcpy(rc->channel, temp_channel);
-            rc->channel_len = strlen(temp_channel);
-            rc->has_channel = true;
             return SUCCESS;
 
         // ERR_INVITEONLYCHAN -> USUARIO NAO FOI CONVIDADO PARA O CANAL
@@ -539,7 +534,6 @@ int cdc_detectar_act(const char* cmd){
     int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content) {
         return _cdc_decode_X_message( rc, cmd, content);
     }
-
 
 // FUNÇÕES DE VALIDAÇÃO
     int is_valid_channel_name(char* name){

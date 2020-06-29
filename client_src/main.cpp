@@ -561,6 +561,11 @@ using namespace std;
         int buffer_it   = 0, message_it = 0;
         int action_code = ACTION_NONE;
         char message[MAX_MESSAGE_LENGHT+1];
+
+        int response_code = 0;
+        char temp_buffer_A[MAX_MESSAGE_LENGHT];
+        char temp_buffer_B[MAX_MESSAGE_LENGHT];
+        bool temp_bool;
         
         while(repeat_loop){
             
@@ -588,14 +593,148 @@ using namespace std;
                     } while(chat.recv_buff[buffer_it++] != '\n' && message_it < MAX_MESSAGE_LENGHT);
 
                     action_code = cdc_detectar_act(message);
-
                     switch(action_code){
 
+                        case ACTION_NICK:
+                            response_code = cdc_decode_nickname(&chat, message, temp_buffer_A);
 
+                            if(response_code == SUCCESS){  
+                                strcpy(chat.nickname, temp_buffer_A);
+                                chat.nick_len = strlen(temp_buffer_A);
+                                chat.has_nick = true;
 
+                                printf("[+]   Nickname %s definido com sucesso\n", temp_buffer_A);
+                            
+                            } else if( response_code == ERR_NICKNAMEINUSE){
+                                printf("[+]   Erro: nickname %s já está sendo utilizado por outro usuário.\n", temp_buffer_A);
+
+                            } else if( response_code == ERR_ERRONEUSNICKNAME){
+                                printf("[+]   Erro: nickname %s possui formato inválido.\n", temp_buffer_A);
+
+                            }
+                            break;
+
+                        case ACTION_JOIN:
+                            response_code = cdc_decode_join(&chat, message, temp_buffer_A, &temp_bool);
+
+                            if(response_code == SUCCESS){
+                                strcpy(chat.channel, temp_buffer_A);
+                                chat.channel_len = strlen(temp_buffer_A);
+                                chat.has_channel = true;
+                                chat.is_admin    = temp_bool;
+                                printf("[+]   Você entrou no canal %s.\n", temp_buffer_A);
+
+                            } else if(response_code == ERR_INVITEONLYCHAN) {
+                                printf("[+]   Erro: é necessário um CONVITE para entrar neste canal.\n");
+
+                            } else if(response_code == ERR_BANNEDFROMCHAN){
+                                printf("[+]   Erro: você foi banido deste canal.\n");
+
+                            }
+            
+                            break;
+
+                        case ACTION_LIST:
+                            response_code = cdc_decode_list(&chat, message, temp_buffer_A);
+
+                            if(response_code == SUCCESS){
+                                printf("[+]   Canais disponíveis: %s\n", temp_buffer_A);
+                            }
+                            break;
+
+                        case ACTION_MODE:
+                            response_code = cdc_decode_mode(&chat, message);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   Modo do canal alterado com sucesso!\n");
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+
+                            }
+
+                            break;
+
+                        case ACTION_WHOIS:
+                            response_code = cdc_decode_whois(&chat, message, temp_buffer_A, temp_buffer_B);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   Who is %s? IP: %s\n", temp_buffer_A, temp_buffer_B);
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                
+                            } else if(response_code == ERR_NOSUCHNICK){
+                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                                
+                            }
+
+                            break;
+
+                        case ACTION_INVITE:
+                        case ACTION_MUTE:
+                        case ACTION_UNMUTE:
+                        case ACTION_KICK:
+                        case ACTION_UNKICK:
+
+                            if(action_code == ACTION_INVITE)
+                                response_code = cdc_decode_invite(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_MUTE)
+                                response_code = cdc_decode_mute(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_UNMUTE)
+                                response_code = cdc_decode_unmute(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_KICK)
+                                response_code = cdc_decode_kick(&chat, message, temp_buffer_A);
+                            else if(action_code == ACTION_UNKICK)
+                                response_code = cdc_decode_unkick(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                
+                                if(action_code == ACTION_INVITE)
+                                    printf("[+]   Convite enviado para o usuário %s.\n", temp_buffer_A);
+                                else if(action_code == ACTION_MUTE)
+                                    printf("[+]   O usuário %s foi silenciado.\n", temp_buffer_A);
+                                else if(action_code == ACTION_UNMUTE)
+                                    printf("[+]   O usuário %s foi desilenciado.\n", temp_buffer_A);
+                                else if(action_code == ACTION_KICK)
+                                    printf("[+]   O usuário %s foi banido do canal.\n", temp_buffer_A);
+                                else if(action_code == ACTION_UNKICK)
+                                    printf("[+]   O usuário %s foi perdoado pelo operador do canal.\n", temp_buffer_A);
+
+                            } else if(response_code == ERR_CHANOPRIVSNEEDED){
+                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                
+                            } else if(response_code == ERR_NOSUCHNICK){
+                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                            }
+                            break;
+
+                        case ACTION_MESSAGE:
+                            response_code = cdc_decode_client_message(&chat, message, temp_buffer_A, temp_buffer_B);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [%s] %s\n", temp_buffer_A, temp_buffer_B);
+                            }
+                            break;
+
+                        case ACTION_SERVERMSG:
+                            response_code = cdc_decode_server_message(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [SERVER] %s\n", temp_buffer_A);
+                            }
+                            break;
+
+                        case ACTION_CHANNELMSG:
+                            response_code = cdc_decode_channel_message(&chat, message, temp_buffer_A);
+                            
+                            if(response_code == SUCCESS){
+                                printf("[+]   [CHANNEL] %s\n", temp_buffer_A);
+                            }
+                            
+                            break;
 
                     }
-
                 }
 
                 // Se chegou aqui, recv_buffer já foi totalmente decodificado então
