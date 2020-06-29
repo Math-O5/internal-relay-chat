@@ -66,8 +66,8 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 
     // Procura pelo cliente, atraves de seu id, e o retira do array
     client* temp = NULL;
-    for(int i = 0; i < max_cl; i++){
-        if(cl_arr[i] && cl_arr[i]->cl_id == id){
+    for(int i = 0; i < max_cl; i++) {
+        if(cl_arr[i] && cl_arr[i]->cl_id == id) {
             temp = cl_arr[i];
             cl_arr[i] = NULL;
             break;
@@ -80,10 +80,10 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 }
 
 // @Comentários em "clients.h"
-client* clt_get_by_id(int id, int max_clients){
+client* clt_get_by_id(int id, int max_clients) {
 
-    for(int i = 0; i < max_clients; i++){
-        if(cl_arr[i] && cl_arr[i]->cl_id == id){
+    for(int i = 0; i < max_clients; i++) {
+        if(cl_arr[i] && cl_arr[i]->cl_id == id) {
             return cl_arr[i];
         }
     }
@@ -111,8 +111,9 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
     pthread_mutex_lock(mutex);
 
     // Envio da mensagem aos clientes
+    // Restringir para broadcast 
     for(int i = 0; i < max_conn; i++){
-        if(cl_arr[i] != NULL){
+        if(cl_arr[i] != NULL) {
             if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) {
                 msg_send_cliente(id_cur, cl_arr[i]->cl_id);
             } else {
