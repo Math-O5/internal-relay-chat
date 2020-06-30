@@ -47,6 +47,9 @@
         #include <time.h>
         #include <netinet/in.h> /* struct sockaddr_in */
 
+        #include <string>
+
+    using namespace std;
     /**
      * @function
      * 

@@ -50,7 +50,6 @@ void msg_info_server(int port, int sv_socket, int max_conn, int cl_count){
 void msg_info_client(int id, int socket, struct sockaddr_in cl_addr){
 
     char t_log[20];
-    printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] Informacoes do cliente(%d)\n", t_log, id);
     time_log(t_log, sizeof(t_log));
@@ -66,27 +65,22 @@ void msg_info_client(int id, int socket, struct sockaddr_in cl_addr){
                                     (cl_addr.sin_addr.s_addr & 0xff000000) >> 24);
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] Port: %d\n", t_log, cl_addr.sin_port);
-    printf("  [ ]\n");
 }
 
 // @Comentários em "message.h"
 void msg_recv_cliente(int id, char* buffer){
     char t_log[20];
-    printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] O cliente %d enviou uma mensagem/comando...\n", t_log, id);
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] <CLIENTE %d>: %s", t_log, id, buffer);
-    printf("  [ ]\n");
 }
 
 // @Comentários em "message.h"
 void msg_send_cliente(int id_emissor, int id_receptor){
     char t_log[20];
-    printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [+] - [%s] A mensagem do cliente %d foi entregue ao cliente %d...\n", t_log, id_emissor, id_receptor);
-    printf("  [ ]\n");
     fflush(stdout);
 }
 

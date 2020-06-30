@@ -120,16 +120,16 @@
      * return: CHANNEL_conn com atributos inicializados
     */
    
-    // CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt);
-    // void CHANNEL_destroy(CHANNEL_conn* channel);
-    // void CHANNEL_destroy_all();
-    // int CHANNEL_remove_user(CHANNEL_conn* channel, client* clt);
-    // int CHANNEL_add_user(CHANNEL_conn* channel, client* clt); 
-    // void CHANNEL_join(string name_channel, client* clt); 
-    // int CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, string kick_nickname); 
-    // int CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt); 
-    // bool CHANNEL_send_message(int cl_socket, char* buffer); 
-    // void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
-    // void CHANNEL_send_message_one(CHANNEL_conn* channel, client* clt, char* buffer);
-    // int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, char* buffer); 
+    CHANNEL_conn* conn_criar_CHANNEL(string name_channel, struct _client* clt);
+    void CHANNEL_destroy(CHANNEL_conn* channel);
+    void CHANNEL_destroy_all();
+    int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
+    int CHANNEL_add_user(CHANNEL_conn* channel,  struct _client* clt); 
+    void CHANNEL_join(string name_channel,  struct _client* clt); 
+    int CHANNEL_kick_user(CHANNEL_conn* channel,  struct _client* clt, string kick_nickname); 
+    int CHANNEL_unkick_user(CHANNEL_conn* channel,  struct _client* clt); 
+    bool CHANNEL_send_message(int cl_socket, char* buffer); 
+    void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
+    void CHANNEL_send_message_one(CHANNEL_conn* channel,  struct _client* clt, char* buffer);
+    int CHANNEL_broadcast(CHANNEL_conn* channel,  struct _client* clt, int type, char* buffer); 
 #endif

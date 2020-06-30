@@ -15,7 +15,6 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
     return cl;
 }
 
-
 // @Comentários em "clients.h"
 int clt_add_queue(client* cl, pthread_mutex_t* mutex){
 
@@ -191,7 +190,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
     while(true){
 
-        // Mensagem recebida !
+        // Mensagem recebida da usuário!
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
             
             int input = clt_read_buffer(cl, buffer);
