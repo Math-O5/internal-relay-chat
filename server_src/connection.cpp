@@ -42,6 +42,7 @@ int cl_count = 0;
 // @Comentários em "connection.h"
 void conn_catch_ctrl_c_and_exit(int sig){
     clt_destruir_clientes();
+    CHANNEL_destroy_all();
     conn_destruir_server(SV);
     msg_encerrar_server();
     exit(EXIT_SUCCESS);

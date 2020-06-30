@@ -81,9 +81,24 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
     return temp;
 }
 
-// @Comentários em "clients.h"
-client* clt_get_by_id(int cli_id) {
+bool clt_validate_nickname(string nickname) 
+{
+    return true;
+}
 
+client* clt_get_by_nickname(string cli_nickname) 
+{
+    for(int i = 0; i < MAX_CLIENTS; i++) {
+        if(cl_arr[i] && cl_arr[i]->nickname == cli_nickname) {
+            return cl_arr[i];
+        }
+    }
+    return NULL;
+}
+
+// @Comentários em "clients.h"
+client* clt_get_by_id(int cli_id) 
+{
     for(int i = 0; i < MAX_CLIENTS; i++) {
         if(cl_arr[i] && cl_arr[i]->cl_id == cli_id) {
             return cl_arr[i];

@@ -25,6 +25,7 @@
      * -----------------------------
     */
         #include "clients.h"
+        #include "channel.h"
         #include "message.h"
 
     /**

@@ -195,6 +195,10 @@
 	void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
 
 	/**
+	 */
+	client* clt_get_by_nickname(string cli_nickname);
+
+	/**
 	 * @function
 	 * 
 	 * client* clt_get_by_id(int id, int max_clients)
