@@ -58,6 +58,9 @@ int cdc_detectar_act(const char* cmd){
 
     } else if ( strstr(cmd, "/kick") == cmd ) {
         action_code = ACTION_KICK;
+
+    } else if ( strstr(cmd, "/unkick") == cmd ) {
+        action_code = ACTION_UNKICK;
     } 
     
     // COMANDOS ESPECIAIS SERVIDOR >> CLIENTE
@@ -72,7 +75,7 @@ int cdc_detectar_act(const char* cmd){
     else if ( strstr(cmd, "/list") == cmd ) {
         action_code = ACTION_LIST;
 
-    } else if (cmd[0] != '/') {             // Obs: (cmd[0] != '/') impede de enviar 
+    } else if (strstr(cmd, "/msg ") == cmd || cmd[0] != '/') {             // Obs: (cmd[0] != '/') impede de enviar 
         action_code = ACTION_MESSAGE;       //      um comando como mensagem sem querer.
     }
 

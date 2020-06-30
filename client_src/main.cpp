@@ -605,7 +605,6 @@ using namespace std;
                         case ACTION_NICK:
                             response_code = cdc_decode_nickname(&chat, message, temp_buffer_A);
 
-                            printf("ola\n");
                             if(response_code == SUCCESS){  
                                 strcpy(chat.nickname, temp_buffer_A);
                                 chat.nick_len = strlen(temp_buffer_A);
@@ -630,7 +629,10 @@ using namespace std;
                                 chat.has_channel = true;
                                 chat.is_admin    = temp_bool;
 
-                                sprintf(temp_buffer_C, "%svocê entrou no canal %s%s%s.\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
+                                if(!chat.is_admin)
+                                    sprintf(temp_buffer_C, "%svocê entrou no canal %s%s%s.\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
+                                else
+                                    sprintf(temp_buffer_C, "%svocê criou o canal %s%s%s e é seu operador!\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
 
                             } else if(response_code == ERR_INVITEONLYCHAN) {
                                 sprintf(temp_buffer_C, "%sé necessário um CONVITE para entrar neste canal.\n", PREFIX_ERROR);
@@ -721,7 +723,7 @@ using namespace std;
                             response_code = cdc_decode_client_message(&chat, message, temp_buffer_A, temp_buffer_B);
                             
                             if(response_code == SUCCESS){
-                                sprintf(temp_buffer_C, "%s%s[%s]:%s %s\n", PREFIX_MESSAGE, COLORB_YELLOW, temp_buffer_A, COLOR_WHITE, temp_buffer_B);
+                                sprintf(temp_buffer_C, "%s%s%s:%s %s\n", PREFIX_MESSAGE, COLORB_YELLOW, temp_buffer_A, COLOR_WHITE, temp_buffer_B);
                             }
                             break;
 

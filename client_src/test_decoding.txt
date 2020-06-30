@@ -1,0 +1,46 @@
+nc -l 9002
+
+/nickname ERR_NICKNAMEINUSE gabiru
+/nickname ERR_ERRONEUSNICKNAME gabiru
+/nickname SUCCESS gabiru
+
+/join ERR_INVITEONLYCHAN
+/join ERR_BANNEDFROMCHAN
+/join SUCCESS animes user
+/join SUCCESS animes admin
+
+/list animes,cinema,musica,final-dark
+
+/mode ERR_CHANOPRIVSNEEDED
+/mode SUCCESS
+
+/whois ERR_CHANOPRIVSNEEDED
+/whois ERR_NOSUCHNICK
+/whois SUCCESS carolina 174.44.0.3
+
+/invite ERR_CHANOPRIVSNEEDED
+/invite ERR_NOSUCHNICK
+/invite SUCCESS junipero555
+
+/mute ERR_CHANOPRIVSNEEDED
+/mute ERR_NOSUCHNICK
+/mute SUCCESS junipero555
+
+/unmute ERR_CHANOPRIVSNEEDED
+/unmute ERR_NOSUCHNICK
+/unmute SUCCESS junipero555
+
+/kick ERR_CHANOPRIVSNEEDED
+/kick ERR_NOSUCHNICK
+/kick SUCCESS junipero555
+
+/unkick ERR_CHANOPRIVSNEEDED
+/unkick ERR_NOSUCHNICK
+/unkick SUCCESS junipero555
+
+/msg @Fernando :Olá pessoal, eu sou uma mensagem de outro usuário.
+/msg @Serena :Vocês viram o final de dark? O que acharam???? :O
+/msg @Fabiano99 :Mano absurdo de bom, melhor série pqp ainda to fritando no plot O.O
+
+/channelmsg :o operador do canal silenciou o usuário @Serena
+/servermsg :você foi convidado para participar do canal &discussao-DARK 

@@ -100,6 +100,11 @@ void msg_inicio(terminal_control* t){
 
 }
 
+
+
+
+
+
     // BACKUP para visualizar as cores
     // printf("  \033[0;30m[+]   Comandos de Controle: \n");
     // printf("  \033[0;31m[+]   Comandos de Controle: \n");
