@@ -22,9 +22,14 @@
         #include <map>
         #include <queue>
         #include <set>
+<<<<<<< HEAD
         #include <string> 	/* string */
 
         using namespace std;
+=======
+
+        using namepsace std;
+>>>>>>> eaf110708d37bfb46f7d9d0709dd56ca9cf0e312
 
     /**
      * Bibliotecas do própio projeto
