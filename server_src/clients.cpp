@@ -6,12 +6,13 @@ client *cl_arr[MAX_CLIENTS];
 // @Comentários em "clients.h"
 client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
+    string nickname = "\0";
     cl->cl_address = address;
     cl->cl_socket = socket;
     cl->cl_id = id;
     cl->sv_socket = sv_socket;
     cl->channel = NULL;
-    cl->nickname = "user" + to_string(id);
+    cl->nickname = nickname
     return cl;
 }
 
@@ -193,24 +194,25 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
         // Mensagem recebida da usuário!
         if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
             
-            int input = clt_read_buffer(cl, buffer);
+            int input = //TODO
+            clt_read_buffer(cl, buffer);
             switch(input) {
-                case CONTINUE:
-                    msg_recv_cliente(id_cur, buffer);
+                // case CONTINUE:
+                //     msg_recv_cliente(id_cur, buffer);
 
-                    shift = 0;
-                    pack = (char*)malloc(sizeof(char)*BUFFER_SIZE);
-                    while((shift = decode_message(buffer, pack, shift)) > 0) {
-                        clt_send_message_all(id_cur, max_conn, mutex, pack);
-                    }
+                //     shift = 0;
+                //     pack = (char*)malloc(sizeof(char)*BUFFER_SIZE);
+                //     while((shift = decode_message(buffer, pack, shift)) > 0) {
+                //         clt_send_message_all(id_cur, max_conn, mutex, pack);
+                //     }
                     
-                    free(pack);
-                    bzero(buffer, BUFFER_SIZE);
-                    break;
-                case QUIT:
-                    msg_cliente_desconexao(cl->cl_id);
-                    return;
-                default: break;
+                //     free(pack);
+                //     bzero(buffer, BUFFER_SIZE);
+                //     break;
+                // case QUIT:
+                //     msg_cliente_desconexao(cl->cl_id);
+                //     return;
+                // default: break;
             }
         }
         // Ocorreu um erro na conexao...

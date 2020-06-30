@@ -89,7 +89,7 @@
 
       /**
        * @function
-       * int cdc_detectar_act(const char* cmd);
+       * int dcd_detectar_act(const char* cmd);
        * -------------------------------
        * 
        * Utilizada para detectar se alguma ACTION_* foi disparada ao analisar
@@ -103,12 +103,12 @@
        * 
        * return: algum dos códigos ACTION_* definindo qual era a ação pretendida.
        */
-        int cdc_detectar_act(const char* cmd);
+        int dcd_detectar_act(const char* cmd);
 
 
       /**
        * @function
-       * int cdc_encode_connect(const char* cmd, char* host, char* port);
+       * int dcd_encode_connect(const char* cmd, char* host, char* port);
        * -------------------------------
        * 
        * Recebe e processa a string cmd referente à ACTION_CONNECT enviada pelo
@@ -133,11 +133,11 @@
        * return: 1 caso algum dos parâmetros não tenha sido enviado corretamente.
        *         0 caso tudo ocorra nos conformes.
        */
-        int cdc_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port);
+        int dcd_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port);
 
-      char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
+      char* dcd_encode_nickname(relay_chat* rc, const char* cmd);
 
-      char* cdc_encode_join(relay_chat* rc, const char* cmd);
+      char* dcd_encode_join(relay_chat* rc, const char* cmd);
 
       /**
        * @function
@@ -157,34 +157,34 @@
        *         raw. O ponteiro NULL indica o fim do array e deve ser desalocado após 
        *         seu uso.
        */
-        char** cdc_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len);
+        char** dcd_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len);
 
-      char* cdc_encode_mode(relay_chat* rc, const char* cmd);
-      char* cdc_encode_invite(relay_chat* rc, const char* cmd);
-      char* cdc_encode_whois(relay_chat* rc, const char* cmd);
-      char* cdc_encode_mute(relay_chat* rc, const char* cmd);
-      char* cdc_encode_unmute(relay_chat* rc, const char* cmd);
-      char* cdc_encode_kick(relay_chat* rc, const char* cmd);
-      char* cdc_encode_unkick(relay_chat* rc, const char* cmd);
+      char* dcd_encode_mode(relay_chat* rc, const char* cmd);
+      char* dcd_encode_invite(relay_chat* rc, const char* cmd);
+      char* dcd_encode_whois(relay_chat* rc, const char* cmd);
+      char* dcd_encode_mute(relay_chat* rc, const char* cmd);
+      char* dcd_encode_unmute(relay_chat* rc, const char* cmd);
+      char* dcd_encode_kick(relay_chat* rc, const char* cmd);
+      char* dcd_encode_unkick(relay_chat* rc, const char* cmd);
 
 
-      int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin);
+      int dcd_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin);
 
-      int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
-      int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);
+      int dcd_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
+      int dcd_decode_list(relay_chat* rc, const char* cmd, char* channels);
 
-      int cdc_decode_mode(relay_chat* rc, const char* cmd);
-      int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
+      int dcd_decode_mode(relay_chat* rc, const char* cmd);
+      int dcd_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
 
-      int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
+      int dcd_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
 
-      int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
-      int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
+      int dcd_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
+      int dcd_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
 
       int is_valid_channel_name(char* name);
       int is_valid_nickname(char* name);

@@ -1,10 +1,10 @@
-#include "codec.h"
+#include "decodec.h"
 #include "chat.h"
 #include <stdlib.h>
 #include <string>
 #include <string.h>
 
-int cdc_detectar_act(const char* cmd){
+int dcd_detectar_act(const char* cmd){
 
     int action_code = ACTION_NONE;
 
@@ -81,7 +81,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS GERAIS
-    int cdc_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port){
+    int dcd_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port){
         if(cmd == NULL || host == NULL || port == NULL){
             return 1;
         }
@@ -108,7 +108,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS QUE ALTERAM ESTADO DO CLIENTE 
-    char* cdc_encode_nickname(relay_chat* rc, const char* cmd){
+    char* dcd_encode_nickname(relay_chat* rc, const char* cmd){
         if(cmd == NULL){
             return NULL;
         }
@@ -126,7 +126,7 @@ int cdc_detectar_act(const char* cmd){
         return nick_message;
     }
 
-    char* cdc_encode_join(relay_chat* rc, const char* cmd){
+    char* dcd_encode_join(relay_chat* rc, const char* cmd){
         if(cmd == NULL){
             return NULL;
         }
@@ -146,7 +146,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS DO CANAL
-    char** cdc_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len){
+    char** dcd_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len){
         if(raw_str == NULL || raw_str_len <= 0){
             return NULL;
         }
@@ -194,7 +194,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS ADMINISTRADOR
-    char* cdc_encode_mode(relay_chat* rc, const char* cmd){
+    char* dcd_encode_mode(relay_chat* rc, const char* cmd){
         if(cmd == NULL){
             return NULL;
         }
@@ -214,7 +214,7 @@ int cdc_detectar_act(const char* cmd){
     
     // todas as funções de administrador abaixo possui o mesmo padrão, então 
     // encapsulei todas em uma função genérica de uso local.
-    char* _cdc_encode_admin_pattern(relay_chat* rc, const char* cmd, const char* action){
+    char* _dcd_encode_admin_pattern(relay_chat* rc, const char* cmd, const char* action){
         if(cmd == NULL){
             return NULL;
         }
@@ -232,33 +232,33 @@ int cdc_detectar_act(const char* cmd){
         return nick_message;
     }
 
-    char* cdc_encode_invite(relay_chat* rc, const char* cmd){
-        return _cdc_encode_admin_pattern(rc, cmd, "invite");
+    char* dcd_encode_invite(relay_chat* rc, const char* cmd){
+        return _dcd_encode_admin_pattern(rc, cmd, "invite");
     }
 
-    char* cdc_encode_whois(relay_chat* rc, const char* cmd){
-       return _cdc_encode_admin_pattern(rc, cmd, "whois");
+    char* dcd_encode_whois(relay_chat* rc, const char* cmd){
+       return _dcd_encode_admin_pattern(rc, cmd, "whois");
     }
 
-    char* cdc_encode_mute(relay_chat* rc, const char* cmd){
-        return _cdc_encode_admin_pattern(rc, cmd, "mute");
+    char* dcd_encode_mute(relay_chat* rc, const char* cmd){
+        return _dcd_encode_admin_pattern(rc, cmd, "mute");
     }
 
-    char* cdc_encode_unmute(relay_chat* rc, const char* cmd){
-        return _cdc_encode_admin_pattern(rc, cmd, "unmute");
+    char* dcd_encode_unmute(relay_chat* rc, const char* cmd){
+        return _dcd_encode_admin_pattern(rc, cmd, "unmute");
     }
 
-    char* cdc_encode_kick(relay_chat* rc, const char* cmd){
-        return _cdc_encode_admin_pattern(rc, cmd, "kick");
+    char* dcd_encode_kick(relay_chat* rc, const char* cmd){
+        return _dcd_encode_admin_pattern(rc, cmd, "kick");
     }
 
-    char* cdc_encode_unkick(relay_chat* rc, const char* cmd){
-        return _cdc_encode_admin_pattern(rc, cmd, "unkick");
+    char* dcd_encode_unkick(relay_chat* rc, const char* cmd){
+        return _dcd_encode_admin_pattern(rc, cmd, "unkick");
     }
 
 
 // COMANDOS QUE ALTERAM ESTADO DO CLIENTE
-    int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname){
+    int dcd_decode_nickname(relay_chat* rc, const char* cmd, char* nickname){
         if(rc == NULL || cmd == NULL || nickname == NULL){
             return INVALID_PROTOCOL;
         }
@@ -293,7 +293,7 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin){
+    int dcd_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin){
         if(rc == NULL || cmd == NULL || channel == NULL){
             return INVALID_PROTOCOL;
         }
@@ -340,7 +340,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS DO CANAL
-    int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content) {
+    int dcd_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content) {
         if(rc == NULL || cmd == NULL || nickname == NULL || content == NULL){
             return INVALID_PROTOCOL;
         }
@@ -363,7 +363,7 @@ int cdc_detectar_act(const char* cmd){
         return SUCCESS;
     }
 
-    int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels) {
+    int dcd_decode_list(relay_chat* rc, const char* cmd, char* channels) {
         if(rc == NULL || cmd == NULL || channels == NULL){
             return INVALID_PROTOCOL;
         }
@@ -384,7 +384,7 @@ int cdc_detectar_act(const char* cmd){
 
 
 // COMANDOS ADMINISTRADOR
-    int cdc_decode_mode(relay_chat* rc, const char* cmd) {
+    int dcd_decode_mode(relay_chat* rc, const char* cmd) {
         if(rc == NULL || cmd == NULL){
             return INVALID_PROTOCOL;
         }
@@ -412,7 +412,7 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info) {
+    int dcd_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info) {
         if(rc == NULL || cmd == NULL || nickname == NULL || ip_info == NULL){
             return INVALID_PROTOCOL;
         }
@@ -448,7 +448,7 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int _cdc_decode_admin_pattern(relay_chat* rc, const char* cmd, char* nickname) {
+    int _dcd_decode_admin_pattern(relay_chat* rc, const char* cmd, char* nickname) {
         if(rc == NULL || cmd == NULL || nickname == NULL){
             return INVALID_PROTOCOL;
         }
@@ -484,29 +484,29 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname) {
-        return  _cdc_decode_admin_pattern(rc, cmd, nickname);
+    int dcd_decode_invite(relay_chat* rc, const char* cmd, char* nickname) {
+        return  _dcd_decode_admin_pattern(rc, cmd, nickname);
     }
 
-    int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname) {
-        return  _cdc_decode_admin_pattern(rc, cmd, nickname);
+    int dcd_decode_mute(relay_chat* rc, const char* cmd, char* nickname) {
+        return  _dcd_decode_admin_pattern(rc, cmd, nickname);
     }
 
-    int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname) {
-        return  _cdc_decode_admin_pattern(rc, cmd, nickname);
+    int dcd_decode_unmute(relay_chat* rc, const char* cmd, char* nickname) {
+        return  _dcd_decode_admin_pattern(rc, cmd, nickname);
     }
 
-    int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname) {
-        return  _cdc_decode_admin_pattern(rc, cmd, nickname);
+    int dcd_decode_kick(relay_chat* rc, const char* cmd, char* nickname) {
+        return  _dcd_decode_admin_pattern(rc, cmd, nickname);
     }
 
-    int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname) {
-        return  _cdc_decode_admin_pattern(rc, cmd, nickname);
+    int dcd_decode_unkick(relay_chat* rc, const char* cmd, char* nickname) {
+        return  _dcd_decode_admin_pattern(rc, cmd, nickname);
     }
 
 
 // MENSAGEMS SERVER -> CLIENT
-    int _cdc_decode_X_message(relay_chat* rc, const char* cmd,  char* content) {
+    int _dcd_decode_X_message(relay_chat* rc, const char* cmd,  char* content) {
         if(rc == NULL || cmd == NULL || content == NULL){
             return INVALID_PROTOCOL;
         }
@@ -527,12 +527,12 @@ int cdc_detectar_act(const char* cmd){
         return SUCCESS;
     }
     
-    int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content) {
-       return _cdc_decode_X_message( rc, cmd, content);
+    int dcd_decode_server_message(relay_chat* rc, const char* cmd,  char* content) {
+       return _dcd_decode_X_message( rc, cmd, content);
     }
 
-    int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content) {
-        return _cdc_decode_X_message( rc, cmd, content);
+    int dcd_decode_channel_message(relay_chat* rc, const char* cmd,  char* content) {
+        return _dcd_decode_X_message( rc, cmd, content);
     }
 
 // FUNÇÕES DE VALIDAÇÃO

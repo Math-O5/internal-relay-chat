@@ -209,6 +209,7 @@ int conn_run_server(server_conn* sv){
         client* cl = clt_criar(cl_addr, cl_conn, id, sv->sv_socket);
         clients_wait.push_back(id++);
         
+        printf("\nOOps...\n");
         clt_add_queue(cl, &mutex);
 
         // Liberar uma thread para o cliente

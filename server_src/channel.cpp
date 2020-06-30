@@ -189,28 +189,28 @@ void CHANNEL_join(string name_channel, client* clt)
         clt->channel = channel;
     } else 
     {
-        int response = CHANNEL_add_user(it_channel->second, clt);
-        
-        switch (response)
-        {
-            case SUCCESS:
-                CHANNEL_broadcast(it_channel->second, clt, MESSAGE_JOIN_CHANNEL, emptyString);
-                break;
-            case MESSAGE_ERR_BANNEDFROMCHAN:
-                CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, emptyString);
-                break;
-            // case MESSAGE_ERR_INVITEONLYCHAN:
-            //     CHANNEL_broadcast(it_channel, clt, MESSAGE_MESSAGE_ERR_INVITEONLYCHAN, "");
-            //     break;
-            default:
-                break;
-        }
+    int response = CHANNEL_add_user(it_channel->second, clt);
+    
+    switch (response)
+    {
+        case SUCCESS:
+            CHANNEL_broadcast(it_channel->second, clt, MESSAGE_JOIN_CHANNEL, emptyString);
+            break;
+        case MESSAGE_ERR_BANNEDFROMCHAN:
+            CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, emptyString);
+            break;
+        // case MESSAGE_ERR_INVITEONLYCHAN:
+        //     CHANNEL_broadcast(it_channel, clt, MESSAGE_MESSAGE_ERR_INVITEONLYCHAN, "");
+        //     break;
+        default:
+            break;
+    }
         
     }
 }
 
 int CHANNEL_invite() {
-
+    return 1;
 }
     
 /**
