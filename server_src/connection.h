@@ -93,7 +93,6 @@
             int     max_conn;
             char    sport[24];
             struct sockaddr_in server_address;
-            struct sockaddr_in server_address;
 
             // buffers de conexão
             char *send_buff, *recv_buff;

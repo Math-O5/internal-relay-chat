@@ -6,16 +6,16 @@ map<string, CHANNEL_conn*>::iterator it_channel;
 map<int, string>::iterator it_arrived;
 
 CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt);
-void CHANNEL_destroy(CHANNEL_conn* channel);
-int CHANNEL_remove_user(CHANNEL_conn* channel, client* clt);
-int CHANNEL_add_user(CHANNEL_conn* channel, client* clt); 
-void CHANNEL_join(string name_channel, client* clt); 
-int CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, string kick_nickname); 
-int CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt); 
-bool CHANNEL_send_message(int cl_socket, char* buffer); 
-void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
-void CHANNEL_send_message_one(CHANNEL_conn* channel, client* clt, char* buffer);
-int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, char* buffer); 
+// void CHANNEL_destroy(CHANNEL_conn* channel);
+// int CHANNEL_remove_user(CHANNEL_conn* channel, client* clt);
+// int CHANNEL_add_user(CHANNEL_conn* channel, client* clt); 
+// void CHANNEL_join(string name_channel, client* clt); 
+// int CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, string kick_nickname); 
+// int CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt); 
+// bool CHANNEL_send_message(int cl_socket, char* buffer); 
+// void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
+// void CHANNEL_send_message_one(CHANNEL_conn* channel, client* clt, char* buffer);
+// int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, char* buffer); 
 
 /**
  * @function conn_criar_CHANNEL
@@ -30,21 +30,21 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, char* buffer
  */
 CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt) 
 {        
-    int size_participants = 1; // há apenas um usuario: o admin;
+    // int size_participants = 1; // há apenas um usuario: o admin;
 
-    // Verifica se o canal não existe.
-    if(channels.find(name_channel) == channels.end()) {
+    // // Verifica se o canal não existe.
+    // if(channels.find(name_channel) == channels.end()) {
         
-        CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
-        newChannel->participants[clt->nickname] = clt->cl_socket;
-        newChannel->arrived[size_participants] = clt->nickname;
-        newChannel->name_admin = clt->nickname;
-        channels[name_channel] = newChannel;
+    //     CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
+    //     newChannel->participants[clt->nickname] = clt->cl_socket;
+    //     newChannel->arrived[size_participants] = clt->nickname;
+    //     newChannel->name_admin = clt->nickname;
+    //     channels[name_channel] = newChannel;
 
-        clt.channel = newChannel;
+    //     clt.channel = newChannel;
 
-        return newChannel;
-    }
+    //     return newChannel;
+    // }
     return NULL;
 }
 
