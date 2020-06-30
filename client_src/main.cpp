@@ -142,7 +142,7 @@ using namespace std;
         /**
          * Iniciando as variáveis globais necessárias;
          */ 
-            printf("[+]   Inicializando variáveis....\n"); 
+            printf(PREFIX_NORMAL); printf("Inicializando variáveis do programa....\n"); 
             
             send_mutex     = PTHREAD_MUTEX_INITIALIZER;
             recv_mutex     = PTHREAD_MUTEX_INITIALIZER;
@@ -157,68 +157,27 @@ using namespace std;
             chat.state_mutex = &state_mutex;        
             terminal.terminal_mutex = &terminal_mutex;
             
-            printf("[+]   Variáveis iniciadas com sucesso.\n"); 
+            printf(PREFIX_SUCCESS); printf("variáveis iniciadas com sucesso.\n"); 
 
-        /**
-         * Abrindo conexão com servidor padrão
-         * 
-         * (*) Descomente para iniciar o programa conectando por padrão
-         *     no servidor local em 127.0.0.1:9002 
-         */
-            // printf("[+]   Abrindo conexão com o servidor 127.0.0.1:9002...\n"); 
-            // if(abrir_conexao(&chat) != 0){
-            //     destruir_relay_chat(&chat);
-            //     printf("[X]   ERRO ao abrir conexão com o servidor.\n");
-            //     exit(EXIT_FAILURE);
-            // } 
-            // printf("[+]   Conexão com o SERVIDOR estabelecida com SUCESSO.\n"); 
-
-        /**
-         * Iniciando as Threads do Servidor
-         * 
-         * (*) Descomente para iniciar o programa conectando por padrão
-         *     no servidor local em 127.0.0.1:9002 
-         */ 
-
-            // printf("[+]   Iniciando Threads de Conexão...\n"); 
-            // if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
-            //     destruir_relay_chat(&chat);
-            //     printf("[x]   ERRO ao inicializar o 'Receive Messages Handler'.\n");
-            //     exit(EXIT_FAILURE);
-            // }
-            
-            // if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
-            //     destruir_relay_chat(&chat);
-            //     printf("[x]   Erro ao inicializar o 'Send Messages Handler'\n");
-            //     exit(EXIT_FAILURE);
-            // }
-            // printf("[+]   THREADS de Conexão iniciadas com SUCESSO.\n"); 
 
         /**
          * Iniciando as Threads de I/O
          */ 
-            printf("[+]   Iniciando THREADS  de I/O...\n"); 
+            printf(PREFIX_NORMAL); printf("Iniciando THREADS  de I/O...\n"); 
             
             if(pthread_create(&out_terminal_thread, NULL, &output_terminal_handler, NULL) != 0){
                 destruir_relay_chat(&chat);
-                printf("[x]   Erro ao inicializar o 'Output Terminal Handler'.\n");
+                printf(PREFIX_ERROR); printf("falha ao inicializar o 'Output Terminal Handler'.\n");
                 exit(EXIT_FAILURE);
             }
 
             if(pthread_create(&in_terminal_thread, NULL, &input_terminal_handler, NULL) != 0) {
                 destruir_relay_chat(&chat);
-                printf("[x]   Erro ao inicializar o 'Input Terminal Handler'.\n");
+                printf(PREFIX_ERROR); printf("falha ao inicializar o 'Input Terminal Handler'.\n");
                 exit(EXIT_FAILURE);
             }
 
-            printf("[+]   THREADS  de I/O iniciadas com SUCESSO.\n"); 
-
-
-        // Na primeira entrega, como a conexão é feita por padrão então 
-        // o join é feita com a RECV para sinalizar que a conexão com o
-        // servidor em 127.0.0.1:9002 caiu.
-        // pthread_join(recv_msg_thread, NULL);
-        // printf("[x]   Aviso: perda de conexão com o servidor, utilize /quit para sair.\n");
+            printf(PREFIX_SUCCESS); printf("threads de I/O iniciadas.\n"); 
 
         // O programa é finalizado quando o usuário
         // finaliza o input por meio de um /quit ou EOF
@@ -306,7 +265,8 @@ using namespace std;
                     // 0º Verifica se já não está conectado em algo
                     if(chat.connection_status == CONNECTION_OPEN) {
                         pthread_mutex_lock(terminal.terminal_mutex);
-                            printf("[+]   ERRO ao conectar, já existe uma CONEXẪO ABERTA.\n");
+                            printf(PREFIX_ERROR);
+                            printf("falha ao conectar, já existe uma conexão ativa.\n");
                         pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
@@ -315,29 +275,43 @@ using namespace std;
                     cdc_encode_connect(&chat, terminal.input, chat.sserver , chat.sport);
 
                     // 2º Abrindo as Conexões e Threads
-                    printf("[+]   Abrindo conexão com o servidor %s:%s...\n", chat.sserver, chat.sport); 
-            
+                    pthread_mutex_lock(terminal.terminal_mutex);
+                        printf(PREFIX_NORMAL);
+                        printf("Abrindo conexão com o servidor %s:%s...\n", chat.sserver, chat.sport); 
+                    pthread_mutex_unlock(terminal.terminal_mutex);
+
+
                     if( abrir_conexao(&chat) != 0 ){
-                        printf("[x]   | --- Erro ao abrir conexão com o servidor.\n");
-                        printf("[x]   | --- Verifique se os dados de HOST e PORT foram inseridos corretamente.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("não foi possível abrir conexão com o servidor.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     } 
 
-                    printf("[+]   | --- Iniciando Threads de Conexão...\n"); 
+                    // printf("[+]   | --- Iniciando Threads de Conexão...\n"); 
                     if(pthread_create(&recv_msg_thread, NULL, &recv_msg_handler, &chat) != 0){
                         fechar_conexao(&chat);
-                        printf("[x]   | --- ERRO ao inicializar o 'Receive Messages Handler'.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("falha ao inicializar o 'Receive Messages Handler'.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
                     if(pthread_create(&send_msg_thread, NULL, &send_msg_handler, &chat) != 0){
                         fechar_conexao(&chat);
-                        printf("[x]   | --- Erro ao inicializar o 'Send Messages Handler'\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("falha ao inicializar o 'Send Messages Handler'\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
 
                     // Deu tudo certo
-                    printf("[+]   | --- THREADS de Conexão iniciadas com SUCESSO!\n"); 
-                    printf("[+]   | --- Conexão com o SERVIDOR estabelecida com SUCESSO!\n"); 
+                    pthread_mutex_lock(terminal.terminal_mutex);
+                        printf(PREFIX_SUCCESS);
+                        printf("conexão com o servidor %s:%s estabelecida!\n", chat.sserver, chat.sport);
+                    pthread_mutex_unlock(terminal.terminal_mutex); 
                     break;
 
                 /**
@@ -361,9 +335,13 @@ using namespace std;
                     repeat_loop = 0;
 
                 case ACTION_DISCONNECT:
+
                     // 0º Verifica se já não está desconectado
                     if(action_code == ACTION_DISCONNECT && chat.connection_status == CONNECTION_CLOSED){
-                        printf("[+]   AVISO: Nenhuma conexão aberta.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("não há nenhuma conexão aberta para ser fechada.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
 
@@ -390,12 +368,15 @@ using namespace std;
                         chat.send_buff_size = 0;
                     pthread_mutex_unlock(chat.send_mutex);
                     
-                    printf("[+]   Conexão com o SERVIDOR finalizada com SUCESSO!\n"); 
-                    
-                    if(action_code == ACTION_QUIT){
-                        printf("[+]   Até a próxima =D\n"); 
-                    }
-
+                    pthread_mutex_lock(terminal.terminal_mutex);
+                        if(action_code == ACTION_QUIT){ 
+                            printf(PREFIX_NORMAL);
+                            printf("Até a próxima =D\n");
+                        } else {
+                            printf(PREFIX_SUCCESS);
+                            printf("conexão com o servidor finalizada!\n");
+                        }
+                    pthread_mutex_unlock(terminal.terminal_mutex);
                     break;
 
                 /**
@@ -409,7 +390,26 @@ using namespace std;
 
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
-                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("ainda não há nenhuma conexão estabelecida.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
+                        break;
+                    }
+
+                    if(!chat.has_nick){
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("você ainda não registrou seu %snickname.\n", COLORB_RED);
+                        pthread_mutex_unlock(terminal.terminal_mutex);
+                        break;
+                    }
+
+                    if(!chat.has_channel){
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("você ainda não entrou em nenhum %scanal.\n", COLORB_RED);
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
 
@@ -437,10 +437,6 @@ using namespace std;
                             free(messages_list);
                         }
 
-                        // pthread_mutex_lock(terminal.terminal_mutex);
-                        //     printf("  [input]: \"%s\" %d \n%s \n", terminal.input, chat.send_buff_size, chat.send_buff);
-                        // pthread_mutex_unlock(terminal.terminal_mutex);
-
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
                 
@@ -449,7 +445,10 @@ using namespace std;
 
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
-                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("ainda não há nenhuma conexão estabelecida.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
 
@@ -463,7 +462,7 @@ using namespace std;
                                 strcat(chat.send_buff, "/list\n");
                                 chat.send_buff_size += 6;
                             }
-                            
+
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
 
@@ -479,7 +478,10 @@ using namespace std;
 
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
-                        printf("[+]   ERRO ao enviar mensagem, NENHUMA CONEXÃO ABERTA.\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("ainda não há nenhuma conexão estabelecida.\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
                     }
                     
@@ -505,9 +507,12 @@ using namespace std;
                         message = cdc_encode_unkick(&chat, terminal.input);
 
                     if(message == NULL){
-                        printf("[+]   ERRO ao enviar comando. Verifique se os parâmetros foram inseridos corretamente!\n");
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("falha ao executar comando. Verifique se os parâmetros foram inseridos corretamente!\n");
+                        pthread_mutex_unlock(terminal.terminal_mutex);
                         break;
-                    }
+                    } 
 
                     pthread_mutex_lock(chat.send_mutex);
                         pthread_cond_signal(chat.cond_send_waiting);
@@ -566,6 +571,8 @@ using namespace std;
         char temp_buffer_A[MAX_MESSAGE_LENGHT];
         char temp_buffer_B[MAX_MESSAGE_LENGHT];
         bool temp_bool;
+        char temp_buffer_C[2*MAX_MESSAGE_LENGHT];
+
         
         while(repeat_loop){
             
@@ -598,19 +605,19 @@ using namespace std;
                         case ACTION_NICK:
                             response_code = cdc_decode_nickname(&chat, message, temp_buffer_A);
 
+                            printf("ola\n");
                             if(response_code == SUCCESS){  
                                 strcpy(chat.nickname, temp_buffer_A);
                                 chat.nick_len = strlen(temp_buffer_A);
                                 chat.has_nick = true;
-
-                                printf("[+]   Nickname %s definido com sucesso\n", temp_buffer_A);
-                            
+                                
+                                sprintf(temp_buffer_C, "%snickname %s%s%s definido com sucesso!\n", PREFIX_SUCCESS, COLORB_GREEN, chat.nickname, COLOR_GREEN);
+                                
                             } else if( response_code == ERR_NICKNAMEINUSE){
-                                printf("[+]   Erro: nickname %s já está sendo utilizado por outro usuário.\n", temp_buffer_A);
-
+                                sprintf(temp_buffer_C, "%so nickname %s%s%s já está sendo utilizado por outro usuário.\n", PREFIX_ERROR, COLORB_RED, temp_buffer_A, COLOR_RED);
+                                
                             } else if( response_code == ERR_ERRONEUSNICKNAME){
-                                printf("[+]   Erro: nickname %s possui formato inválido.\n", temp_buffer_A);
-
+                                sprintf(temp_buffer_C, "%so nickname %s%s%s possui um formato inválido.\n", PREFIX_ERROR, COLORB_RED, temp_buffer_A, COLOR_RED);
                             }
                             break;
 
@@ -622,34 +629,35 @@ using namespace std;
                                 chat.channel_len = strlen(temp_buffer_A);
                                 chat.has_channel = true;
                                 chat.is_admin    = temp_bool;
-                                printf("[+]   Você entrou no canal %s.\n", temp_buffer_A);
+
+                                sprintf(temp_buffer_C, "%svocê entrou no canal %s%s%s.\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
 
                             } else if(response_code == ERR_INVITEONLYCHAN) {
-                                printf("[+]   Erro: é necessário um CONVITE para entrar neste canal.\n");
+                                sprintf(temp_buffer_C, "%sé necessário um CONVITE para entrar neste canal.\n", PREFIX_ERROR);
 
                             } else if(response_code == ERR_BANNEDFROMCHAN){
-                                printf("[+]   Erro: você foi banido deste canal.\n");
-
+                                sprintf(temp_buffer_C, "%svocê foi banido deste canal.\n", PREFIX_ERROR);
                             }
-            
+
                             break;
 
                         case ACTION_LIST:
                             response_code = cdc_decode_list(&chat, message, temp_buffer_A);
 
                             if(response_code == SUCCESS){
-                                printf("[+]   Canais disponíveis: %s\n", temp_buffer_A);
+                                sprintf(temp_buffer_C, "%s canais disponíveis: %s\n", PREFIX_SERVER, temp_buffer_A);
                             }
+
                             break;
 
                         case ACTION_MODE:
                             response_code = cdc_decode_mode(&chat, message);
                             
                             if(response_code == SUCCESS){
-                                printf("[+]   Modo do canal alterado com sucesso!\n");
+                                sprintf(temp_buffer_C, "%smodo do canal alterado com sucesso!\n", PREFIX_SUCCESS);
 
                             } else if(response_code == ERR_CHANOPRIVSNEEDED){
-                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
 
                             }
 
@@ -659,13 +667,13 @@ using namespace std;
                             response_code = cdc_decode_whois(&chat, message, temp_buffer_A, temp_buffer_B);
                             
                             if(response_code == SUCCESS){
-                                printf("[+]   Who is %s? IP: %s\n", temp_buffer_A, temp_buffer_B);
+                                sprintf(temp_buffer_C, "%sWho is %s? IP: %s\n", PREFIX_SUCCESS, temp_buffer_A, temp_buffer_B);
 
                             } else if(response_code == ERR_CHANOPRIVSNEEDED){
-                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
                                 
                             } else if(response_code == ERR_NOSUCHNICK){
-                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                                sprintf(temp_buffer_C, "%snão foi possível localizar este usuário no canal.\n", PREFIX_ERROR);
                                 
                             }
 
@@ -691,21 +699,21 @@ using namespace std;
                             if(response_code == SUCCESS){
                                 
                                 if(action_code == ACTION_INVITE)
-                                    printf("[+]   Convite enviado para o usuário %s.\n", temp_buffer_A);
+                                    sprintf(temp_buffer_C, "%sconvite enviado para o usuário %s.\n", PREFIX_SUCCESS, temp_buffer_A);
                                 else if(action_code == ACTION_MUTE)
-                                    printf("[+]   O usuário %s foi silenciado.\n", temp_buffer_A);
+                                    sprintf(temp_buffer_C, "%so usuário %s foi silenciado.\n", PREFIX_SUCCESS, temp_buffer_A);
                                 else if(action_code == ACTION_UNMUTE)
-                                    printf("[+]   O usuário %s foi desilenciado.\n", temp_buffer_A);
+                                    sprintf(temp_buffer_C, "%so usuário %s foi desilenciado.\n", PREFIX_SUCCESS, temp_buffer_A);
                                 else if(action_code == ACTION_KICK)
-                                    printf("[+]   O usuário %s foi banido do canal.\n", temp_buffer_A);
+                                    sprintf(temp_buffer_C, "%so usuário %s foi banido do canal.\n", PREFIX_SUCCESS, temp_buffer_A);
                                 else if(action_code == ACTION_UNKICK)
-                                    printf("[+]   O usuário %s foi perdoado pelo operador do canal.\n", temp_buffer_A);
+                                    sprintf(temp_buffer_C, "%so usuário %s foi perdoado pelo operador do canal.\n", PREFIX_SUCCESS, temp_buffer_A);
 
                             } else if(response_code == ERR_CHANOPRIVSNEEDED){
-                                printf("[+]   Erro: você não é o operador deste canal.\n");
+                                sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
                                 
                             } else if(response_code == ERR_NOSUCHNICK){
-                                printf("[+]   Erro: não localizamos esta pessoa no canal.\n");
+                                sprintf(temp_buffer_C, "%snão foi possível localizar este usuário no canal.\n", PREFIX_ERROR);
                             }
                             break;
 
@@ -713,7 +721,7 @@ using namespace std;
                             response_code = cdc_decode_client_message(&chat, message, temp_buffer_A, temp_buffer_B);
                             
                             if(response_code == SUCCESS){
-                                printf("[+]   [%s] %s\n", temp_buffer_A, temp_buffer_B);
+                                sprintf(temp_buffer_C, "%s%s[%s]:%s %s\n", PREFIX_MESSAGE, COLORB_YELLOW, temp_buffer_A, COLOR_WHITE, temp_buffer_B);
                             }
                             break;
 
@@ -721,7 +729,7 @@ using namespace std;
                             response_code = cdc_decode_server_message(&chat, message, temp_buffer_A);
                             
                             if(response_code == SUCCESS){
-                                printf("[+]   [SERVER] %s\n", temp_buffer_A);
+                                sprintf(temp_buffer_C, "%s%s\n", PREFIX_SERVER, temp_buffer_A);
                             }
                             break;
 
@@ -729,12 +737,16 @@ using namespace std;
                             response_code = cdc_decode_channel_message(&chat, message, temp_buffer_A);
                             
                             if(response_code == SUCCESS){
-                                printf("[+]   [CHANNEL] %s\n", temp_buffer_A);
+                                sprintf(temp_buffer_C, "%s%s\n", PREFIX_CHANNEL, temp_buffer_A);
                             }
-                            
                             break;
 
-                    }
+                    }// fim switch case;
+
+                    // Copiando as mensagens para o buffer de saída
+                    strcat(terminal.output_buffer, temp_buffer_C);
+                    terminal.buffer_size += strlen(temp_buffer_C);
+                    memset(temp_buffer_C, 0 , sizeof(temp_buffer_C));
                 }
 
                 // Se chegou aqui, recv_buffer já foi totalmente decodificado então

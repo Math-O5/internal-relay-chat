@@ -192,7 +192,6 @@ int cdc_detectar_act(const char* cmd){
         return mensagem;
     }
 
-
 // COMANDOS ADMINISTRADOR
     char* cdc_encode_mode(relay_chat* rc, const char* cmd){
         if(cmd == NULL){
