@@ -529,6 +529,9 @@ using namespace std;
                 case ACTION_HELP:
                     pthread_mutex_lock(terminal.terminal_mutex);
                         msg_help(&terminal);
+
+
+
                     pthread_mutex_unlock(terminal.terminal_mutex);
             }
         }
@@ -652,7 +655,7 @@ using namespace std;
                             response_code = cdc_decode_list(&chat, message, temp_buffer_A);
 
                             if(response_code == SUCCESS){
-                                sprintf(temp_buffer_C, "%s canais disponíveis: %s\n", PREFIX_SERVER, temp_buffer_A);
+                                sprintf(temp_buffer_C, "%scanais disponíveis: %s\n", PREFIX_SERVER, temp_buffer_A);
                             }
 
                             break;

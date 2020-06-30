@@ -9,7 +9,8 @@ nc -l 9002
 /join SUCCESS animes user
 /join SUCCESS animes admin
 
-/list animes,cinema,musica,final-dark
+/list animes,cinema,musica,final-dark,.....
+/list computacao,estatistica,
 
 /mode ERR_CHANOPRIVSNEEDED
 /mode SUCCESS
