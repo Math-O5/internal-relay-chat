@@ -63,9 +63,6 @@
         
         #define MAX_CLIENTS 20
 
-
-
-
         using namespace std;
 
     /**
@@ -95,7 +92,6 @@
             int     sv_socket;
             int     max_conn;
             char    sport[24];
-            struct sockaddr_in server_address;
             struct sockaddr_in server_address;
 
             // buffers de conexão

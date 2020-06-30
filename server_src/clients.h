@@ -1,5 +1,5 @@
 #ifndef CLIENTS_H
-    #define CLIENTS_H 4040
+#define CLIENTS_H 4040
 
 	/**
 	 * Constantes e Macros
@@ -47,12 +47,13 @@
 		#include <stdlib.h>
 		#include <string.h> /* strlen */
 		#include <unistd.h> /* close */
-
+		#include <string> 	/* string */
 	/**
      * Biblioteca do própio projeto
      * -----------------------------
     */
-		#include "message.h"
+	#include "message.h"
+	#include "channel.h"
 
 	using namespace std;
 
@@ -84,14 +85,14 @@
 		// atributos do cliente (chat)
 		int cl_id;
 		string nickname;
-		CHANNEL_conn* channel;
-	}client;
-
+		string channel;
+	} client;
 	/**
 	 * @function
 	 * 
 	 * client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
 	 * --------------------------------------------------------------------------------
+	 * 
 	 * 
 	 * Cria um novo cliente de acordo com informações passadas no parâmetro: o endereço do cliente,
 	 * socket em que o cliente se conectou, id do cliente e socket em que o servidor se conectou respectivamente.

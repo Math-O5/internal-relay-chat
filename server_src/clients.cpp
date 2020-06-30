@@ -10,8 +10,8 @@ client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
     cl->cl_socket = socket;
     cl->cl_id = id;
     cl->sv_socket = sv_socket;
-    cl->channel = '';
-    cl->nickname = '';
+    cl->channel = NULL;
+    cl->nickname = "user" + to_string(id);
     return cl;
 }
 
@@ -33,7 +33,7 @@ int clt_add_queue(client* cl, pthread_mutex_t* mutex){
     pthread_mutex_unlock(mutex);
 
     // Numero maximo de clientes ja foi atingido...
-    if(index == max_cl)
+    if(index == MAX_CLIENTS)
         return FAIL;
 
     return SUCCESS;
@@ -68,7 +68,7 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 
     // Procura pelo cliente, atraves de seu id, e o retira do array
     client* temp = NULL;
-    for(int i = 0; i < max_cl; i++) {
+    for(int i = 0; i < MAX_CLIENTS; i++) {
         if(cl_arr[i] && cl_arr[i]->cl_id == id) {
             temp = cl_arr[i];
             cl_arr[i] = NULL;

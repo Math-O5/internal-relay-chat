@@ -22,8 +22,9 @@
         #include <map>
         #include <queue>
         #include <set>
+        #include <string> 	/* string */
 
-        using namepsace std;
+        using namespace std;
 
     /**
      * Bibliotecas do própio projeto
@@ -88,23 +89,23 @@
      * buffers de conexão
      * ------------------
      */
-        typedef struct _CHANNEL_conn{
+    typedef struct _CHANNEL_conn
+    {
+        // atributos do canal
+        string name_channel;
+        string name_admin;
 
-            // atributos do canal
-            string name_channel;
-            string name_admin;
+        int size_participants;
+        map<string, int> participants;                    // nickname, cl_socket 
+        map<int, string> arrived;                         // position arrived, string client
 
-            int size_participants;
-            map<string, int> participants;                    // nickname, cl_socket 
-            map<int, string> arrived;                         // position arrived, string client
+        // TODO: Use the ipv4
+        set<string> notAllowedParticipants;            // <nickname> dos clientes banidos.
 
-            // TODO: Use the ipv4
-            set<string> notAllowedParticipants;            // <nickname> dos clientes banidos.
-
-            // buffers de conexão
-            char *send_buff, *recv_buff;
-            int  send_buff_size, recv_buff_size;
-        }CHANNEL_conn;
+        // buffers de conexão
+        char *send_buff, *recv_buff;
+        int  send_buff_size, recv_buff_size;
+    } CHANNEL_conn;
 
     /**
      * @function
@@ -118,15 +119,17 @@
      * 
      * return: CHANNEL_conn com atributos inicializados
     */
-    int conn_criar_CHANNEL(client* clt);
-
-    CHANNEL_add_user(client* clt);
-    CHANNEL_remove_user(client* clt);
-    
-    CHANNEL_join_user(client* clt);
-
-    CHANNEL_kick_user(client* clt);
-    CHANNEL_ban_user(client* clt);
-    CHANNEL_broadcast(client* clt);
-    CHANNEL_commands();
+   
+    // CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt);
+    // void CHANNEL_destroy(CHANNEL_conn* channel);
+    // void CHANNEL_destroy_all();
+    // int CHANNEL_remove_user(CHANNEL_conn* channel, client* clt);
+    // int CHANNEL_add_user(CHANNEL_conn* channel, client* clt); 
+    // void CHANNEL_join(string name_channel, client* clt); 
+    // int CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, string kick_nickname); 
+    // int CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt); 
+    // bool CHANNEL_send_message(int cl_socket, char* buffer); 
+    // void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
+    // void CHANNEL_send_message_one(CHANNEL_conn* channel, client* clt, char* buffer);
+    // int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, char* buffer); 
 #endif
