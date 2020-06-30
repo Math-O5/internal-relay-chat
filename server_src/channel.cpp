@@ -30,21 +30,21 @@ CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt);
  */
 CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt) 
 {        
-    // int size_participants = 1; // há apenas um usuario: o admin;
+    int size_participants = 1; // há apenas um usuario: o admin;
 
-    // // Verifica se o canal não existe.
-    // if(channels.find(name_channel) == channels.end()) {
+    // Verifica se o canal não existe.
+    if(channels.find(name_channel) == channels.end()) {
         
-    //     CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
-    //     newChannel->participants[clt->nickname] = clt->cl_socket;
-    //     newChannel->arrived[size_participants] = clt->nickname;
-    //     newChannel->name_admin = clt->nickname;
-    //     channels[name_channel] = newChannel;
+        CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
+        newChannel->participants[clt->nickname] = clt->cl_socket;
+        newChannel->arrived[size_participants] = clt->nickname;
+        newChannel->name_admin = clt->nickname;
+        channels[name_channel] = newChannel;
 
-    //     clt.channel = newChannel;
+        clt->channel = newChannel;
 
-    //     return newChannel;
-    // }
+        return newChannel;
+    }
     return NULL;
 }
 
@@ -56,11 +56,11 @@ CHANNEL_conn* conn_criar_CHANNEL(string name_channel, client* clt)
 //  * @permision: admin 
 //  * 
 //  */
-// void CHANNEL_destroy(CHANNEL_conn* channel) 
-// {
-//     channels.erase(channel->name_channel);
-//     free(channel);
-// }
+void CHANNEL_destroy(CHANNEL_conn* channel) 
+{
+    channels.erase(channel->name_channel);
+    free(channel);
+}
 
 // /**
 //  * @function conn_destruit_CHANNELS

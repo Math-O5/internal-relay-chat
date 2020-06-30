@@ -85,7 +85,7 @@
 		// atributos do cliente (chat)
 		int cl_id;
 		string nickname;
-		CHANNEL_conn* channel;
+		struct _CHANNEL_conn* channel;
 	} client;
 	/**
 	 * @function

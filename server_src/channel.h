@@ -94,7 +94,7 @@
         // atributos do canal
         string name_channel;
         string name_admin;
-
+    
         int size_participants;
         map<string, int> participants;                    // nickname, cl_socket 
         map<int, string> arrived;                         // position arrived, string client
