@@ -525,6 +525,11 @@ using namespace std;
                         
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
+
+                case ACTION_HELP:
+                    pthread_mutex_lock(terminal.terminal_mutex);
+                        msg_help(&terminal);
+                    pthread_mutex_unlock(terminal.terminal_mutex);
             }
         }
         

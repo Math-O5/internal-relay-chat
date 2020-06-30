@@ -183,7 +183,7 @@
          */
         void msg_inicio(terminal_control* t);
 
-        
+        void msg_help(terminal_control* t);
 
 
 

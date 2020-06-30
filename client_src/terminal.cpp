@@ -100,6 +100,40 @@ void msg_inicio(terminal_control* t){
 
 }
 
+void msg_help(terminal_control* t){
+
+    printf(PREFIX_NORMAL); printf("%sLista de Comandos Gerais:%s\n", COLORB_WHITE, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/connect%s                  - Conectar em DEFAULT_HOST:DEFAULT_PORT.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/connect <HOST_IP> <PORT>%s - Conectar em HOST_IP:PORT.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/disconnect%s               - Fecha a conexão com o servidor atual.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/ping%s                     - Testa a conexão com o servidor.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/help%s                     - Ver lista completa de comandos.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/quit ou Ctrl+D (EOF)%s     - Fecha o programa.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_EMPTY_LINE);
+
+    printf(PREFIX_NORMAL); printf("%sLista de Comandos do Servidor%s\n", COLORB_WHITE, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/nickname <NICK>%s          - Define ou altera seu nickname no servidor.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/join <CHANNEL>%s           - Entra em um canal existente ou cria um novo.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/list%s                     - Lista todos os canais ativos no servidor.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_EMPTY_LINE);
+
+    printf(PREFIX_NORMAL); printf("%sLista de Comandos do Operador%s\n", COLORB_WHITE, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/mode <+i/-i>%s             - Altera o canal para 'público' (-i) ou invite-only (+i).\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/invite <NICK>%s            - Convida um usuário do servidor para o canal.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/whois <NICK>%s             - Retorna os dados do usuário.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/mute <NICK>%s              - Silencia o usuário no canal.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/unmute <NICK>%s            - Remove a restrição de silêncio do usuário.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/kick <NICK>%s              - Bane e remove um usuário do canal.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/unkick <NICK>%s            - Revoga o banimento do usuário.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_EMPTY_LINE);
+
+    printf(PREFIX_NORMAL); printf("Pressione %sENTER%s para dispensar a ajuda.\n", COLORB_YELLOW, COLOR_WHITE);
+    getchar();
+
+    for(int i = 0; i < 23; i++){
+        printf("\033[A\33[2K\r");
+    }
+}
 
 
 
