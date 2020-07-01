@@ -101,6 +101,7 @@
 
         // TODO: Use the ipv4
         set<string> notAllowedParticipants;            // <nickname> dos clientes banidos.
+        set<string> mutedParticipants;            // <nickname> dos clientes banidos.
 
         // buffers de conexão
         char *send_buff, *recv_buff;
@@ -126,10 +127,10 @@
     int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
     int CHANNEL_add_user(CHANNEL_conn* channel,  struct _client* clt); 
     void CHANNEL_join(string name_channel,  struct _client* clt); 
-    int CHANNEL_kick_user(CHANNEL_conn* channel,  struct _client* clt, string kick_nickname); 
+    int CHANNEL_kick_user(CHANNEL_conn* channel,  struct _client* clt, const char* kick_nickname); 
     int CHANNEL_unkick_user(CHANNEL_conn* channel,  struct _client* clt); 
-    bool CHANNEL_send_message(int cl_socket, char* buffer); 
-    void CHANNEL_send_message_all(CHANNEL_conn* channel, char* buffer);
-    void CHANNEL_send_message_one(CHANNEL_conn* channel,  struct _client* clt, char* buffer);
-    int CHANNEL_broadcast(CHANNEL_conn* channel,  struct _client* clt, int type, char* buffer); 
+    bool CHANNEL_send_message(int cl_socket, const char* buffer); 
+    void CHANNEL_send_message_all(CHANNEL_conn* channel, const char* buffer);
+    void CHANNEL_send_message_one(CHANNEL_conn* channel,  struct _client* clt,const char* buffer);
+    int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, const char* buffer); 
 #endif

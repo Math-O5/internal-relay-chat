@@ -3,16 +3,30 @@
 // Array com os structs dos clientes
 client *cl_arr[MAX_CLIENTS];
 
+/**
+ * @functon CHANNEL_is_valid_nickname
+ * @param { string } nickname nome a ser checado
+ * 
+ * Checa se o nome é valido.
+ */
+bool clt_is_valid_nickname(string nickname) {
+    // if(is_valid_nickname() == false) return false;
+    if(clt_get_by_nickname(nickname) != NULL && nickname != "invalid")
+        return false;
+    else return true;
+}
+
+
 // @Comentários em "clients.h"
 client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
-    string nickname = "\0";
+    string nickname = "invalid";
     cl->cl_address = address;
     cl->cl_socket = socket;
     cl->cl_id = id;
     cl->sv_socket = sv_socket;
     cl->channel = NULL;
-    cl->nickname = nickname
+    cl->nickname = nickname;
     return cl;
 }
 

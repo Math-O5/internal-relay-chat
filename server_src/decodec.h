@@ -24,7 +24,6 @@
 #ifndef CODEC_H
     #define CODEC_H 1459
 
-    #include "chat.h"     /* DEFAULT_SERVER_HOST e DEFAULT_SERVER_PORT */
     
     /**
      * Constantes e Macros
