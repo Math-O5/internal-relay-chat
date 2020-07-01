@@ -41,6 +41,7 @@
     */
 		#include <iostream>
 		#include <netinet/in.h> /* struct sockaddr_in */
+		#include <arpa/inet.h>  /* get ipv4*/ 
 		#include <pthread.h> /* pthread_cond_t */
 		#include <vector>
 		#include <stdio.h>
@@ -84,6 +85,7 @@
 
 		// atributos do cliente (chat)
 		int cl_id;
+		char* ip_address;
 		string nickname;
 		struct _CHANNEL_conn* channel;
 	} client;
@@ -182,7 +184,7 @@
 	 * return: SUCESS foi enviada a mensagem para com o cliente 
 	 * 		   FAIL não foi possível enviar a mensagem para o cliente
 	*/
-	bool clt_send_message(int cl_socket, char* buffer);
+	bool clt_send_message(int cl_socket, const char* buffer);
 
 	/**
 	 * @function

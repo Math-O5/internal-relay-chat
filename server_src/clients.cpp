@@ -16,14 +16,23 @@ bool clt_is_valid_nickname(string nickname) {
     else return true;
 }
 
-
 // @Comentários em "clients.h"
 client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
     string nickname = "invalid";
+    struct hostent *host_entry; 
+    char hostbuffer[256];
+    
+    // Recuperando o Ipv4
+    gethostname(hostbuffer, sizeof(hostbuffer));
+    host_entry = gethostbyname(hostbuffer); 
+    if(host_entry == NULL)
+        return NULL;
+
     cl->cl_address = address;
     cl->cl_socket = socket;
     cl->cl_id = id;
+    cl->ip_address = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0])); 
     cl->sv_socket = sv_socket;
     cl->channel = NULL;
     cl->nickname = nickname;
@@ -122,7 +131,7 @@ client* clt_get_by_id(int cli_id)
 }
 
 // @Comentários em "clients.h"
-bool clt_send_message(int cl_socket, char* buffer) {
+bool clt_send_message(int cl_socket, const char* buffer) {
     int try_send = 0;
 
     // Tenta enviar a mensagem até receber confirmação. Se após 

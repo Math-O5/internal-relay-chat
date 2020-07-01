@@ -40,7 +40,8 @@ int _server_socket = 0;
 int cl_count = 0;
 
 // @Comentários em "connection.h"
-void conn_catch_ctrl_c_and_exit(int sig){
+void conn_catch_ctrl_c_and_exit(int sig)
+{
     clt_destruir_clientes();
     CHANNEL_destroy_all();
     conn_destruir_server(SV);
@@ -49,7 +50,8 @@ void conn_catch_ctrl_c_and_exit(int sig){
 }
 
 // @Comentários em "connection.h"
-server_conn conn_criar_server(){
+server_conn conn_criar_server()
+{
     server_conn sv;
     sv.sv_socket = -1;
     sprintf(sv.sport, "9002");
@@ -59,10 +61,12 @@ server_conn conn_criar_server(){
 }
 
 // @Comentários em "connection.h"
-int conn_abrir_server(server_conn* sv, int max_conn){
+int conn_abrir_server(server_conn* sv, int max_conn)
+{
 
     // Verifica se o numero de conexoes socilitada é maior que o numero permitido
-    if(max_conn > MAX_CLIENTS) {
+    if(max_conn > MAX_CLIENTS) 
+    {
         return ERRO_MAX_CLIENTS;
     }
 
@@ -83,18 +87,21 @@ int conn_abrir_server(server_conn* sv, int max_conn){
 
     // Configura o socket para aceitar multipla conexão (most commun detault: true
     int option = 1;
-    if(setsockopt(sv->sv_socket, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0){
+    if(setsockopt(sv->sv_socket, SOL_SOCKET,(SO_REUSEPORT | SO_REUSEADDR),(char*)&option,sizeof(option)) < 0)
+    {
     	return ERRO_MULTIPLE_CONNECTION;
 	}
 
     // Bind
-    if(bind(sv->sv_socket, (struct sockaddr*)&(sv->server_address), sizeof(sv->server_address)) < 0){
+    if(bind(sv->sv_socket, (struct sockaddr*)&(sv->server_address), sizeof(sv->server_address)) < 0)
+    {
         return ERRO_BIND;
     }
 
     // Listen
     sv->max_conn = max_conn;
-    if(listen(sv->sv_socket, max_conn) < 0){
+    if(listen(sv->sv_socket, max_conn) < 0)
+    {
         return ERRO_LISTEN;
     }
 
@@ -102,14 +109,16 @@ int conn_abrir_server(server_conn* sv, int max_conn){
 }
 
 // @Comentários em "connection.h"
-int conn_destruir_server(server_conn* sv){
+int conn_destruir_server(server_conn* sv)
+{
     if(sv == NULL)
       return ERRO_SOCKET;
     if(sv->sv_socket < 0)
         return ERRO_SOCKET;
     close(sv->sv_socket);
 
-    for(int i = 0; i < MAX_CLIENTS; i++) {
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
         pthread_cancel(t[i]);  
     }
 
@@ -117,17 +126,20 @@ int conn_destruir_server(server_conn* sv){
 }
 
 // @Comentários em "connection.h"
-int conn_check_max_clients(server_conn* sv, int cl_count){
-
-    if(cl_count == sv->max_conn){
+int conn_check_max_clients(server_conn* sv, int cl_count)
+{
+    if(cl_count == sv->max_conn)
+    {
         return ERRO_MAX_CLIENT_REACHED;
     }
     return SUCCESS;
 }
 
 // @Comentários em "connection.h"
-void* conn_client_thread(void *args){
-    while(true) {
+void* conn_client_thread(void *args)
+{
+    while(true) 
+    {
         pthread_mutex_lock(&mutex);
         
         // Aguarda a conexao com um cliente
@@ -159,15 +171,17 @@ void* conn_client_thread(void *args){
 }
 
 // @Comentários em "connection.h"
-void conn_client_pooling(){
-    for(int i = 0; i < MAX_CLIENTS; i++) {
+void conn_client_pooling()
+{
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
         pthread_create(&t[i], NULL, conn_client_thread, NULL);
     } 
 }
 
 // @Comentários em "connection.h"
-int conn_run_server(server_conn* sv){
-    
+int conn_run_server(server_conn* sv)
+{    
     // Variavel global com as informacoes do servidor
     SV = sv;
 
@@ -185,8 +199,8 @@ int conn_run_server(server_conn* sv){
     struct sockaddr_in cl_addr;
     socklen_t cl_len = sizeof(cl_addr);
     
-    while(true){
-
+    while(true)
+    {
         // TODO mandar mensagem de erro para clients, aceitar um a mais
 		int cl_conn = accept(sv->sv_socket, (struct sockaddr*)&(cl_addr), &cl_len);
 
@@ -196,7 +210,8 @@ int conn_run_server(server_conn* sv){
         }
         
         // Verifica se o numero maximo de clientes no server foi atingido
-        if(conn_check_max_clients(sv, cl_count)){
+        if(conn_check_max_clients(sv, cl_count))
+        {
             close(cl_conn);
             msg_max_client(cl_addr);
             continue;
@@ -207,6 +222,10 @@ int conn_run_server(server_conn* sv){
 
         // Adiciona um novo cliente (atualizando atributos)
         client* cl = clt_criar(cl_addr, cl_conn, id, sv->sv_socket);
+        
+        if(cl == NULL)
+            continue;
+            
         clients_wait.push_back(id++);
         
         printf("\nOOps...\n");
