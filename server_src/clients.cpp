@@ -167,6 +167,33 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
 }
 
 // @Comentários em "clients.h"
+void clt_ping(client* cl) 
+{    
+    char log[] = "/pong\n";
+    msg_info_ping(cl->cl_id);
+    if(clt_send_message(cl->cl_socket, log)) 
+    {
+        msg_info_pong(cl->cl_id);
+    } 
+}
+
+// TODO: pass it to Channel
+void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t* mutex) {
+    int shift;
+    char* pack; 
+    shift = 0;
+    
+    pack = (char*)malloc(sizeof(char)*PACK_SIZE);
+    
+    while((shift = decode_message(buffer, pack, shift)) > 0) 
+    {
+        //clt_send_message_all(id_cur, max_conn, mutex, pack);
+    }
+    
+    free(pack);
+    bzero(buffer, BUFFER_SIZE);
+}
+// @Comentários em "clients.h"
 int clt_read_buffer(client* cl, char* buffer) {
     
     // Comando: /ping
@@ -193,10 +220,6 @@ int clt_read_buffer(client* cl, char* buffer) {
 
 // @Comentários em "clients.h"
 void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
-
-    int shift;
-    char* pack; 
-    
     // Buffer com as mensagens dos clientes 
     char buffer[BUFFER_SIZE];
     memset(buffer, '\0', BUFFER_SIZE);
@@ -212,31 +235,32 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     // Mensagem com as informacoes do cliente
     msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
 
-    while(true){
-
+    while(true)
+    {
         // Mensagem recebida da usuário!
-        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0){
-            
-            int input = //TODO
-            clt_read_buffer(cl, buffer);
+        // O cliente fica bloqueado enquanto esse evento não acontece.
+        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0)         
+        {    
+            // Se o buffer estiver vazio, espera-se outra mensagem
+            if(strlen(buffer) <= 0)
+                continue;
+
+            pthread_mutex_lock(mutex);
+
+            int input = detect_action(buffer);
             switch(input) {
                 // case CONTINUE:
                 //     msg_recv_cliente(id_cur, buffer);
-
-                //     shift = 0;
-                //     pack = (char*)malloc(sizeof(char)*BUFFER_SIZE);
-                //     while((shift = decode_message(buffer, pack, shift)) > 0) {
-                //         clt_send_message_all(id_cur, max_conn, mutex, pack);
-                //     }
-                    
-                //     free(pack);
-                //     bzero(buffer, BUFFER_SIZE);
+                //     clt_split_and_send(id_cur,MAX_CLIENTS, buffer, pthread_mutex_t* mutex);
                 //     break;
                 // case QUIT:
                 //     msg_cliente_desconexao(cl->cl_id);
                 //     return;
                 // default: break;
             }
+
+            pthread_mutex_unlock(mutex);
+
         }
         // Ocorreu um erro na conexao...
         else{
@@ -245,17 +269,16 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     }
 }
 
-
 // @Comentários em "client.h"
 int decode_message(char* buffer, char* pack, int index) {
 
     if(buffer == NULL || *buffer == '\n' || *buffer == '\0')
         return 0;
     
-    bzero(pack, BUFFER_SIZE);
+    bzero(pack, PACK_SIZE);
 
     int i = 0, j = 0;
-    for(i = index; buffer[i] != '\n' && i < BUFFER_SIZE-1; ++i) {
+    for(i = index; buffer[i] != '\n' && i < PACK_SIZE-1; ++i) {
         pack[j++] = buffer[i];
     }
 

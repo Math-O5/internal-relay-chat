@@ -20,6 +20,7 @@
 	 * Valor com a quantidade máxima de clientes permitidos no servidor
 	 */
 		#define BUFFER_SIZE 4096
+		#define PACK_SIZE 512
 
 		#define SUCCESS 0
 		#define FAIL 1
