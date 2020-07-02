@@ -281,7 +281,6 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     decode_nickname(buffer, temp_buffer_A);
                     
                     state = clt_is_valid_nickname(temp_buffer_A);
-                    printf("state %d\n", state);
                     if (state == SUCCESS) 
                     {
                         strcpy(temp_buffer_B, clt->nickname);
@@ -291,7 +290,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                         clt_send_message(clt->cl_socket,buffer);
 
                         CHANNEL_on_change_nickname(clt, temp_buffer_B);  
-                        msg_nickname_cliente(clt->cl_id, clt->nickname, temp_buffer_B);     
+                        msg_nickname_cliente(clt->cl_id, clt->nickname, temp_buffer_B);   
                     } else if(state == ERR_NICKNAMEINUSE) 
                     {
                         sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", temp_buffer_A);  
@@ -313,12 +312,20 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     }
 
                     decode_join(buffer, temp_buffer_A);
-                    printf("%s", temp_buffer_A);
+                    if(clt_validate_nickname(temp_buffer_A) == false) 
+                    {
+                        sprintf(buffer, "/join ERR_BADCHANNELKEY %s\n", clt->nickname);    
+                        clt_send_message(clt->cl_socket, buffer);
+                        break;
+                    }
+
                     CHANNEL_join(temp_buffer_A, clt);
                     msg_join_channel(clt);
                     break;
 
                 case ACTION_LIST:
+                    CHANNEL_list(buffer);
+                    clt_send_message(clt->cl_socket, buffer);
                     break;
 
                 case ACTION_MODE:

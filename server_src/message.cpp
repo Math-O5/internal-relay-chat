@@ -258,12 +258,11 @@ void msg_create_nickname(int id, char* nickname){
 }
 
 // @Comentários em "message.h"
-void msg_change_nickname(int id, char* nickname){
+void msg_change_nickname(char* nickname, char* oldnickname)
+{
     char t_log[20];
-    printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
-    printf("  [+] - [%s] O cliente %d alterou seu nickname para '%s'.\n", t_log, id, nickname);
-    printf("  [ ]\n");
+    printf("  [+] - [%s] O usuario %s %s alterou seu nickname para '%s'.\n", t_log, nickname, oldnickname);
     fflush(stdout);
 }
 

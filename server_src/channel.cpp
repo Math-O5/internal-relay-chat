@@ -23,6 +23,12 @@ void map_insert_key_char(map<const char*, int, cmp_str> pointer, const char* str
     pointer.insert(pair<char*, int>(strCopy, value));
 }
 
+void map_insert_key_char(map<const char*, CHANNEL_conn*, cmp_str> pointer, const char* str, CHANNEL_conn* value) {
+    char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
+    strcpy(strCopy, str);
+    pointer.insert(pair<char*, CHANNEL_conn*>(strCopy, value));
+}
+
 void map_insert_key_int(map<int, char*> pointer, int value, const char* str) {
     char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
     strcpy(strCopy, str);
@@ -57,8 +63,9 @@ CHANNEL_conn* conn_criar_CHANNEL(char* nickname_channel, client* clt)
         strcpy(newChannel->nickname_admin, clt->nickname);
         strcpy(newChannel->nickname_channel, nickname_channel);
         newChannel->is_public = true;
-        channels[nickname_channel] = newChannel;
-
+        // channels to list of channels
+        map_insert_key_char(channels, nickname_channel,newChannel);
+        // reference of channel on client
         clt->channel = newChannel;
 
         return newChannel;
@@ -93,6 +100,29 @@ void CHANNEL_destroy_all()
         free(channel.second);
     }
     channels.clear();
+}
+
+/**
+ * @function conn_destruit_CHANNELS
+ * 
+ * Exclui TODOS os canais
+ * @permision: server 
+ * 
+ */
+void CHANNEL_list(char* buffer) 
+{
+    char tmp_buffer[BUFFER_SIZE];
+    memset(buffer, 0 , sizeof(buffer));
+
+    for(auto channel : channels) {
+        strcat(buffer, channel.second->nickname_channel);
+        strcat(buffer, ", ");
+    }
+
+    if(strlen(tmp_buffer) <= 0)
+        sprintf(buffer, "/channels : Não há canais. Digite /join <nome_do_canal>\n");
+    else
+        sprintf(buffer, "/channels %s\n", tmp_buffer);
 }
 
 /**
@@ -239,24 +269,24 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     } 
     else 
     {
-    //     int response = CHANNEL_add_user(it_channel->second, clt);
+        int response = CHANNEL_add_user(it_channel->second, clt);
         printf("oops!");
         fflush(stdout);
         
-    //     switch (response)
-    //     {
-    //         case SUCCESS:
-    //             CHANNEL_broadcast(it_channel->second, clt, MESSAGE_JOIN_CHANNEL, emptychar);
-    //             break;
-    //         case MESSAGE_ERR_BANNEDFROMCHAN:
-    //             CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, emptychar);
-    //             break;
-    //         // case MESSAGE_ERR_INVITEONLYCHAN:
-    //         //     CHANNEL_broadcast(it_channel, clt, MESSAGE_MESSAGE_ERR_INVITEONLYCHAN, "");
-    //         //     break;
-    //         default:
-    //             break;
-    //     }
+        switch (response)
+        {
+            case SUCCESS:
+                CHANNEL_broadcast(it_channel->second, clt, MESSAGE_JOIN_CHANNEL, emptychar);
+                break;
+            case MESSAGE_ERR_BANNEDFROMCHAN:
+                CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, emptychar);
+                break;
+            case MESSAGE_ERR_INVITEONLYCHAN:
+                CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_INVITEONLYCHAN, emptychar);
+                break;
+            default:
+                break;
+        }
     }
 }
 

@@ -291,13 +291,13 @@
      /**
      * @function
      * 
-     * void msg_change_nickname(int id, char* nickname)
+     * void msg_change_nickname(char* nickname, char* oldNickname)
      * ------------------------------------------------
      * 
      * Mensagem indicando que o nickname do usuario foi alterado
      * 
     */
-    void msg_change_nickname(int id, char* nickname);
+    void msg_change_nickname(char* nickname, char* oldnickname);
 
 // ******************************* KICK *******************************
 

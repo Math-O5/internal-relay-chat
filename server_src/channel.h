@@ -134,6 +134,7 @@
     CHANNEL_conn* conn_criar_CHANNEL(char* name_channel, struct _client* clt);
     void CHANNEL_destroy(CHANNEL_conn* channel);
     void CHANNEL_destroy_all();
+    void CHANNEL_list(char* buffer); 
     int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
     int CHANNEL_add_user(CHANNEL_conn* channel,  struct _client* clt); 
     void CHANNEL_on_change_nickname(struct _client* clt, const char* old_nickname);
