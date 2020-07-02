@@ -44,14 +44,42 @@
      */
 
         #define MAX_MESSAGE_LENGHT 512
-
         #define LINE_BUFFER ((MAX_MESSAGE_LENGHT * 5) + 1)
-
         #define BUFFER_SIZE ((MAX_MESSAGE_LENGHT * 30) + 1)
-
         #define INPUT_ENABLED 1
-
         #define INPUT_DISABLED 0
+
+        #define COLORL_GRAY     "\033[0;30m"
+        #define COLOR_RED       "\033[0;31m"
+        #define COLOR_GREEN     "\033[0;32m"
+        #define COLOR_YELLOW    "\033[0;33m"
+        #define COLOR_BLUE      "\033[0;34m"
+        #define COLOR_MAGENTA   "\033[0;35m"
+        #define COLOR_CYAN      "\033[0;36m"
+        #define COLOR_WHITE     "\033[0;37m"
+        
+        #define COLORB_GRAY      "\033[1;30m"
+        #define COLORB_RED       "\033[1;31m"
+        #define COLORB_GREEN     "\033[1;32m"
+        #define COLORB_YELLOW    "\033[1;33m"
+        #define COLORB_BLUE      "\033[1;34m"
+        #define COLORB_MAGENTA   "\033[1;35m"
+        #define COLORB_CYAN      "\033[1;36m"
+        #define COLORB_WHITE     "\033[1;37m"
+
+        #define COLOR_RESET      "\033[0m"
+
+        #define PREFIX_NORMAL       "  \033[1;37m[-]\033[0;37m   "
+        #define PREFIX_EMPTY_LINE   "  \033[1;37m[ ]\033[0;37m   \n"
+        #define PREFIX_MESSAGE      "  \033[1;37m[M]\033[0;37m   "
+
+        #define PREFIX_SUCCESS      "  \033[1;32m[+]   SUCESSO: \033[0;32m"
+        #define PREFIX_ERROR        "  \033[1;31m[x]   ERRO: \033[0;31m"
+        #define PREFIX_SERVER       "  \033[1;33m[S]   SERVIDOR: \033[0;33m"
+        #define PREFIX_CHANNEL      "  \033[1;34m[C]   CANAL: \033[0;34m"
+
+        #define PREFIX_INPUT        "  \033[1;33m[$]:  \033[1;37m"
+
 
     /**
      * @struct
@@ -146,14 +174,17 @@
          *         0 caso o usuário não tenha inserido nenhum input durante essa iteração.
          */
         int terminal_input_iteration(terminal_control* t);
-
+        
         /**
          * @custom_message
          * void msg_inicio(&t)
          * -------------------
-         * 
          * Encapsula uma sequência de printf's exibida assim que o programa é iniciado.
          */
         void msg_inicio(terminal_control* t);
+
+        void msg_help(terminal_control* t);
+
+
 
 #endif
