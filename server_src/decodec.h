@@ -46,6 +46,7 @@
       #define ACTION_UNKICK          607
 
       // CASOS DE SUCESSO E ERRO
+      #define VALID_PROTOCOL          1
       #define INVALID_PROTOCOL       0
       
       #define ERR_NOSUCHNICK        401
@@ -106,7 +107,7 @@
       // *** Nickname ***
       /**
        * @function
-       * void decode_nickname(const char* cmd, char* nickname);
+       * int decode_nickname(const char* cmd, char* nickname);
        * ------------------------------------------------------
        * 
        * Retorna via parametro (nickname) o nome do cliente
@@ -117,13 +118,18 @@
        *         comando (inteiro)
        *     nickname : char*
        *         nome do cliente
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_nickname(const char* cmd, char* nickname);
+      int decode_nickname(const char* cmd, char* nickname);
 
       // *** Join ***
       /**
        * @function
-       * void decode_join(const char* cmd, char* channel);
+       * int decode_join(const char* cmd, char* channel);
        * -------------------------------------------------
        * 
        * Retorna via parametro (channel) o nome do canal em que o cliente
@@ -135,13 +141,17 @@
        *         comando (inteiro)
        *     channel : char*
        *         nome do canal
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_join(const char* cmd, char* channel);
+      int decode_join(const char* cmd, char* channel);
 
       // *** Mode ***
       /**
        * @function
-       * void decode_mode(const char* cmd, bool* invite_mode);
+       * int decode_mode(const char* cmd, bool* invite_mode);
        * -----------------------------------------------------
        * 
        * Retorna via parametro (invite_mode) o modo do canal (entrada por convite ou nao)
@@ -153,13 +163,18 @@
        *     invite_mode : bool*
        *         INVITE_ONLY_ON  (1) -> entrada no canal somente por convite
        *         INVITE_ONLY_OFF (0) -> entrada livre no canal 
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_mode(const char* cmd, bool* invite_mode);
+      int decode_mode(const char* cmd, bool* invite_mode);
 
       // *** Invite ***
       /**
        * @function
-       * void decode_invite(const char* cmd, char* invite_nickname);
+       * int decode_invite(const char* cmd, char* invite_nickname);
        * -----------------------------------------------------------
        * 
        * Retorna via parametro (invite_nickname) o nome do cliente a ser convidado
@@ -170,13 +185,18 @@
        *         comando (inteiro)
        *     invite_nickname : char*
        *         nome do cliente a ser convidado
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_invite(const char* cmd, char* invite_nickname);
+      int decode_invite(const char* cmd, char* invite_nickname);
 
       // *** Whois ***
       /**
        * @function
-       * void decode_whois(const char* cmd, char* whois_nickname);
+       * int decode_whois(const char* cmd, char* whois_nickname);
        * ---------------------------------------------------------
        * 
        * Retorna via parametro (whois_nickname) o nickname do cliente o qual deseja
@@ -188,13 +208,18 @@
        *         comando (inteiro)
        *     whois_nickname : char*
        *         nickame do cliente o qual sera pego o IP
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_whois(const char* cmd, char* whois_nickname);
+      int decode_whois(const char* cmd, char* whois_nickname);
 
       // *** Mute ***
       /**
        * @function
-       * void decode_mute(const char* cmd, char* mute_nickname);
+       * int decode_mute(const char* cmd, char* mute_nickname);
        * -------------------------------------------------------
        * 
        * Retorna via parametro (mute_nickname) o nickname do cliente o qual sera
@@ -206,13 +231,18 @@
        *         comando (inteiro)
        *     mute_nickname : char*
        *         nickname do cliente o qual sera mutado
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_mute(const char* cmd, char* mute_nickname);
+      int decode_mute(const char* cmd, char* mute_nickname);
 
       // *** Unmute ***
       /**
        * @function
-       * void decode_unmute(const char* cmd, char* unmute_nickname);
+       * int decode_unmute(const char* cmd, char* unmute_nickname);
        * -----------------------------------------------------------
        * 
        * Retorna via parametro (unmute_nickname) o nickname do cliente o qual sera
@@ -224,13 +254,18 @@
        *         comando (inteiro)
        *     unmute_nickname : char*
        *         nickname do cliente o qual sera desmutado
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_unmute(const char* cmd, char* unmute_nickname);
+      int decode_unmute(const char* cmd, char* unmute_nickname);
 
       // *** Kick ***
       /**
        * @function
-       * void decode_kick(const char* cmd, char* kick_nickname);
+       * int decode_kick(const char* cmd, char* kick_nickname);
        * -------------------------------------------------------
        * 
        * Retorna via parametro (kick_nickname) o nickname do cliente o qual sera
@@ -242,13 +277,18 @@
        *         comando (inteiro)
        *     kick_nickname : char*
        *         nickname do cliente o qual sera kikado do canal
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_kick(const char* cmd, char* kick_nickname);
+      int decode_kick(const char* cmd, char* kick_nickname);
 
       // *** Unkick ***
       /**
        * @function
-       * void decode_kick(const char* cmd, char* unkick_nickname);
+       * int decode_kick(const char* cmd, char* unkick_nickname);
        * -------------------------------------------------------
        * 
        * Retorna via parametro (unkick_nickname) o nickname do cliente o qual sera
@@ -260,13 +300,18 @@
        *         comando (inteiro)
        *     unkick_nickname : char*
        *         nickname do cliente o qual sera deskikado do canal
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_unkick(const char* cmd, char* unkick_nickname);
+      int decode_unkick(const char* cmd, char* unkick_nickname);
 
       // *** Msg ***
       /**
        * @function
-       * void decode_msg(const char* cmd, char* role, char* nickname, char* message_content);
+       * int decode_msg(const char* cmd, char* role, char* nickname, char* message_content);
        * --------------------------------------------------------------------------------------
        * 
        * Retorna via parametro o role (role) e o nickname (nickname) do cliente, e tambem a 
@@ -282,7 +327,12 @@
        *         nickname do cliente que enviou a mensagem
        *     message_content : char*
        *         mensagem que o cliente enviou    
+       * 
+       * Retorno:
+       * --------
+       *     SUCCESS           : Foi possivel fazer o decode do comando 
+       *     INVALID_PROTOCOL  : Nao foi possivel fazer o decode do comando devida a sua formatacao
       */
-      void decode_msg(const char* cmd, char* role, char* nickname, char* message_content);
+      int decode_msg(const char* cmd, char* role, char* nickname, char* message_content);
 
 #endif 
