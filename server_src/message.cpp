@@ -155,13 +155,26 @@ void msg_info_pong(int id) {
 } 
 
 // @Comentários em "message.h"
+void msg_nickname_cliente(int id, const char* newNickname, char* oldNickname)
+{
+    char t_log[20];
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O cliente %d mudou o nickname de %s para %s...\n", t_log, id, oldNickname, newNickname);
+}
+
+void msg_join_channel(struct _client* clt) {
+    char t_log[20];
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O %s %d entrou no canal %s.\n", t_log, clt->nickname, clt->cl_id, clt->channel->nickname_channel);
+}
+
+// @Comentários em "message.h"
 void msg_encerrar_server() {
     char t_log[20];
-    printf("  [ ]\n");
     time_log(t_log, sizeof(t_log));
     printf("  [-] - [%s] Servidor finalizado com sucesso.\n", t_log);
-    printf("  [ ]\n");
     fflush(stdout);
 }
+
 
     

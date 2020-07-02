@@ -77,7 +77,7 @@ void decode_nickname(const char* cmd, char* nickname){
 // @Comentários em "decodec.h"
 void decode_join(const char* cmd, char* channel){
 
-    sscanf(cmd, "%*s %s", channel);
+    sscanf(cmd, "%*s %50s", channel);
 }
 
 // @Comentários em "decodec.h"

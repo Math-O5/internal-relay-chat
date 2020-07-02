@@ -22,7 +22,6 @@
         #include <map>
         #include <queue>
         #include <set>
-        #include <string> 	/* string */
 
         using namespace std;
 
@@ -54,24 +53,35 @@
      * Número máximo de clientes aceitos no servidor
     */
 
-        #define ERRO_MAX_CLIENTS 1
-        #define ERRO_SOCKET 2
-        #define ERRO_MULTIPLE_CONNECTION 3
-        #define ERRO_BIND 4
-        #define ERRO_LISTEN 5
-        #define ERRO_PORT 6
-        #define ERRO_MAX_CLIENT_REACHED 7
-        #define ERROR_CREATE_CHANNEL 8
-        #define ERROR_USER_BANNED 9
-        #define SUCCESS 0
-        #define FAIL 1
-        
-        #define ID_INITIALAZED 10
-        
-        #define MAX_SIZE_NAME 30
-        #define MAX_CLIENTS 20
+    #define ERRO_MAX_CLIENTS 1
+    #define ERRO_SOCKET 2
+    #define ERRO_MULTIPLE_CONNECTION 3
+    #define ERRO_BIND 4
+    #define ERRO_LISTEN 5
+    #define ERRO_PORT 6
+    #define ERRO_MAX_CLIENT_REACHED 7
+    #define ERROR_CREATE_CHANNEL 8
+    #define ERROR_USER_BANNED 9
+    #define SUCCESS 0
+    #define FAIL 1
+    
+    #define ID_INITIALAZED 10
+    
+    #define MAX_SIZE_NAME 30
+    #define MAX_CLIENTS 20
 
-        using namespace std;
+    using namespace std;
+
+    /**
+     * Compara duas strings char*
+     */
+    struct cmp_str
+    {
+        bool operator()(char const *str1, char const *str2) const
+        {
+            return strcmp(str1, str2) < 0;
+        }
+    };
 
     /**
      * @struct
@@ -93,16 +103,15 @@
     typedef struct _CHANNEL_conn
     {
         // atributos do canal
-        string name_channel;
-        string name_admin;
+        char* nickname_channel;
+        char* nickname_admin;
         bool is_public;
         int size_participants;
-        map<string, int> participants;                    // nickname, cl_socket 
-        map<int, string> arrived;                         // position arrived, string client
+        map<const char*, int, cmp_str> participants;                    // nickname, cl_socket 
+        map<int, char*> arrived;                         // position arrived, nickname
 
-        // TODO: Use the ipv4
-        set<string> notAllowedParticipants;            // <nickname> dos clientes banidos.
-        set<string> mutedParticipants;            // <nickname> dos clientes banidos.
+        set<const char*, cmp_str> notAllowedParticipants;              // <nickname> dos clientes banidos.
+        set<const char*, cmp_str> mutedParticipants;                   // <nickname> dos clientes banidos.
 
         // buffers de conexão
         char *send_buff, *recv_buff;
@@ -122,12 +131,13 @@
      * return: CHANNEL_conn com atributos inicializados
     */
    
-    CHANNEL_conn* conn_criar_CHANNEL(string name_channel, struct _client* clt);
+    CHANNEL_conn* conn_criar_CHANNEL(char* name_channel, struct _client* clt);
     void CHANNEL_destroy(CHANNEL_conn* channel);
     void CHANNEL_destroy_all();
     int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
     int CHANNEL_add_user(CHANNEL_conn* channel,  struct _client* clt); 
-    void CHANNEL_join(string name_channel,  struct _client* clt); 
+    void CHANNEL_on_change_nickname(struct _client* clt, const char* old_nickname);
+    void CHANNEL_join(char* name_channel,  struct _client* clt); 
     void CHANNEL_kick_user(CHANNEL_conn* channel, struct _client* clt, const char* kick_nickname); 
     void CHANNEL_unkick_user(CHANNEL_conn* channel, struct _client* clt, const char* unkick_nickname); 
     bool CHANNEL_send_message(int cl_socket, const char* buffer); 

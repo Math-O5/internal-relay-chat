@@ -47,7 +47,7 @@
         #include <time.h>
         #include <netinet/in.h> /* struct sockaddr_in */
 
-        #include <string>
+        #include "clients.h"
 
     using namespace std;
     /**
@@ -178,6 +178,17 @@
     */
     void msg_info_pong(int id);
     
+    /**
+     * @function
+     * 
+     * void msg_nickname_cliente()
+     * --------------------------
+     * 
+     * Mensagem atualização do nome cliente
+    */
+    void msg_nickname_cliente(int id, const char* newNickname, char* oldNickname);
+    void msg_join_channel(struct _client* clt);
+
     /**
      * @function
      * 

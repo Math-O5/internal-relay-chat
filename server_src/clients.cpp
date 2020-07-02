@@ -3,39 +3,61 @@
 // Array com os structs dos clientes
 client *cl_arr[MAX_CLIENTS];
 
+
+bool clt_validate_nickname(char* nickname) 
+{
+    if (strlen(nickname) >= 3 && sscanf(nickname, " %50[a-zA-Z]", nickname) == 1 
+    &&  strcmp(nickname, "invalid"))
+        return true;
+    else 
+        return false;
+}
+
 /**
  * @functon CHANNEL_is_valid_nickname
  * @param { string } nickname nome a ser checado
- * 
+ * @return { SUCCESS | ERR_NICKNAMEINUSE | ERR_ERRONEUSNICKNAME }
  * Checa se o nome é valido.
  */
-bool clt_is_valid_nickname(string nickname) {
-    // if(is_valid_nickname() == false) return false;
-    if(clt_get_by_nickname(nickname) != NULL && nickname != "invalid")
-        return false;
-    else return true;
+int clt_is_valid_nickname(char* nickname) {
+    if(!clt_validate_nickname(nickname)) return ERR_ERRONEUSNICKNAME;
+    if(clt_get_by_nickname(nickname) != NULL)
+        return ERR_NICKNAMEINUSE;
+    else return SUCCESS;
 }
 
 // @Comentários em "clients.h"
 client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
     client* cl = (client*) malloc(sizeof(client));
-    string nickname = "invalid";
     struct hostent *host_entry; 
     char hostbuffer[256];
+    char *IP_buffer; 
+
     
+    host_entry = NULL;
+    memset(hostbuffer, 0, sizeof(hostbuffer));
+
     // Recuperando o Ipv4
-    gethostname(hostbuffer, sizeof(hostbuffer));
-    host_entry = gethostbyname(hostbuffer); 
-    if(host_entry == NULL)
+    if(gethostname(hostbuffer, sizeof(hostbuffer)) == -1)
         return NULL;
 
+    host_entry = gethostbyname(hostbuffer); 
+    
+    if(host_entry == NULL)
+        return NULL;
+    
+    IP_buffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0])); 
+    
     cl->cl_address = address;
     cl->cl_socket = socket;
     cl->cl_id = id;
-    cl->ip_address = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0])); 
+    cl->ip_address = (char*) malloc(sizeof(char)*300);
+    strcpy(cl->ip_address, IP_buffer);
     cl->sv_socket = sv_socket;
     cl->channel = NULL;
-    cl->nickname = nickname;
+    cl->nickname = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
+    strcpy(cl->nickname, "invalid");
+
     return cl;
 }
 
@@ -104,15 +126,10 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
     return temp;
 }
 
-bool clt_validate_nickname(string nickname) 
-{
-    return true;
-}
-
-client* clt_get_by_nickname(string cli_nickname) 
+client* clt_get_by_nickname(const char* cli_nickname) 
 {
     for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] && cl_arr[i]->nickname == cli_nickname) {
+        if(cl_arr[i] && !strcmp(cl_arr[i]->nickname, cli_nickname)) {
             return cl_arr[i];
         }
     }
@@ -183,7 +200,7 @@ void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t*
     char* pack; 
     shift = 0;
     
-    pack = (char*)malloc(sizeof(char)*PACK_SIZE);
+    pack = (char*)malloc(sizeof(char)*MAX_MESSAGE_LENGHT);
     
     while((shift = decode_message(buffer, pack, shift)) > 0) 
     {
@@ -222,24 +239,34 @@ int clt_read_buffer(client* cl, char* buffer) {
 void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     // Buffer com as mensagens dos clientes 
     char buffer[BUFFER_SIZE];
+    
+    int response_code = 0, state = 0;
+    char temp_buffer_A[MAX_MESSAGE_LENGHT];
+    char temp_buffer_B[MAX_MESSAGE_LENGHT];
+    bool temp_bool;
+    char temp_buffer_C[2*MAX_MESSAGE_LENGHT];
+
     memset(buffer, '\0', BUFFER_SIZE);
 
     // Recupera as informacoes do cliente...
-    client* cl = clt_get_by_id(id_cur);
+    client* clt = clt_get_by_id(id_cur);
 
     // Cliente indisponível
-    if(cl == NULL) {
+    if(clt == NULL) {
         return;
     }
 
     // Mensagem com as informacoes do cliente
-    msg_info_client(id_cur, cl->cl_socket, cl->cl_address);
+    msg_info_client(id_cur, clt->cl_socket, clt->cl_address);
 
     while(true)
     {
+        memset(buffer, '\0', BUFFER_SIZE);
+        memset(temp_buffer_A, '\0', MAX_MESSAGE_LENGHT);
+
         // Mensagem recebida da usuário!
         // O cliente fica bloqueado enquanto esse evento não acontece.
-        if(recv(cl->cl_socket, buffer, BUFFER_SIZE, 0) > 0)         
+        if(recv(clt->cl_socket, buffer, MAX_MESSAGE_LENGHT, 0) > 0)         
         {    
             // Se o buffer estiver vazio, espera-se outra mensagem
             if(strlen(buffer) <= 0)
@@ -247,20 +274,70 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
             pthread_mutex_lock(mutex);
 
-            int input = detect_action(buffer);
-            switch(input) {
-                // case CONTINUE:
-                //     msg_recv_cliente(id_cur, buffer);
-                //     clt_split_and_send(id_cur,MAX_CLIENTS, buffer, pthread_mutex_t* mutex);
-                //     break;
-                // case QUIT:
-                //     msg_cliente_desconexao(cl->cl_id);
-                //     return;
-                // default: break;
+            int action_code = detect_action(buffer);
+            switch(action_code) 
+            {
+                case ACTION_NICK:
+                    decode_nickname(buffer, temp_buffer_A);
+                    
+                    state = clt_is_valid_nickname(temp_buffer_A);
+                    printf("state %d\n", state);
+                    if (state == SUCCESS) 
+                    {
+                        strcpy(temp_buffer_B, clt->nickname);
+                        strcpy(clt->nickname, temp_buffer_A); 
+                        
+                        sprintf(buffer, "/nickname SUCCESS %s\n", clt->nickname);  
+                        clt_send_message(clt->cl_socket,buffer);
+
+                        CHANNEL_on_change_nickname(clt, temp_buffer_B);  
+                        msg_nickname_cliente(clt->cl_id, clt->nickname, temp_buffer_B);     
+                    } else if(state == ERR_NICKNAMEINUSE) 
+                    {
+                        sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", temp_buffer_A);  
+                        clt_send_message(clt->cl_socket,buffer);
+                    } else 
+                    {
+                        sprintf(buffer, "/nickname ERR_ERRONEUSNICKNAME %s\n", temp_buffer_A);  
+                        clt_send_message(clt->cl_socket,buffer);
+                    }
+
+                    break;
+
+                case ACTION_JOIN:
+                    if(clt_validate_nickname(clt->nickname) == false) 
+                    {
+                        sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", clt->nickname);    
+                        clt_send_message(clt->cl_socket,buffer);
+                        break;
+                    }
+
+                    decode_join(buffer, temp_buffer_A);
+                    printf("%s", temp_buffer_A);
+                    CHANNEL_join(temp_buffer_A, clt);
+                    msg_join_channel(clt);
+                    break;
+
+                case ACTION_LIST:
+                    break;
+
+                case ACTION_MODE:
+                    break;
+
+                case ACTION_WHOIS:
+                    break;
+
+                case ACTION_INVITE:
+                case ACTION_MUTE:
+                case ACTION_UNMUTE:
+                case ACTION_KICK:
+                case ACTION_UNKICK:
+                    break;
+
+                case ACTION_MESSAGE:
+                    break;
             }
-
             pthread_mutex_unlock(mutex);
-
         }
         // Ocorreu um erro na conexao...
         else{
@@ -275,10 +352,10 @@ int decode_message(char* buffer, char* pack, int index) {
     if(buffer == NULL || *buffer == '\n' || *buffer == '\0')
         return 0;
     
-    bzero(pack, PACK_SIZE);
+    bzero(pack, MAX_MESSAGE_LENGHT);
 
     int i = 0, j = 0;
-    for(i = index; buffer[i] != '\n' && i < PACK_SIZE-1; ++i) {
+    for(i = index; buffer[i] != '\n' && i < MAX_MESSAGE_LENGHT-1; ++i) {
         pack[j++] = buffer[i];
     }
 

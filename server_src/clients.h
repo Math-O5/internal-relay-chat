@@ -20,7 +20,7 @@
 	 * Valor com a quantidade máxima de clientes permitidos no servidor
 	 */
 		#define BUFFER_SIZE 4096
-		#define PACK_SIZE 512
+		#define MAX_MESSAGE_LENGHT 512
 
 		#define SUCCESS 0
 		#define FAIL 1
@@ -49,7 +49,6 @@
 		#include <stdlib.h>
 		#include <string.h> /* strlen */
 		#include <unistd.h> /* close */
-		#include <string> 	/* string */
 	/**
      * Biblioteca do própio projeto
      * -----------------------------
@@ -87,7 +86,7 @@
 		// atributos do cliente (chat)
 		int cl_id;
 		char* ip_address;
-		string nickname;
+		char* nickname;
 		struct _CHANNEL_conn* channel;
 	} client;
 	/**
@@ -200,7 +199,7 @@
 
 	/**
 	 */
-	client* clt_get_by_nickname(string cli_nickname);
+	client* clt_get_by_nickname(const char* cli_nickname);
 
 	/**
 	 * @function
