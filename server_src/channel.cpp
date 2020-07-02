@@ -498,14 +498,14 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '@';
             else role = '#';
 
-            sprintf(msg_buffer, "/msg %c%s : %s\n", role, clt->nickname, buffer);
+            // sprintf(msg_buffer, "/msg %c%s : %s\n", role, clt->nickname, buffer);
             break;
 
         case MESSAGE_NEW_JOIN_CHANNEL:          // Mensagem para quem criou o canal.
-            sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->name_channel);
+            // sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->name_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s", channel->name_channel, clt->nickname);
+            // sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s", channel->name_channel, clt->nickname);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
@@ -514,11 +514,11 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '@';
             else role = '#';   
 
-            sprintf(msg_buffer, "/join SUCCESS %s role:user.\n", channel->name_channel);
+            // sprintf(msg_buffer, "/join SUCCESS %s role:user.\n", channel->name_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             // a lista ordenada pela ordem de chegada, sem considerar o admin.
-            sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s\n", channel->name_channel, clt->nickname);
+            // sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s\n", channel->name_channel, clt->nickname);
 
             // TODO: avoid overflow buffer
             it_arrived = ++channel->arrived.begin();
@@ -531,7 +531,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             // mensagem para todos no canal
-            sprintf(msg_buffer, "/channelmsg : %c%s conectou-se.\n", role, clt->nickname);
+            // sprintf(msg_buffer, "/channelmsg : %c%s conectou-se.\n", role, clt->nickname);
             CHANNEL_send_message_all(channel, msg_buffer);
 
             break;
@@ -541,10 +541,10 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '@';
             else role = '#';   
 
-            sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->name_channel);
+            // sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->name_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/channelmsg : @%s é o novo administrador.\n", clt->nickname);
+            // sprintf(msg_buffer, "/channelmsg : @%s é o novo administrador.\n", clt->nickname);
             CHANNEL_send_message_all(channel, msg_buffer);
             break;
 
@@ -556,103 +556,103 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '@';
             else role = '#';  
 
-            sprintf(msg_buffer, "/quit %c%s : %s\n", role, clt->nickname, "desconectou-se.");
+            // sprintf(msg_buffer, "/quit %c%s : %s\n", role, clt->nickname, "desconectou-se.");
             CHANNEL_send_message_all(channel, msg_buffer);
             break;
 
         case MESSAGE_ERR_INVITEONLYCHAN:            // Error: usuario não foi convidado para entrar nesse canal.
-            sprintf(msg_buffer, "/join ERR_INVITEONLYCHAN\n");
+            // sprintf(msg_buffer, "/join ERR_INVITEONLYCHAN\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_ERR_BANNEDFROMCHAN:            // Error: usuario não foi banido para entrar nesse canal.
-            sprintf(msg_buffer, "/join ERR_BANNEDFROMCHAN\n");
+            // sprintf(msg_buffer, "/join ERR_BANNEDFROMCHAN\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_KICK_CHANNEL:
-            sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi banido pelo administrador.");
+            // sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi banido pelo administrador.");
             CHANNEL_send_message_all(channel, msg_buffer);
 
-            sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
+            // sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_UNKICK_CHANNEL:
-            sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
+            // sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_MUTE_CHANNEL:
-            sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi silenciado pelo administrador.");
+            // sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi silenciado pelo administrador.");
             CHANNEL_send_message_all(channel, msg_buffer);
 
-            sprintf(msg_buffer, "/mute SUCCESS %s\n", buffer);
+            // sprintf(msg_buffer, "/mute SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_UNMUTE_CHANNEL:
-            sprintf(msg_buffer, "/unmute SUCCESS %s\n", buffer);
+            // sprintf(msg_buffer, "/unmute SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             break;
 
         case MESSAGE_MUTE_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/mute ERR_NOSUCHNICK\n");
+            // sprintf(msg_buffer, "/mute ERR_NOSUCHNICK\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_MUTE_ERR_CHANOPRIVSNEEDED:
-            sprintf(msg_buffer, "/mute ERR_CHANOPRIVSNEEDED");
+            // sprintf(msg_buffer, "/mute ERR_CHANOPRIVSNEEDED");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_UNMUTE_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/unmute ERR_NOSUCHNICK\n");
+            // sprintf(msg_buffer, "/unmute ERR_NOSUCHNICK\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_UNMUTE_ERR_CHANOPRIVSNEEDED:
-            sprintf(msg_buffer, "/unmute ERR_CHANOPRIVSNEEDED");
+            // sprintf(msg_buffer, "/unmute ERR_CHANOPRIVSNEEDED");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_KICK_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/kick ERR_NOSUCHNICK\n");
+            // sprintf(msg_buffer, "/kick ERR_NOSUCHNICK\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_KICK_ERR_CHANOPRIVSNEEDED:
-            sprintf(msg_buffer, "/kick ERR_CHANOPRIVSNEEDED");
+            // sprintf(msg_buffer, "/kick ERR_CHANOPRIVSNEEDED");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
          case MESSAGE_WHOIS_CHANNEL:
-            sprintf(msg_buffer, "/whois SUCCESS %s\n", buffer);
+            // sprintf(msg_buffer, "/whois SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_WHOIS_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/whois ERR_NOSUCHNICK\n");
+            // sprintf(msg_buffer, "/whois ERR_NOSUCHNICK\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
         case MESSAGE_WHOIS_ERR_CHANOPRIVSNEEDED:
-            sprintf(msg_buffer, "/whois ERR_CHANOPRIVSNEEDED");
+            // sprintf(msg_buffer, "/whois ERR_CHANOPRIVSNEEDED");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
          case MESSAGE_MODE_CHANNEL:
 
-            sprintf(msg_buffer, "/mode SUCCESS\n");
+            // sprintf(msg_buffer, "/mode SUCCESS\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/channelmsg canal %s agora é %s\n", channel->name_channel, buffer);
+            // sprintf(msg_buffer, "/channelmsg canal %s agora é %s\n", channel->name_channel, buffer);
             CHANNEL_send_message_all(channel, msg_buffer);
             break;
         
         case MESSAGE_MODE_ERR_CHANOPRIVSNEEDED:
-            sprintf(msg_buffer, "/mode ERR_CHANOPRIVSNEEDED");
+            // sprintf(msg_buffer, "/mode ERR_CHANOPRIVSNEEDED");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 

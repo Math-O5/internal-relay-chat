@@ -188,4 +188,207 @@
     */
     void msg_encerrar_server();
 
+    // ############################################################ PARTE 3 ############################################################
+
+// ******************************* MENSAGENS GERAIS *******************************
+
+    /**
+     * @function
+     * 
+     * void msg(char type, char* msg)
+     * ------------------------------
+     * 
+     * Mensagem generica definida pelo parametro 'msg' e o seu
+     * tipo (+ , - , x , ...) eh defindo pelo parametro 'type'  
+     *
+    */
+    void msg(char type, char* msg);
+
+// ******************************* LIST *******************************
+
+    /**
+     * @function
+     * 
+     * void msg_list(char* nickname)
+     * -----------------------------
+     * 
+     * Mensagem indicando que foram listados o nome dos canais
+     * para o usuario que solicitou 
+     * 
+    */
+    void msg_list(char* nickname);
+
+// ******************************* JOIN *******************************
+
+    /**
+     * @function
+     * 
+     * void msg_create_channel(char* nickname, char* channel_name)
+     * -----------------------------------------------------------
+     * 
+     * Mensagem que indica que o canal foi criado
+     * 
+    */
+    void msg_create_channel(char* nickname, char* channel_name);
+
+    /**
+     * @function
+     * 
+     * void msg_join_channel(char* nickname, char* channel_name)
+     * ---------------------------------------------------------
+     * 
+     * Mensagem que notifica que o usuario entrou no canal
+     * 
+    */
+    void msg_join_channel(char* nickname, char* channel_name);
+
+    /**
+     * @function
+     * 
+     * void msg_exit_channel(char* nickname, char* channel_name)
+     * ---------------------------------------------------------
+     * 
+     * Mensagem que avisa que o usuario saiu do canal 
+     * 
+    */
+    void msg_exit_channel(char* nickname, char* channel_name);
+
+    /**
+     * @function
+     * 
+     * void msg_destroy_channel(char* channel_name)
+     * --------------------------------------------
+     * 
+     * Mensagem de desativacao do canal
+     * 
+    */
+    void msg_destroy_channel(char* channel_name);
+
+// ******************************* NICKNAME *******************************
+
+     /**
+     * @function
+     * 
+     * void msg_create_nickname(int id, char* nickname)
+     * ------------------------------------------------
+     * 
+     * Mensagem de criacao do nickname pelo cliente
+     * 
+    */
+    void msg_create_nickname(int id, char* nickname);
+
+     /**
+     * @function
+     * 
+     * void msg_change_nickname(int id, char* nickname)
+     * ------------------------------------------------
+     * 
+     * Mensagem indicando que o nickname do usuario foi alterado
+     * 
+    */
+    void msg_change_nickname(int id, char* nickname);
+
+// ******************************* KICK *******************************
+
+     /**
+     * @function
+     * 
+     * void msg_kick(char* nickname_adm, char* nickname_user, char* channel_name)
+     * --------------------------------------------------------------------------
+     * 
+     * Mensagem avisando que o usuario foi expulso do canal
+     * 
+    */
+    void msg_kick(char* nickname_adm, char* nickname_user, char* channel_name);
+
+// ******************************* UNKICK *******************************
+     
+     /**
+     * @function
+     * 
+     * void msg_unkick(char* nickname_adm, char* nickname_user, char* channel_name)
+     * ----------------------------------------------------------------------------
+     * 
+     * Mensagem avisando que o usuario voltou a ser permitido participar do canal
+     * 
+    */
+    void msg_unkick(char* nickname_adm, char* nickname_user, char* channel_name);
+
+// ******************************* MUTE *******************************
+
+    /**
+     * @function
+     * 
+     * void msg_mute(char* nickname_adm, char* nickname_user, char* channel_name)
+     * --------------------------------------------------------------------------
+     * 
+     * Mensagem indicando que o usuario foi mutado
+     * 
+    */
+    void msg_mute(char* nickname_adm, char* nickname_user, char* channel_name);
+
+// ******************************* UNMUTE *******************************
+
+    /**
+     * @function
+     * 
+     * void msg_unmute(char* nickname_adm, char* nickname_user, char* channel_name)
+     * ---------------------------------------------------------------------------- 
+     * 
+     * Mensagem indicando que o usuario foi desmutado
+     * 
+    */
+    void msg_unmute(char* nickname_adm, char* nickname_user, char* channel_name);
+
+// ******************************** WHOIS *******************************
+
+    /**
+     * @function
+     * 
+     * void msg_whois(char* nickname_adm, char* nickname_user, char* channel_name, struct sockaddr_in cl_addr)
+     * --------------------------------------------------------------------------------------------------------
+     * 
+     * Mensagem que mostra o IP do usuario, o qual foi solicitado pelo administrador do canal
+     * 
+    */
+    void msg_whois(char* nickname_adm, char* nickname_user, char* channel_name, struct sockaddr_in cl_addr);
+
+// ******************************** MODE ********************************
+
+    /**
+     * @function
+     * 
+     * void msg_invite_only_on(char* nickname_adm, char* channel_name)
+     * ---------------------------------------------------------------
+     * 
+     * Mensagem avisando que o modo do canal foi alterado para apenas convidados
+     * 
+    */
+    void msg_invite_only_on(char* nickname_adm, char* channel_name);
+
+    /**
+     * @function
+     * 
+     * void msg_invite_only_off(char* nickname_adm, char* channel_name)
+     * ----------------------------------------------------------------
+     * 
+     * Mensagem avisando que o modo do canal foi alterado para qualquer usuario possa
+     * participar
+     * 
+    */
+    void msg_invite_only_off(char* nickname_adm, char* channel_name);
+
+// ******************************** INVITE ********************************
+
+    /**
+     * @function
+     * 
+     * void msg_invite(char* nickname_in, char* nickname_out, char* channel_name)
+     * --------------------------------------------------------------------------
+     * 
+     * Mensagem indicando que tal usuario convidou outro para o canal
+     * 
+    */
+    void msg_invite(char* nickname_in, char* nickname_out, char* channel_name);
+
 #endif

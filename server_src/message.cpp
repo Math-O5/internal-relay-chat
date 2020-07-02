@@ -164,4 +164,207 @@ void msg_encerrar_server() {
     fflush(stdout);
 }
 
-    
+
+// ############################################################ PARTE 3 ############################################################
+
+// ******************************* MENSAGENS GERAIS *******************************
+
+// @Comentários em "message.h"
+void msg(char type, char* msg){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [%c] - [%s] %s\n", type, t_log, msg);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* LIST *******************************
+
+// @Comentários em "message.h"
+void msg_list(char* nickname){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] Foi listado para o usuario '%s' a listagem dos canais do servidor.\n", t_log, nickname);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* JOIN *******************************
+
+// @Comentários em "message.h"
+void msg_create_channel(char* nickname, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O canal '%s' foi criado pelo usuario '%s'.\n", t_log, channel_name, nickname);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_join_channel(char* nickname, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O usuario '%s' deu join no canal '%s'.\n", t_log, nickname, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_exit_channel(char* nickname, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] O usuario '%s' saiu do canal '%s'.\n", t_log, nickname, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_destroy_channel(char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] O canal '%s' foi terminado pois nao haviam mais participantes.\n", t_log, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* NICKNAME *******************************
+
+// @Comentários em "message.h"
+void msg_create_nickname(int id, char* nickname){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O cliente %d criou seu nickname: '%s'.\n", t_log, id, nickname);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_change_nickname(int id, char* nickname){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O cliente %d alterou seu nickname para '%s'.\n", t_log, id, nickname);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* KICK *******************************
+
+// @Comentários em "message.h"
+void msg_kick(char* nickname_adm, char* nickname_user, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] O usuario '%s' foi banido do canal '%s' pelo administrador '%s'.\n", t_log, nickname_user, channel_name, nickname_adm);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* UNKICK *******************************
+
+// @Comentários em "message.h"
+void msg_unkick(char* nickname_adm, char* nickname_user, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O usuario '%s' voltou a ser permitido pelo administrador '%s' a participar do canal '%s'.\n", t_log, nickname_user, nickname_adm, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* MUTE *******************************
+
+// @Comentários em "message.h"
+void msg_mute(char* nickname_adm, char* nickname_user, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] O usuario '%s' foi silenciado pelo administrador '%s' no canal '%s'.\n", t_log, nickname_user, nickname_adm, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************* UNMUTE *******************************
+
+// @Comentários em "message.h"
+void msg_unmute(char* nickname_adm, char* nickname_user, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O usuario '%s' nao esta mais silenciado pelo administrador '%s' no canal '%s'.\n", t_log, nickname_user, nickname_adm, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************** WHOIS *******************************
+
+// @Comentários em "message.h"
+void msg_whois(char* nickname_adm, char* nickname_user, char* channel_name, struct sockaddr_in cl_addr){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O administrador '%s' do canal '%s' solicitou o IP do usuario '%s' o qual eh %d.%d.%d.%d .\n",
+        t_log, 
+        nickname_user, 
+        channel_name, 
+        nickname_adm, 
+        (cl_addr.sin_addr.s_addr & 0xff),
+        (cl_addr.sin_addr.s_addr & 0xff00) >> 8,
+        (cl_addr.sin_addr.s_addr & 0xff0000) >> 16,
+        (cl_addr.sin_addr.s_addr & 0xff000000) >> 24);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************** MODE ********************************
+
+// @Comentários em "message.h"
+void msg_invite_only_on(char* nickname_adm, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O administrador '%s' mudou o modo do canal '%s' para apenas convidados.\n", t_log, nickname_adm, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_invite_only_off(char* nickname_adm, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [-] - [%s] O administrador '%s' mudou o modo do canal '%s' para qualquer usuario possa participar.\n", t_log, nickname_adm, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************** INVITE ********************************
+
+// @Comentários em "message.h"
+void msg_invite(char* nickname_in, char* nickname_out, char* channel_name){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O usuario '%s' convidou o outro usuario '%s' para o canal '%s'.\n", t_log, nickname_in, nickname_out, channel_name);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
+
+// ******************************** INVALID PROTOCOL ********************************
+
+// @Comentários em "message.h"
+void msg_invalid_protocol(int id){
+    char t_log[20];
+    printf("  [ ]\n");
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O cliente %d enviou um protocolo com erro.\n", t_log, id);
+    printf("  [ ]\n");
+    fflush(stdout);
+}
