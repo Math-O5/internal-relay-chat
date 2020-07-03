@@ -37,7 +37,6 @@ void map_insert_key_int(map<int, char*>& pointer, int value, const char* str) {
  * Atualiza a referencia do cliente para o canal.
  * 
  */
-
 CHANNEL_conn* conn_criar_CHANNEL(char* nickname_channel, client* clt) 
 {        
     int size_participants = 1; // há apenas um usuario: o admin;
@@ -46,7 +45,7 @@ CHANNEL_conn* conn_criar_CHANNEL(char* nickname_channel, client* clt)
     if(channels.find(nickname_channel) == channels.end()) {
         map<const char*, int, cmp_str> tmp_participants;
         map<int, char*> tmp_arrived;
-        set<const char*, cmp_str> tmp_muted, tmp_notAllow;
+        set<const char*, cmp_str> tmp_muted, tmp_notAllow, tmp_invites;
 
         CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
         newChannel->nickname_admin = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
@@ -56,6 +55,7 @@ CHANNEL_conn* conn_criar_CHANNEL(char* nickname_channel, client* clt)
         newChannel->arrived = tmp_arrived;
         newChannel->notAllowedParticipants = tmp_notAllow;
         newChannel->mutedParticipants = tmp_muted;
+        newChannel->invitesParticipants = tmp_invites;
 
         map_insert_key_char(newChannel->participants, clt->nickname, clt->cl_socket);
         map_insert_key_int(newChannel->arrived, 1, clt->nickname);
@@ -247,19 +247,22 @@ int CHANNEL_add_user(CHANNEL_conn* channel, client* clt)
 
     //extrae o valor da posição de chegada do ultimo participante
     int last = channel->arrived.rbegin()->first + 1;
-    printf("************posicao %d **********\n", last);
 
-    for(auto i : channel->notAllowedParticipants) {
-        printf("value: %s\n", i);
-    }
-
-    // Check if the user is banned
+    // Confirma se o usuário não está banido.
+    // O usuário é adicionado e excluido dessa lista com /kick e /unkick.
     if(channel->notAllowedParticipants.find(clt->nickname) != channel->notAllowedParticipants.end()) 
     {
         return ERROR_USER_BANNED;
     }
 
-    // TODO: check invite permission 
+    // Confirma permissão de acesso ao canal. 
+    // Se o canal é publico qualquer usário pode entrar.
+    // Se o canal é privado apenas convidados podem entrar.
+    if(channel->is_public == false && 
+        channel->invitesParticipants.find(clt->nickname) == channel->invitesParticipants.end())
+    { 
+        return ERROR_INVITEONLYCHAN;
+    } 
 
     // adiciona o participante e sua respectiva ordem de chegada
     map_insert_key_char(channel->participants, clt->nickname, clt->cl_socket);
@@ -335,21 +338,14 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     // Se o usuário já estiver em um canal, ele é retirado dele.
     if(clt->channel != NULL) 
     {
-            printf("huuuuu\n");
-
         it_channel = channels.find(clt->channel->nickname_channel);
-            printf("juuuu\n");
-
         CHANNEL_remove_user(clt->channel, clt);
-            printf("kii\n");
-
         CHANNEL_broadcast(it_channel->second, clt, MESSAGE_QUIT_CHANNEL, "");
     }
 
-    printf("liiii\n");
     it_channel = channels.find(nickname_channel);
 
-    // // Se o canal não existe, então será criado e o criador é admin
+    // Se o canal não existe, então será criado e o criador é admin
     if(it_channel == channels.end()) 
     {
         channel = conn_criar_CHANNEL(nickname_channel, clt);
@@ -357,7 +353,6 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     } 
     else 
     {
-            printf("niuuuuuu");
         int response = CHANNEL_add_user(it_channel->second, clt);
         
         switch (response)
@@ -368,7 +363,7 @@ void CHANNEL_join(char* nickname_channel, client* clt)
             case ERROR_USER_BANNED:
                 CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, "");
                 break;
-            case MESSAGE_ERR_INVITEONLYCHAN:
+            case ERROR_INVITEONLYCHAN:
                 CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_INVITEONLYCHAN, "");
                 break;
             default:
@@ -538,20 +533,17 @@ void CHANNEL_whois(CHANNEL_conn* channel, client* clt, char* whois)
 {
     if(channel == NULL) return;
     
-    if(channel->participants[whois] == 0)                   // Se o usuario não está no canal.
+    if(channel->participants.find(whois) == channel->participants.end())                   // Se o usuario não está no canal.
     {
         CHANNEL_broadcast(channel, clt, MESSAGE_WHOIS_ERR_NOSUCHNICK, whois);
         return;
     }
 
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
-    {           
-        channel->mutedParticipants.erase(whois);            // Se o canal existe, o usuario é apagado da lista de kick. Obs. sets não armazena valores duplicados.
-        
-        client* clt = clt_get_by_nickname(whois);
+    {     
+        client* whois_client = clt_get_by_nickname(whois);
         strcat(whois, " ");
-        strcat(whois, clt->ip_address);
-
+        strcat(whois, whois_client->ip_address);
         CHANNEL_broadcast(channel, clt, MESSAGE_WHOIS_CHANNEL, whois);
     } else
     {

@@ -19,7 +19,8 @@ bool clt_validate_nickname(char* nickname)
  * @return { SUCCESS | ERR_NICKNAMEINUSE | ERR_ERRONEUSNICKNAME }
  * Checa se o nome é valido.
  */
-int clt_is_valid_nickname(char* nickname) {
+int clt_is_valid_nickname(char* nickname) 
+{
     if(!clt_validate_nickname(nickname)) return ERR_ERRONEUSNICKNAME;
     if(clt_get_by_nickname(nickname) != NULL)
         return ERR_NICKNAMEINUSE;
@@ -86,8 +87,10 @@ int clt_add_queue(client* cl, pthread_mutex_t* mutex){
 
 // @Comentários em "clients.h"
 void clt_destruir(int id){
-    for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] != NULL && cl_arr[i]->cl_id == id) {
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
+        if(cl_arr[i] != NULL && cl_arr[i]->cl_id == id) 
+        {
             close(cl_arr[i]->cl_socket);
             cl_arr[i] = NULL;
             free(cl_arr[i]);
@@ -97,9 +100,12 @@ void clt_destruir(int id){
 }
 
 // @Comentários em "clients.h"
-void clt_destruir_clientes() {
-    for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] != NULL) {
+void clt_destruir_clientes() 
+{
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
+        if(cl_arr[i] != NULL) 
+        {
             close(cl_arr[i]->cl_socket);
             free(&(*cl_arr[i]));
         }
@@ -113,8 +119,10 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 
     // Procura pelo cliente, atraves de seu id, e o retira do array
     client* temp = NULL;
-    for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] && cl_arr[i]->cl_id == id) {
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
+        if(cl_arr[i] && cl_arr[i]->cl_id == id) 
+        {
             temp = cl_arr[i];
             cl_arr[i] = NULL;
             break;
@@ -128,8 +136,10 @@ client* clt_remove_queue(int id, pthread_mutex_t* mutex){
 
 client* clt_get_by_nickname(const char* cli_nickname) 
 {
-    for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] && !strcmp(cl_arr[i]->nickname, cli_nickname)) {
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
+        if(cl_arr[i] && !strcmp(cl_arr[i]->nickname, cli_nickname)) 
+        {
             return cl_arr[i];
         }
     }
@@ -139,8 +149,10 @@ client* clt_get_by_nickname(const char* cli_nickname)
 // @Comentários em "clients.h"
 client* clt_get_by_id(int cli_id) 
 {
-    for(int i = 0; i < MAX_CLIENTS; i++) {
-        if(cl_arr[i] && cl_arr[i]->cl_id == cli_id) {
+    for(int i = 0; i < MAX_CLIENTS; i++) 
+    {
+        if(cl_arr[i] && cl_arr[i]->cl_id == cli_id) 
+        {
             return cl_arr[i];
         }
     }
@@ -148,11 +160,13 @@ client* clt_get_by_id(int cli_id)
 }
 
 // @Comentários em "clients.h"
-bool clt_send_message(int cl_socket, const char* buffer) {
+bool clt_send_message(int cl_socket, const char* buffer) 
+{
     int try_send = 0;
 
     // Tenta enviar a mensagem até receber confirmação. Se após 
-    while(send(cl_socket, buffer, strlen(buffer), 0) < 0 && try_send < 6) {
+    while(send(cl_socket, buffer, strlen(buffer), 0) < 0 && try_send < 6) 
+    {
         try_send += 1;
     }
     return (try_send == 6) ? false : true;
@@ -170,8 +184,10 @@ void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char
     // Envio da mensagem aos clientes
     // Restringir para broadcast 
     for(int i = 0; i < max_conn; i++){
-        if(cl_arr[i] != NULL) {
-            if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) {
+        if(cl_arr[i] != NULL) 
+        {
+            if(clt_send_message(cl_arr[i]->cl_socket, msg_buffer)) 
+            {
                 msg_send_cliente(id_cur, cl_arr[i]->cl_id);
             } else {
                 msg_client_no_response(cl_arr[i]->cl_id);
@@ -195,7 +211,8 @@ void clt_ping(client* cl)
 }
 
 // TODO: pass it to Channel
-void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t* mutex) {
+void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t* mutex) 
+{
     int shift;
     char* pack; 
     shift = 0;
@@ -211,22 +228,26 @@ void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t*
     bzero(buffer, BUFFER_SIZE);
 }
 // @Comentários em "clients.h"
-int clt_read_buffer(client* cl, char* buffer) {
+int clt_read_buffer(client* cl, char* buffer) 
+{
     
     // Comando: /ping
-    if(strncmp(buffer, "/ping", 5) == 0) {
+    if(strncmp(buffer, "/ping", 5) == 0) 
+    {
         
         char log[] = ">> <SERVER>: pong\n";
         memset(buffer, '\0', BUFFER_SIZE);
         msg_info_ping(cl->cl_id);
 
-        if(clt_send_message(cl->cl_socket, log)) {
+        if(clt_send_message(cl->cl_socket, log)) 
+        {
             msg_info_pong(cl->cl_id);
         } 
         return PING;
 
     // Comando: /quit
-    } else if(strncmp(buffer, "/quit", 5) == 0) {
+    } else if(strncmp(buffer, "/quit", 5) == 0) 
+    {
         memset(buffer, '\0', BUFFER_SIZE);
         return QUIT;
     } 
@@ -252,7 +273,8 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     client* clt = clt_get_by_id(id_cur);
 
     // Cliente indisponível
-    if(clt == NULL) {
+    if(clt == NULL) 
+    {
         return;
     }
 
@@ -322,7 +344,6 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     CHANNEL_join(temp_buffer_A, clt);
                     if(clt->channel != NULL)
                         msg_join_channel(clt);
-    
                     break;
 
                 case ACTION_LIST:
@@ -332,17 +353,61 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     break;
 
                 case ACTION_MODE:
+                   if(clt->channel == NULL) 
+                   {
+                        clt_send_message(
+                            clt->cl_socket, 
+                            "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
+                        ); 
+                        break;
+                    }   
+                    response_code = decode_mode(buffer, &temp_bool);
+
+                    if(CHANNEL_check_privilege(clt->channel, clt) == false) 
+                    {
+                        sprintf(temp_buffer_A, "/mode ERR_CHANOPRIVSNEEDED\n");
+                        CHANNEL_send_message_one(clt->channel, clt, temp_buffer_A);
+                    } else if(response_code == VALID_PROTOCOL) {
+                        CHANNEL_mode(clt->channel, clt, temp_bool);
+                    } else {
+                        clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");
+                    }
                     break;
 
                 case ACTION_WHOIS:
+                    if(clt->channel == NULL) 
+                    {
+                        clt_send_message(
+                            clt->cl_socket, 
+                            "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
+                        ); 
+                        break;
+                    }   
+                    
+                    response_code = decode_whois(buffer, temp_buffer_A);
+                    
+                    /* Confirma privilégios */ 
+                    if(CHANNEL_check_privilege(clt->channel, clt) == false) 
+                    {
+                        sprintf(temp_buffer_A, "/whois ERR_CHANOPRIVSNEEDED\n");
+                        CHANNEL_send_message_one(clt->channel, clt, temp_buffer_A);
+                    } else if(response_code == VALID_PROTOCOL)
+                    {    
+                        CHANNEL_whois(clt->channel, clt, temp_buffer_A);
+                    } else 
+                    {
+                        sprintf(temp_buffer_C, "/%s ERR_NOSUCHNICK %s\n", temp_buffer_A);
+                        CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+                    }
                     break;
-
+                   
                 case ACTION_INVITE:
                 case ACTION_MUTE:
                 case ACTION_UNMUTE:
                 case ACTION_KICK:
                 case ACTION_UNKICK:
-                   if(clt->channel == NULL) {
+                   if(clt->channel == NULL) 
+                   {
                         clt_send_message(
                             clt->cl_socket, 
                             "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
@@ -362,14 +427,14 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                         response_code = decode_unkick(buffer, temp_buffer_A);
                     
                     /* Confirma privilégios */ 
-                    if(CHANNEL_check_privilege(clt->channel, clt) == false) {
+                    if(CHANNEL_check_privilege(clt->channel, clt) == false) 
+                    {
                         memset(temp_buffer_B, 0, sizeof(temp_buffer_B));
                         strncpy(temp_buffer_B, buffer, indexOf(buffer, ' '));
                         sprintf(temp_buffer_C, "%s ERR_CHANOPRIVSNEEDED\n", temp_buffer_B);
                         CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
                     } else if(response_code == VALID_PROTOCOL)
                     {    
-
                         if(action_code == ACTION_INVITE)
                             CHANNEL_invite(clt->channel, clt, temp_buffer_A);
                         else if(action_code == ACTION_MUTE)
@@ -380,7 +445,6 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                             CHANNEL_kick_user(clt->channel, clt, temp_buffer_A);
                         else if(action_code == ACTION_UNKICK)
                             CHANNEL_unkick_user(clt->channel, clt, temp_buffer_A);
-                        printf("passeiz\n");
                     } else {
                         sprintf(temp_buffer_C, "/%s ERR_NOSUCHNICK %s\n", temp_buffer_A);
                         CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
@@ -388,7 +452,8 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     break;
 
                 case ACTION_MESSAGE:
-                    if(clt->channel == NULL) {
+                    if(clt->channel == NULL) 
+                    {
                         clt_send_message(
                             clt->cl_socket, 
                             "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
@@ -423,7 +488,8 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 }
 
 // @Comentários em "client.h"
-int decode_message(char* buffer, char* pack, int index) {
+int decode_message(char* buffer, char* pack, int index) 
+{
 
     if(buffer == NULL || *buffer == '\n' || *buffer == '\0')
         return 0;
@@ -431,7 +497,8 @@ int decode_message(char* buffer, char* pack, int index) {
     bzero(pack, MAX_MESSAGE_LENGHT);
 
     int i = 0, j = 0;
-    for(i = index; buffer[i] != '\n' && i < MAX_MESSAGE_LENGHT-1; ++i) {
+    for(i = index; buffer[i] != '\n' && i < MAX_MESSAGE_LENGHT-1; ++i) 
+    {
         pack[j++] = buffer[i];
     }
 
@@ -443,9 +510,11 @@ int decode_message(char* buffer, char* pack, int index) {
     return i + 1;
 }
 
-int indexOf(char* str, char charater) {
+int indexOf(char* str, char charater) 
+{
     int i = 0;
-    while(str[i] != 0) {
+    while(str[i] != 0) 
+    {
         if(str[i] == charater)
             return i;
         ++i;

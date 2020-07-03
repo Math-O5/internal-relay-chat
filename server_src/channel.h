@@ -62,6 +62,7 @@
     #define ERRO_MAX_CLIENT_REACHED 7
     #define ERROR_CREATE_CHANNEL 8
     #define ERROR_USER_BANNED 9
+    #define ERROR_INVITEONLYCHAN 10
     #define SUCCESS 0
     #define FAIL 1
     
@@ -110,9 +111,9 @@
         map<const char*, int, cmp_str> participants;                    // nickname, cl_socket 
         map<int, char*> arrived;                         // position arrived, nickname
 
-        set<const char*, cmp_str> notAllowedParticipants;              // <nickname> dos clientes banidos.
-        set<const char*, cmp_str> mutedParticipants;                   // <nickname> dos clientes banidos.
-
+        set<const char*, cmp_str>   notAllowedParticipants,              // <nickname> dos clientes banidos.
+                                    mutedParticipants,                   // <nickname> dos clientes banidos.
+                                    invitesParticipants;
         // buffers de conexão
         char *send_buff, *recv_buff;
         int  send_buff_size, recv_buff_size;
@@ -161,5 +162,7 @@
     void CHANNEL_mute_user(CHANNEL_conn* channel, struct _client* clt, const char* mute_nickname);
     void CHANNEL_unmute_user(CHANNEL_conn* channel, struct _client* clt, const char* unmute_nickname);
     void CHANNEL_invite(CHANNEL_conn* channel, struct _client* clt, const char* kick_nickname);
+    void CHANNEL_whois(CHANNEL_conn* channel, struct _client* clt, char* whois);
+    void CHANNEL_mode(CHANNEL_conn* channel, struct _client* clt, bool is_public); 
 
 #endif
