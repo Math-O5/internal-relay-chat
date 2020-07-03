@@ -343,15 +343,31 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     break;
 
                 case ACTION_MESSAGE:
+                    int state = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
+                    
+                    if(state == VALID_PROTOCOL) 
+                    {
+                        msg_client_channel(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
+                        CHANNEL_broadcast(clt->channel, clt, MESSAGE_CLIENT, temp_buffer_C);
+                    } else
+                    {
+                        clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");   
+                    }
+                    
                     break;
             }
             pthread_mutex_unlock(mutex);
         }
         // Ocorreu um erro na conexao...
         else{
+            msg_exit_channel(clt->nickname, clt->channel->nickname_channel);
+            CHANNEL_broadcast(clt->channel, clt, MESSAGE_QUIT_CHANNEL, "");
+            CHANNEL_remove_user(clt->channel, clt); 
             return;
         }
     }
+    CHANNEL_remove_user(clt->channel, clt); 
+    msg_exit_channel(clt->nickname, clt->channel->nickname_channel);
 }
 
 // @Comentários em "client.h"

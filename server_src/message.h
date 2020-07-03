@@ -214,6 +214,8 @@
      *
     */
     void msg(char type, char* msg);
+    void msg_client_channel(int id, char* nickname, char* channel);
+    void msg_client_no_response_channel(int id, char* nickname, char* channel);
 
 // ******************************* LIST *******************************
 
