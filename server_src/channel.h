@@ -121,12 +121,12 @@
 
     enum MESSAGE {
         MESSAGE_CLIENT, MESSAGE_NEW_JOIN_CHANNEL, MESSAGE_JOIN_CHANNEL, MESSAGE_NEW_ADMIN_CHANNEL,
-        MESSAGE_TOPIC, MESSAGE_QUIT_CHANNEL, MESSAGE_ERR_INVITEONLYCHAN, MESSAGE_ERR_BANNEDFROMCHAN,
+        MESSAGE_TOPIC, MESSAGE_QUIT_CHANNEL, MESSAGE_ERR_INVITEONLYCHAN, MESSAGE_ERR_BANNEDFROMCHAN, 
         MESSAGE_KICK_CHANNEL, MESSAGE_UNKICK_CHANNEL, MESSAGE_KICK_ERR_NOSUCHNICK, MESSAGE_KICK_ERR_CHANOPRIVSNEEDED,
         MESSAGE_MUTE_CHANNEL, MESSAGE_UNMUTE_CHANNEL, MESSAGE_MUTE_ERR_NOSUCHNICK, MESSAGE_MUTE_ERR_CHANOPRIVSNEEDED,
-        MESSAGE_UNMUTE_ERR_NOSUCHNICK, MESSAGE_UNMUTE_ERR_CHANOPRIVSNEEDED, MESSAGE_UNKICK_ERR_NOSUCHNICK, MESSAGE_UNKICK_ERR_CHANOPRIVSNEEDED,
-        MESSAGE_WHOIS_ERR_NOSUCHNICK, MESSAGE_WHOIS_CHANNEL, MESSAGE_WHOIS_ERR_CHANOPRIVSNEEDED,
-        MESSAGE_MODE_CHANNEL, MESSAGE_MODE_ERR_CHANOPRIVSNEEDED, MESSAGE_CHANGE_NICKNAME,
+        MESSAGE_UNMUTE_ERR_NOSUCHNICK, MESSAGE_UNMUTE_ERR_CHANOPRIVSNEEDED, MESSAGE_UNKICK_ERR_NOSUCHNICK,MESSAGE_CLIENT_MUTED_CHANNEL,
+        MESSAGE_UNKICK_ERR_CHANOPRIVSNEEDED, MESSAGE_WHOIS_ERR_NOSUCHNICK, MESSAGE_WHOIS_CHANNEL, MESSAGE_WHOIS_ERR_CHANOPRIVSNEEDED, MESSAGE_INVITED,
+        MESSAGE_MODE_CHANNEL, MESSAGE_MODE_ERR_CHANOPRIVSNEEDED, MESSAGE_CHANGE_NICKNAME, MESSAGE_INVITE_CHANNEL
     };
     /**
      * @function
@@ -146,8 +146,10 @@
     void CHANNEL_destroy_all();
     void CHANNEL_list(char* buffer); 
     void CHANNEL_list_participants(CHANNEL_conn* channel, char* buffer);
-    int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
+    void CHANNEL_msg(CHANNEL_conn* channel, struct _client* clt, char* buffer);
+    bool CHANNEL_check_privilege(CHANNEL_conn* channel, struct _client* clt);
     int CHANNEL_add_user(CHANNEL_conn* channel,  struct _client* clt); 
+    int CHANNEL_remove_user(CHANNEL_conn* channel,  struct _client* clt);
     void CHANNEL_on_change_nickname(struct _client* clt, const char* old_nickname);
     void CHANNEL_join(char* name_channel,  struct _client* clt); 
     void CHANNEL_kick_user(CHANNEL_conn* channel, struct _client* clt, const char* kick_nickname); 
@@ -156,4 +158,8 @@
     void CHANNEL_send_message_all(CHANNEL_conn* channel, const char* buffer);
     void CHANNEL_send_message_one(CHANNEL_conn* channel,  struct _client* clt,const char* buffer);
     int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, const char* buffer); 
+    void CHANNEL_mute_user(CHANNEL_conn* channel, struct _client* clt, const char* mute_nickname);
+    void CHANNEL_unmute_user(CHANNEL_conn* channel, struct _client* clt, const char* unmute_nickname);
+    void CHANNEL_invite(CHANNEL_conn* channel, struct _client* clt, const char* kick_nickname);
+
 #endif

@@ -240,7 +240,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
     // Buffer com as mensagens dos clientes 
     char buffer[BUFFER_SIZE];
     
-    int response_code = 0, state = 0;
+    int response_code = 0;
     char temp_buffer_A[MAX_MESSAGE_LENGHT];
     char temp_buffer_B[MAX_MESSAGE_LENGHT];
     bool temp_bool;
@@ -269,7 +269,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
         if(recv(clt->cl_socket, buffer, MAX_MESSAGE_LENGHT, 0) > 0)         
         {    
             // Se o buffer estiver vazio, espera-se outra mensagem
-            if(strlen(buffer) <= 0)
+            if(strlen(buffer) <= 1)
                 continue;
 
             pthread_mutex_lock(mutex);
@@ -279,9 +279,9 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
             {
                 case ACTION_NICK:
                     decode_nickname(buffer, temp_buffer_A);
+                    response_code = clt_is_valid_nickname(temp_buffer_A);
                     
-                    state = clt_is_valid_nickname(temp_buffer_A);
-                    if (state == SUCCESS) 
+                    if (response_code == SUCCESS) 
                     {
                         strcpy(temp_buffer_B, clt->nickname);
                         strcpy(clt->nickname, temp_buffer_A); 
@@ -291,7 +291,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
 
                         CHANNEL_on_change_nickname(clt, temp_buffer_B);  
                         msg_nickname_cliente(clt->cl_id, clt->nickname, temp_buffer_B);   
-                    } else if(state == ERR_NICKNAMEINUSE) 
+                    } else if(response_code == ERR_NICKNAMEINUSE) 
                     {
                         sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", temp_buffer_A);  
                         clt_send_message(clt->cl_socket,buffer);
@@ -320,7 +320,9 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     }
 
                     CHANNEL_join(temp_buffer_A, clt);
-                    msg_join_channel(clt);
+                    if(clt->channel != NULL)
+                        msg_join_channel(clt);
+    
                     break;
 
                 case ACTION_LIST:
@@ -340,34 +342,84 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                 case ACTION_UNMUTE:
                 case ACTION_KICK:
                 case ACTION_UNKICK:
+                   if(clt->channel == NULL) {
+                        clt_send_message(
+                            clt->cl_socket, 
+                            "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
+                        ); 
+                        break;
+                    }   
+
+                    if(action_code == ACTION_INVITE)
+                        response_code = decode_invite(buffer, temp_buffer_A);
+                    else if(action_code == ACTION_MUTE)
+                        response_code = decode_mute(buffer, temp_buffer_A);
+                    else if(action_code == ACTION_UNMUTE)
+                        response_code = decode_unmute(buffer, temp_buffer_A);
+                    else if(action_code == ACTION_KICK)
+                        response_code = decode_kick(buffer, temp_buffer_A);
+                    else if(action_code == ACTION_UNKICK)
+                        response_code = decode_unkick(buffer, temp_buffer_A);
+                    
+                    /* Confirma privilégios */ 
+                    if(CHANNEL_check_privilege(clt->channel, clt) == false) {
+                        memset(temp_buffer_B, 0, sizeof(temp_buffer_B));
+                        strncpy(temp_buffer_B, buffer, indexOf(buffer, ' '));
+                        sprintf(temp_buffer_C, "%s ERR_CHANOPRIVSNEEDED\n", temp_buffer_B);
+                        CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+                    } else if(response_code == VALID_PROTOCOL)
+                    {    
+
+                        if(action_code == ACTION_INVITE)
+                            CHANNEL_invite(clt->channel, clt, temp_buffer_A);
+                        else if(action_code == ACTION_MUTE)
+                            CHANNEL_mute_user(clt->channel, clt, temp_buffer_A);
+                        else if(action_code == ACTION_UNMUTE)
+                            CHANNEL_unmute_user(clt->channel, clt, temp_buffer_A);
+                        else if(action_code == ACTION_KICK)
+                            CHANNEL_kick_user(clt->channel, clt, temp_buffer_A);
+                        else if(action_code == ACTION_UNKICK)
+                            CHANNEL_unkick_user(clt->channel, clt, temp_buffer_A);
+                        printf("passeiz\n");
+                    } else {
+                        sprintf(temp_buffer_C, "/%s ERR_NOSUCHNICK %s\n", temp_buffer_A);
+                        CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+                    }
                     break;
 
                 case ACTION_MESSAGE:
-                    int state = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
+                    if(clt->channel == NULL) {
+                        clt_send_message(
+                            clt->cl_socket, 
+                            "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
+                        ); 
+                        break;
+                    }   
+
+                    int response_code = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
                     
-                    if(state == VALID_PROTOCOL) 
+                    if(response_code == VALID_PROTOCOL) 
                     {
-                        msg_client_channel(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
-                        CHANNEL_broadcast(clt->channel, clt, MESSAGE_CLIENT, temp_buffer_C);
+                       CHANNEL_msg(clt->channel, clt, temp_buffer_C);
                     } else
                     {
                         clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");   
-                    }
-                    
+                    }  
                     break;
             }
             pthread_mutex_unlock(mutex);
         }
         // Ocorreu um erro na conexao...
         else{
-            msg_exit_channel(clt->nickname, clt->channel->nickname_channel);
-            CHANNEL_broadcast(clt->channel, clt, MESSAGE_QUIT_CHANNEL, "");
-            CHANNEL_remove_user(clt->channel, clt); 
+            if(clt->channel != NULL)
+            {
+                msg_exit_channel(clt->nickname, clt->channel->nickname_channel);
+                CHANNEL_broadcast(clt->channel, clt, MESSAGE_QUIT_CHANNEL, "");
+                CHANNEL_remove_user(clt->channel, clt); 
+            }
             return;
         }
     }
-    CHANNEL_remove_user(clt->channel, clt); 
-    msg_exit_channel(clt->nickname, clt->channel->nickname_channel);
 }
 
 // @Comentários em "client.h"
@@ -389,4 +441,14 @@ int decode_message(char* buffer, char* pack, int index) {
     if(buffer[i] != '\n' || i >= BUFFER_SIZE) 
         return 0;
     return i + 1;
+}
+
+int indexOf(char* str, char charater) {
+    int i = 0;
+    while(str[i] != 0) {
+        if(str[i] == charater)
+            return i;
+        ++i;
+    }
+    return -1;
 }

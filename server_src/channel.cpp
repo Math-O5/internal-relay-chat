@@ -105,6 +105,13 @@ void CHANNEL_destroy_all()
     channels.clear();
 }
 
+bool CHANNEL_check_privilege(CHANNEL_conn* channel, client* clt) {
+    if(channel == NULL || clt == NULL) return false;
+    if(!strcmp(channel->nickname_admin, clt->nickname))
+        return true;
+    return false;
+}
+
 /**
  * @function conn_destruit_CHANNELS
  * 
@@ -160,6 +167,20 @@ void CHANNEL_list_participants(struct _client* clt, char* buffer)
     return;
 }
 
+void CHANNEL_msg(CHANNEL_conn* channel, client* clt, char* buffer) 
+{
+    if(channel == NULL || clt == NULL) return;
+
+    if(clt->channel->mutedParticipants.find(clt->nickname) == clt->channel->mutedParticipants.end())
+    {
+        msg_client_channel(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
+        CHANNEL_broadcast(clt->channel, clt, MESSAGE_CLIENT, buffer);
+    } else 
+    {
+        CHANNEL_broadcast(channel, clt, MESSAGE_CLIENT_MUTED_CHANNEL, "");
+    }
+}
+
 /**
  * @function CHANNEL_remove_user
  * 
@@ -170,7 +191,7 @@ void CHANNEL_list_participants(struct _client* clt, char* buffer)
  * @return { SUCESS | FAIL }
  * 
  */
-int CHANNEL_remove_user(CHANNEL_conn* channel, struct _client* clt) 
+int CHANNEL_remove_user(CHANNEL_conn* channel, client* clt) 
 {
     if(channel == NULL) return FAIL;
 
@@ -197,6 +218,7 @@ int CHANNEL_remove_user(CHANNEL_conn* channel, struct _client* clt)
         {
             char* newAdmin = channel->arrived.begin()->second;
             clt = clt_get_by_nickname(newAdmin);
+            strcpy(channel->nickname_admin, clt->nickname);
             CHANNEL_broadcast(channel, clt, MESSAGE_NEW_ADMIN_CHANNEL, "");
         }                
     }
@@ -227,10 +249,14 @@ int CHANNEL_add_user(CHANNEL_conn* channel, client* clt)
     int last = channel->arrived.rbegin()->first + 1;
     printf("************posicao %d **********\n", last);
 
+    for(auto i : channel->notAllowedParticipants) {
+        printf("value: %s\n", i);
+    }
+
     // Check if the user is banned
     if(channel->notAllowedParticipants.find(clt->nickname) != channel->notAllowedParticipants.end()) 
     {
-        return MESSAGE_ERR_BANNEDFROMCHAN;
+        return ERROR_USER_BANNED;
     }
 
     // TODO: check invite permission 
@@ -284,6 +310,10 @@ void CHANNEL_on_change_nickname(client* clt, const char* old_nickname) {
         }
     }
 
+    if(!strcmp(clt->channel->nickname_admin, old_nickname)) {
+        strcpy(clt->channel->nickname_admin, clt->nickname);
+    }
+
     // TODO: Quando a chave para o ipv4
     CHANNEL_broadcast(clt->channel, clt, MESSAGE_CHANGE_NICKNAME, old_nickname);
 }
@@ -301,7 +331,6 @@ void CHANNEL_on_change_nickname(client* clt, const char* old_nickname) {
 void CHANNEL_join(char* nickname_channel, client* clt) 
 {    
     CHANNEL_conn* channel;
-    printf("");
 
     // Se o usuário já estiver em um canal, ele é retirado dele.
     if(clt->channel != NULL) 
@@ -329,7 +358,6 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     else 
     {
             printf("niuuuuuu");
-
         int response = CHANNEL_add_user(it_channel->second, clt);
         
         switch (response)
@@ -337,7 +365,7 @@ void CHANNEL_join(char* nickname_channel, client* clt)
             case SUCCESS:
                 CHANNEL_broadcast(it_channel->second, clt, MESSAGE_JOIN_CHANNEL, "");
                 break;
-            case MESSAGE_ERR_BANNEDFROMCHAN:
+            case ERROR_USER_BANNED:
                 CHANNEL_broadcast(it_channel->second, clt, MESSAGE_ERR_BANNEDFROMCHAN, "");
                 break;
             case MESSAGE_ERR_INVITEONLYCHAN:
@@ -367,27 +395,43 @@ void CHANNEL_invite(CHANNEL_conn* channel, client* clt, const char* kick_nicknam
  */
 void CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, const char* kick_nickname) 
 {   
+    client* ban = clt_get_by_nickname(kick_nickname);
+    
     if(channel == NULL) return;
     
-    if(channel->participants[kick_nickname] == 0) 
-    {
-        CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_NOSUCHNICK, "");
+    if(ban == NULL || channel->participants.find(kick_nickname) == channel->participants.end()) {
+        CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_NOSUCHNICK, kick_nickname);
+        return;
     }
+
 
     // apenas admin
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
     {   
+
         // Se o canal existe, o usuario é adicionado da lista de kick. Obs. sets não armazena valores duplicados.
-        channel->notAllowedParticipants.insert(kick_nickname);
+        channel->notAllowedParticipants.insert(ban->nickname);
         
-        client* ban = clt_get_by_nickname(kick_nickname);
+        // printf("size %d\n", channel->notAllowedParticipants.size());
+        // for(auto i : channel->notAllowedParticipants) {
+        //     printf("value: %s\n", i);
+        // }
         
         // exclui o usuario do canal
-        CHANNEL_remove_user(channel, ban);        
+        CHANNEL_remove_user(channel, ban);
+        clt_send_message(ban->cl_socket, "/servermsg : O administrador baniu do canal.\n");        
         CHANNEL_broadcast(channel, clt, MESSAGE_KICK_CHANNEL, kick_nickname);
-
     } else {
         CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_CHANOPRIVSNEEDED, kick_nickname);
+    }
+}
+
+void CHANNEL_list_ban(CHANNEL_conn* channel, char* buffer) 
+{    
+    memset(buffer, 0, sizeof(buffer));
+    for(auto i : channel->notAllowedParticipants) {
+        strcat(buffer, i);
+        strcat(buffer, ", ");
     }
 }
 
@@ -404,18 +448,25 @@ void CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, const char* kick_nick
 void CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt, const char* unkick_nickname) 
 {   
     if(channel == NULL) return;
+    client* ban = clt_get_by_nickname(unkick_nickname);
     
-    if(channel->participants[unkick_nickname] != 0) 
+    if(ban == NULL || channel->participants[unkick_nickname] != 0) 
     {
-        CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_ERR_NOSUCHNICK, "");
+        CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_ERR_NOSUCHNICK, unkick_nickname);
+        return;
     }
     
     // apenas admin
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
     {
         // Se o canal existe, o usuario é retirado da lista de kick.
-        channel->notAllowedParticipants.erase(clt->nickname);
+        channel->notAllowedParticipants.erase(unkick_nickname);
         CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_CHANNEL, unkick_nickname);
+     
+        if(ban != NULL) 
+        {
+            clt_send_message(ban->cl_socket, "/servermsg : O administrador liberou seu acesso ao canal.\n");   
+        }
     } else {
         CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_ERR_CHANOPRIVSNEEDED, unkick_nickname);
     }
@@ -433,18 +484,20 @@ void CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt, const char* unkick_
 void CHANNEL_mute_user(CHANNEL_conn* channel, client* clt, const char* mute_nickname) 
 {   
     if(channel == NULL) return;
+
+    client* mute_client = clt_get_by_nickname(mute_nickname);
     
     // Se o usuario não está no canal.
-    if(channel->participants[mute_nickname] == 0) 
+    if(mute_client == NULL || channel->participants[mute_nickname] == 0) 
     {
-        CHANNEL_broadcast(channel, clt, MESSAGE_MUTE_ERR_NOSUCHNICK, "");
+        CHANNEL_broadcast(channel, clt, MESSAGE_MUTE_ERR_NOSUCHNICK, mute_nickname);
         return;
     }
 
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
     {   
         // Se o canal existe, o usuario é adicionado da lista de kick. Obs. sets não armazena valores duplicados.
-        channel->mutedParticipants.insert(mute_nickname);              
+        channel->mutedParticipants.insert(mute_client->nickname);              
         CHANNEL_broadcast(channel, clt, MESSAGE_MUTE_CHANNEL, mute_nickname);
     } else 
     {
@@ -467,7 +520,7 @@ void CHANNEL_unmute_user(CHANNEL_conn* channel, client* clt, const char* unmute_
     
     if(channel->participants[unmute_nickname] == 0)                   // Se o usuario não está no canal.
     {
-        CHANNEL_broadcast(channel, clt, MESSAGE_UNMUTE_ERR_NOSUCHNICK, "");
+        CHANNEL_broadcast(channel, clt, MESSAGE_UNMUTE_ERR_NOSUCHNICK, unmute_nickname);
         return;
     }
 
@@ -487,18 +540,16 @@ void CHANNEL_whois(CHANNEL_conn* channel, client* clt, char* whois)
     
     if(channel->participants[whois] == 0)                   // Se o usuario não está no canal.
     {
-        CHANNEL_broadcast(channel, clt, MESSAGE_WHOIS_ERR_NOSUCHNICK, "");
+        CHANNEL_broadcast(channel, clt, MESSAGE_WHOIS_ERR_NOSUCHNICK, whois);
         return;
     }
 
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
-    {   
-        const char espace[] = " ";
-        
+    {           
         channel->mutedParticipants.erase(whois);            // Se o canal existe, o usuario é apagado da lista de kick. Obs. sets não armazena valores duplicados.
         
         client* clt = clt_get_by_nickname(whois);
-        strcat(whois, espace);
+        strcat(whois, " ");
         strcat(whois, clt->ip_address);
 
         CHANNEL_broadcast(channel, clt, MESSAGE_WHOIS_CHANNEL, whois);
@@ -508,7 +559,8 @@ void CHANNEL_whois(CHANNEL_conn* channel, client* clt, char* whois)
     }
 }   
 
-void CHANNEL_mode(CHANNEL_conn* channel, client* clt, bool is_public) {
+void CHANNEL_mode(CHANNEL_conn* channel, client* clt, bool is_public) 
+{
     if(channel == NULL) return;
 
     if(!strcmp(clt->nickname, channel->nickname_admin)) 
@@ -519,7 +571,6 @@ void CHANNEL_mode(CHANNEL_conn* channel, client* clt, bool is_public) {
             strcpy(privacity, "privado");
         
         channel->is_public = is_public;
-
 
         CHANNEL_broadcast(channel, clt, MESSAGE_MODE_CHANNEL, privacity);
     } else
@@ -599,10 +650,6 @@ void CHANNEL_send_message_one(CHANNEL_conn* channel, client* clt, const char* bu
     } 
 }
 
-void CHANNEL_recv_message(CHANNEL_conn* channel, client* clt, int cmd, const char* buffer) {
-
-}
-
 // /**
 //  * @function CHANNEL_kick_user
 //  * 
@@ -613,7 +660,7 @@ void CHANNEL_recv_message(CHANNEL_conn* channel, client* clt, int cmd, const cha
 //  * @return { SUCESS | FAIL }
 //  * 
 //  */
-int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, const char* buffer) 
+int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, const char* buffer) 
 {
     char msg_buffer[BUFFER_SIZE];
     char role;
@@ -640,10 +687,10 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
 
         case MESSAGE_NEW_JOIN_CHANNEL:          // Mensagem para quem criou o canal.
-            sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->nickname_channel);
+            sprintf(msg_buffer, "/join SUCCESS %s role:admin\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/join RPL_NAMREPLY %s #%s.\n", channel->nickname_channel, clt->nickname);
+            sprintf(msg_buffer, "/join RPL_NAMREPLY %s #%s\n", channel->nickname_channel, clt->nickname);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
@@ -652,7 +699,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '#';
             else role = '@';   
 
-            sprintf(msg_buffer, "/join SUCCESS %s role:user.\n", channel->nickname_channel);
+            sprintf(msg_buffer, "/join SUCCESS %s role:user\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             // a lista ordenada pela ordem de chegada, sem considerar o admin.
@@ -673,7 +720,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
                 role = '#';
             else role = '@';   
 
-            sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->nickname_channel);
+            sprintf(msg_buffer, "/join SUCCESS %s role:admin\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             sprintf(msg_buffer, "/channelmsg : #%s é o novo administrador.\n", clt->nickname);
@@ -703,7 +750,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
 
         case MESSAGE_KICK_CHANNEL:
-            sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi banido pelo administrador.");
+            sprintf(msg_buffer, "/channelmsg : %s foi banido pelo administrador.\n", buffer);
             CHANNEL_send_message_all(channel, msg_buffer);
 
             sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
@@ -711,12 +758,16 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
 
         case MESSAGE_UNKICK_CHANNEL:
-            sprintf(msg_buffer, "/kick SUCCESS %s\n", buffer);
+            sprintf(msg_buffer, "/unkick SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
-        
+
+        case MESSAGE_CLIENT_MUTED_CHANNEL:
+            sprintf(msg_buffer, "/channelmsg : Você foi silenciado pelo administrador.\n");
+            CHANNEL_send_message_one(channel, clt, msg_buffer);
+            break;
         case MESSAGE_MUTE_CHANNEL:
-            sprintf(msg_buffer, "/channelmsg %s %s\n", buffer, "foi silenciado pelo administrador.");
+            sprintf(msg_buffer, "/channelmsg : %s foi silenciado pelo administrador.\n", buffer);
             CHANNEL_send_message_all(channel, msg_buffer);
 
             sprintf(msg_buffer, "/mute SUCCESS %s\n", buffer);
@@ -724,13 +775,15 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
 
         case MESSAGE_UNMUTE_CHANNEL:
+            sprintf(msg_buffer, "/channelmsg : %s  pode conversar novamente.\n", buffer);
+            CHANNEL_send_message_all(channel, msg_buffer);
+            
             sprintf(msg_buffer, "/unmute SUCCESS %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
-
             break;
 
         case MESSAGE_MUTE_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/mute ERR_NOSUCHNICK\n");
+            sprintf(msg_buffer, "/mute ERR_NOSUCHNICK %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
@@ -740,7 +793,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
         
         case MESSAGE_UNMUTE_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/unmute ERR_NOSUCHNICK\n");
+            sprintf(msg_buffer, "/unmute ERR_NOSUCHNICK %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
@@ -750,7 +803,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
         
         case MESSAGE_KICK_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/kick ERR_NOSUCHNICK\n");
+            sprintf(msg_buffer, "/kick ERR_NOSUCHNICK %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
@@ -765,7 +818,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             break;
 
         case MESSAGE_WHOIS_ERR_NOSUCHNICK:
-            sprintf(msg_buffer, "/whois ERR_NOSUCHNICK\n");
+            sprintf(msg_buffer, "/whois ERR_NOSUCHNICK %s\n", buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
         
@@ -779,7 +832,7 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             sprintf(msg_buffer, "/mode SUCCESS\n");
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/channelmsg canal %s agora é %s\n", channel->nickname_channel, buffer);
+            sprintf(msg_buffer, "/channelmsg canal %s agora é %s.\n", channel->nickname_channel, buffer);
             CHANNEL_send_message_all(channel, msg_buffer);
             break;
         
@@ -788,6 +841,18 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
+        case MESSAGE_INVITE_CHANNEL:
+            sprintf(msg_buffer, "/invite SUCCESS %s\n", buffer);
+            CHANNEL_send_message_one(channel, clt, msg_buffer);
+            break;
+        
+        case MESSAGE_INVITED:
+            sprintf(msg_buffer, 
+                    "/servermsg : Você foi convidado para o canal %s, para entrar use o comando: /join %s.\n",
+                    buffer, buffer);
+            clt_send_message(clt->cl_socket, msg_buffer);
+            break;
+        
         default:
             return FAIL;
     }

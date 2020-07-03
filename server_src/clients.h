@@ -228,4 +228,6 @@
 	// Lê até o '\n' o '\0' e retorna a posição que parou
 	int decode_message(char* buffer, char* pack, int index);
 
+	int indexOf(char* str, char charater);
+
 #endif
