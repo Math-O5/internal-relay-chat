@@ -4,8 +4,11 @@
 map<const char*, CHANNEL_conn*, cmp_str> channels;
 map<const char*, CHANNEL_conn*, cmp_str>::iterator it_channel;
 map<int, char*>::iterator it_arrived;
-
+map<const char*, int, cmp_str> ::iterator it;
 char emptychar[] = "";
+
+// Array com os structs dos clientes
+// client *channels[MAX_CLIENTS];
 
 enum MESSAGE {
     MESSAGE_CLIENT, MESSAGE_NEW_JOIN_CHANNEL, MESSAGE_JOIN_CHANNEL, MESSAGE_NEW_ADMIN_CHANNEL,
@@ -17,19 +20,19 @@ enum MESSAGE {
     MESSAGE_MODE_CHANNEL, MESSAGE_MODE_ERR_CHANOPRIVSNEEDED, MESSAGE_CHANGE_NICKNAME,
 };
 
-void map_insert_key_char(map<const char*, int, cmp_str> pointer, const char* str, int value) {
+void map_insert_key_char(map<const char*, int, cmp_str>& pointer, const char* str, int value) {
     char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
     strcpy(strCopy, str);
     pointer.insert(pair<char*, int>(strCopy, value));
 }
 
-void map_insert_key_char(map<const char*, CHANNEL_conn*, cmp_str> pointer, const char* str, CHANNEL_conn* value) {
+void map_insert_key_channel(map<const char*, CHANNEL_conn*, cmp_str>& pointer, const char* str, CHANNEL_conn* value) {
     char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
     strcpy(strCopy, str);
     pointer.insert(pair<char*, CHANNEL_conn*>(strCopy, value));
 }
 
-void map_insert_key_int(map<int, char*> pointer, int value, const char* str) {
+void map_insert_key_int(map<int, char*>& pointer, int value, const char* str) {
     char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
     strcpy(strCopy, str);
     pointer.insert(pair<int, char*>(value, strCopy));
@@ -48,23 +51,37 @@ void map_insert_key_int(map<int, char*> pointer, int value, const char* str) {
  * Atualiza a referencia do cliente para o canal.
  * 
  */
+
 CHANNEL_conn* conn_criar_CHANNEL(char* nickname_channel, client* clt) 
 {        
     int size_participants = 1; // há apenas um usuario: o admin;
-
+    char buffer[BUFFER_SIZE];
     // Verifica se o canal não existe.
     if(channels.find(nickname_channel) == channels.end()) {
-        
+        map<const char*, int, cmp_str> tmp_participants;
+        map<int, char*> tmp_arrived;
+        set<const char*, cmp_str> tmp_muted, tmp_notAllow;
+
         CHANNEL_conn* newChannel = (CHANNEL_conn*) malloc(sizeof(CHANNEL_conn));
         newChannel->nickname_admin = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
         newChannel->nickname_channel = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
+        
+        newChannel->participants = tmp_participants;
+        newChannel->arrived = tmp_arrived;
+        newChannel->notAllowedParticipants = tmp_notAllow;
+        newChannel->mutedParticipants = tmp_muted;
+
         map_insert_key_char(newChannel->participants, clt->nickname, clt->cl_socket);
         map_insert_key_int(newChannel->arrived, 1, clt->nickname);
+        map_insert_key_channel(channels, nickname_channel, newChannel);
+
         strcpy(newChannel->nickname_admin, clt->nickname);
         strcpy(newChannel->nickname_channel, nickname_channel);
+
+        it =  newChannel->participants.find(clt->nickname);
+  
         newChannel->is_public = true;
-        // channels to list of channels
-        map_insert_key_char(channels, nickname_channel,newChannel);
+        
         // reference of channel on client
         clt->channel = newChannel;
 
@@ -112,17 +129,49 @@ void CHANNEL_destroy_all()
 void CHANNEL_list(char* buffer) 
 {
     char tmp_buffer[BUFFER_SIZE];
-    memset(buffer, 0 , sizeof(buffer));
-
-    for(auto channel : channels) {
-        strcat(buffer, channel.second->nickname_channel);
-        strcat(buffer, ", ");
+    memset(buffer, 0 , sizeof(char)*BUFFER_SIZE);
+    memset(tmp_buffer, 0 , sizeof(char)*BUFFER_SIZE);
+    
+    for(it_channel = channels.begin(); it_channel != channels.end(); ++it_channel) {
+        printf("aff %s\n", it_channel->second->nickname_channel);
+        strcat(tmp_buffer, it_channel->first);
+        strcat(tmp_buffer, ", ");
     }
-
+    
     if(strlen(tmp_buffer) <= 0)
         sprintf(buffer, "/channels : Não há canais. Digite /join <nome_do_canal>\n");
     else
         sprintf(buffer, "/channels %s\n", tmp_buffer);
+}
+
+void CHANNEL_list_participants(struct _client* clt, char* buffer) 
+{
+    if(clt->channel == NULL)
+    {
+        sprintf(buffer, "/servermsg : Você não está em nenhum canal. Digite /join <nome_do_canal> entrar em um.\n");
+        return;
+    }
+
+    // TODO: avoid overflow buffer
+    it_arrived = clt->channel->arrived.begin();
+    strcat(buffer, " #");
+    strcat(buffer, it_arrived->second);
+    strcat(buffer, ", ");
+    ++it_arrived;
+    
+    while(it_arrived != clt->channel->arrived.end()) {
+        strcat(buffer, "@");
+        strcat(buffer, it_arrived->second);
+        strcat(buffer, ", ");
+        ++it_arrived;
+    }
+
+    // memset(buffer, 0 ,sizeof(buffer));
+    // for(auto cli : clt->channel->participants) {
+    //     strcat(buffer, cli.first);
+    //     strcat(buffer, ", ");
+    // }   
+    return;
 }
 
 /**
@@ -139,25 +188,26 @@ int CHANNEL_remove_user(CHANNEL_conn* channel, struct _client* clt)
 {
     if(channel == NULL) return FAIL;
 
-    // limpa a referencia do canal do cliente.
-    clt->channel = NULL;
-    
     // adiciona o participante e sua respectiva ordem de chegada
     channel->participants.erase(clt->nickname);
 
+    // limpa a referencia do canal do cliente.
+    clt->channel = NULL;
+    
     // Remove da lista de ordem de chegada
-    for(it_arrived = channel->arrived.begin(); it_arrived != channel->arrived.end(); ++it_channel) 
+    for(it_arrived = channel->arrived.begin(); it_arrived != channel->arrived.end(); ++it_arrived) 
     {
-        if(strcmp(it_arrived->second, clt->nickname)) 
+        if(!strcmp(it_arrived->second, clt->nickname)) 
         {
             channel->arrived.erase(it_arrived);
+            break;
         }
     }
 
     // se há participantes no canal
     if(!channel->participants.empty()) 
     {
-        if(strcmp(channel->nickname_admin, clt->nickname)) {
+        if(!strcmp(channel->nickname_admin, clt->nickname)) {
             char* newAdmin = channel->arrived.begin()->second;
             clt = clt_get_by_nickname(newAdmin);
             CHANNEL_broadcast(channel, clt, MESSAGE_NEW_ADMIN_CHANNEL, emptychar);
@@ -199,8 +249,8 @@ int CHANNEL_add_user(CHANNEL_conn* channel, client* clt)
     // TODO: check invite permission 
 
     // adiciona o participante e sua respectiva ordem de chegada
-    channel->participants[clt->nickname] = clt->cl_socket;  
-    channel->arrived[last] = clt->nickname;
+    map_insert_key_char(channel->participants, clt->nickname, clt->cl_socket);
+    map_insert_key_int(channel->arrived, last, clt->nickname);
 
     clt->channel = channel;
 
@@ -250,15 +300,23 @@ void CHANNEL_on_change_nickname(client* clt, const char* old_nickname) {
 void CHANNEL_join(char* nickname_channel, client* clt) 
 {    
     CHANNEL_conn* channel;
+    printf("");
 
     // Se o usuário já estiver em um canal, ele é retirado dele.
     if(clt->channel != NULL) 
     {
-        it_channel = channels.find(channel->nickname_channel);
+            printf("huuuuu\n");
+
+        it_channel = channels.find(clt->channel->nickname_channel);
+            printf("juuuu\n");
+
         CHANNEL_remove_user(clt->channel, clt);
+            printf("kii\n");
+
         CHANNEL_broadcast(it_channel->second, clt, MESSAGE_QUIT_CHANNEL, emptychar);
     }
 
+    printf("liiii\n");
     it_channel = channels.find(nickname_channel);
 
     // // Se o canal não existe, então será criado e o criador é admin
@@ -269,9 +327,9 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     } 
     else 
     {
+            printf("niuuuuuu");
+
         int response = CHANNEL_add_user(it_channel->second, clt);
-        printf("oops!");
-        fflush(stdout);
         
         switch (response)
         {
@@ -564,16 +622,16 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
     {
         case MESSAGE_CLIENT:    // Formatação da mensagem do cliente.
             if(channel->nickname_admin == clt->nickname)    
-                role = '@';
-            else role = '#';
+                role = '#';
+            else role = '@';
 
             // sprintf(msg_buffer, "/msg %c%s : %s\n", role, clt->nickname, buffer);
             break;
 
         case MESSAGE_CHANGE_NICKNAME:
             if(!strcmp(clt->nickname, channel->nickname_admin)) 
-                role = '@';
-            else role = '#';
+                role = '#';
+            else role = '@';
 
             sprintf(msg_buffer, "/channelmsg o %c%s : %s\n", role, clt->nickname, buffer);  
             CHANNEL_send_message_all(channel, msg_buffer);
@@ -583,41 +641,35 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, struct _client* clt, int type, cons
             sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
-            sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s", channel->nickname_channel, clt->nickname);
+            sprintf(msg_buffer, "/join RPL_NAMREPLY %s #%s", channel->nickname_channel, clt->nickname);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
             break;
 
         case MESSAGE_JOIN_CHANNEL:          // Mensagem padrão dos usuários que acabaram de entrar no canal.
             if(!strcmp(clt->nickname, channel->nickname_admin))  
-                role = '@';
-            else role = '#';   
+                role = '#';
+            else role = '@';   
 
             sprintf(msg_buffer, "/join SUCCESS %s role:user.\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             // a lista ordenada pela ordem de chegada, sem considerar o admin.
-            sprintf(msg_buffer, "/join RPL_NAMREPLY %s +%s\n", channel->nickname_channel, clt->nickname);
-
-            // TODO: avoid overflow buffer
-            it_arrived = ++channel->arrived.begin();
-            while(it_arrived != channel->arrived.end()) {
-                strcpy(msg_buffer, " @");
-                strcpy(msg_buffer, it_arrived->second);
-                ++it_arrived;
-            }
-            
+            sprintf(msg_buffer, "/join RPL_NAMREPLY %s", channel->nickname_channel);
+            CHANNEL_list_participants(clt, msg_buffer);
+            strcat(msg_buffer, "\n\0");
+            printf("Lets see... %s\n", msg_buffer);
             CHANNEL_send_message_one(channel, clt, msg_buffer);
 
             // mensagem para todos no canal
-            // sprintf(msg_buffer, "/channelmsg : %c%s conectou-se.\n", role, clt->nickname);
+            sprintf(msg_buffer, "/channelmsg : %c%s conectou-se.\n", role, clt->nickname);
             CHANNEL_send_message_all(channel, msg_buffer);
 
             break;
 
         case MESSAGE_NEW_ADMIN_CHANNEL:         // O novo admin do canal é
             if(!strcmp(clt->nickname, channel->nickname_admin)) 
-                role = '@';
-            else role = '#';   
+                role = '#';
+            else role = '@';   
 
             sprintf(msg_buffer, "/join SUCCESS %s role:admin.\n", channel->nickname_channel);
             CHANNEL_send_message_one(channel, clt, msg_buffer);

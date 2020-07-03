@@ -324,6 +324,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     break;
 
                 case ACTION_LIST:
+                    memset(buffer, 0 , BUFFER_SIZE);
                     CHANNEL_list(buffer);
                     clt_send_message(clt->cl_socket, buffer);
                     break;
