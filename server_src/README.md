@@ -45,10 +45,10 @@ A arquitetura do projeto foi feita pensando nos seguintes critérios:
 - 2º Garantir o repasse de mensagens.
 - 3° Não sobrecarregar o servidor.
 
-Para isso o servidor coonta com uma thread que atende cada cliente. Inicialmente, são criadas todas threads e rápidamente colocadas para dormir, de modo a evitar o trabalho de cria-las e destruí-las diversas vezes. Em seguida, o processo principal fica bloqueado esperando uma nova conexão. Quando ela ocorre, uma cadeia de eventos garante uma thread para o cliente, que seguirá com ele até ele se desconectar. Os comando de receber e enviar mensagens são bloqueantes, o que garante também a eficiencia o servidor.
+Para isso o servidor conta com uma thread que atende cada cliente. Inicialmente, são criadas todas threads e rápidamente colocadas para dormir, de modo a evitar o trabalho de cria-las e destruí-las diversas vezes. Em seguida, o processo principal fica bloqueado esperando uma nova conexão. Quando ela ocorre, uma cadeia de eventos garante uma thread para o cliente, que seguirá com ele até ele se desconectar. Os comando de receber e enviar mensagens são bloqueantes, o que garante também a eficiencia o servidor.
 
 <h2>Fluxograma Geral do servidor</h2>
-<p align="center">
+<p text-align="center">
 	<img src="../assets/server_socket.png" width="50%" heigth="50%" alt="fluxograma_do_server"></img>
 </p>
 

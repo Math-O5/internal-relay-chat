@@ -19,23 +19,20 @@ O primeiro terminal é o servidor, seguido de três clientes.
 </div>
 
 ## Lista de comandos
-`Users:`
-`• /join nomeCanal - Entra no canal;`
-`• /nickname apelidoDesejado - O cliente passa a ser reconhecido pelo apelido especificado;`
-`• /ping - O servidor retorna "pong"assim que receber a mensagem.`
+Users:</br>
+`• /connect - Estabelece a conexão com o servidor;`</br>
+`• /quit - O cliente fecha a conexão e fecha a aplicação;`</br>
+`• /ping - O servidor retorna "pong"assim que receber a mensagem;`</br>
+`• /join nomeCanal - Entra no canal;`</br>
+`• /nickname apelidoDesejado - O cliente passa a ser reconhecido pelo apelido especificado;`</br>
+`• /ping - O servidor retorna "pong"assim que receber a mensagem.`</br>
 
-`Admin:`
-`• /kick nomeUsurio - Fecha a conexão de um usuário especificado`
-`• /mute nomeUsurio - Faz com que um usuário não possa enviar mensagens neste canal`
-`• /unmute nomeUsurio - Retira o mute de um usuário.`
-`• /whois nomeUsurio - Retorna o endereço IP do usuário apenas para o administrador`
-`• /invite nomeUsuario - convida o usuário para o canal.`
-<h3>Desenvolvido por:</h3>
-<p>
-<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
-<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
-<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
-</p>
+Admin:</br>
+`• /kick nomeUsurio - Fecha a conexão de um usuário especificado;`</br>
+`• /mute nomeUsurio - Faz com que um usuário não possa enviar mensagens neste canal;`</br>
+`• /unmute nomeUsurio - Retira o mute de um usuário;`</br>
+`• /whois nomeUsurio - Retorna o endereço IP do usuário apenas para o administrador;`</br>
+`• /invite nomeUsuario - convida o usuário para o canal.`</br>
 
 ## Nas pastas...
 <ul>
@@ -53,7 +50,7 @@ O primeiro terminal é o servidor, seguido de três clientes.
 	<img src="assets/threads_server.png" alt="client"></img>
 </div>
 
-<h2>Environment testados</h2>
+<h2>Ambientes testados</h2>
 <p>OS: Fedora 30.x</br>
 gcc version 9.2.1 20190827 (Red Hat 9.2.1-1)</br> 
 g++ (GCC) 9.2.1 20190827 (Red Hat 9.2.1-1)</br>
@@ -61,4 +58,11 @@ g++ (GCC) 9.2.1 20190827 (Red Hat 9.2.1-1)</br>
 <p>OS: Ubuntu 18.04.4 LTS x86_64</br>
 Shell: bash 4.4.20</br>
 g++ (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0</br>
+</p>
+
+<h3>Desenvolvido por:</h3>
+<p>
+<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a> Gabriel van Loon Bode da Costa Dourado Fuentes Rojas Da Silva Pinto</br>
+<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
+<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
 </p>
