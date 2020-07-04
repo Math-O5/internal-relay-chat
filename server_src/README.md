@@ -5,7 +5,7 @@ cliente-servidor utilizando o ambiente POSIX.
 
 ## O que é o Server do Chat
 
-O servidor é responsável por estabelecer conexão entre clientes e garentir o recebimento e envio de todas mensagens e destes. Além disso, ele registra todas atividades feita pelo cliente e cria canais de broadcast, ou seja, seções em que apenas quem está no canal recebe a mensagem. 
+O servidor é responsável por estabelecer conexão entre clientes e garantir o recebimento e envio de todas mensagens destes. Além disso, ele registra todas atividades do cliente e cria canais de broadcast, ou seja, seções em que apenas quem está no canal recebe a mensagem(balas de pate-papo). 
 
 ## Esquemático das bibliotecas
 

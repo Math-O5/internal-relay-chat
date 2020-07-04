@@ -1,5 +1,5 @@
-<h1 style="color=red;">internal_relay_chat  :speech_balloon:</h1>
-epic trabalhinho redes
+<h1 style="color=red;">Bate-Papo :speech_balloon:</h1>
+epic trabalhinho redes: <strong>Internal Relay Chat (IRC)</strong>
 
 <h2>Descrição</h2>
 <p>Implementação dos antigos <strong>Internal Relay Chat (IRC)</strong>, o qual pode ser chamado também de antigo Telegram.</br>O protocolo de comunicação seguido foi o IRC 1459, o qual estabelece um padrão de comunicação client-server.</p>
