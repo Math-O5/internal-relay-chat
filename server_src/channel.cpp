@@ -107,9 +107,9 @@ void CHANNEL_list(char* buffer)
     }
     
     if(strlen(tmp_buffer) <= 0)
-        sprintf(buffer, "/channels : Não há canais. Digite /join <nome_do_canal>\n");
+        sprintf(buffer, "/channelmsg : Não há canais. Digite /join <nome_do_canal>\n");
     else
-        sprintf(buffer, "/channels %s\n", tmp_buffer);
+        sprintf(buffer, "/list %s\n", tmp_buffer);
 }
 
 void CHANNEL_list_participants(struct _client* clt, char* buffer) 
@@ -133,12 +133,6 @@ void CHANNEL_list_participants(struct _client* clt, char* buffer)
         strcat(buffer, ", ");
         ++it_arrived;
     }
-
-    // memset(buffer, 0 ,sizeof(buffer));
-    // for(auto cli : clt->channel->participants) {
-    //     strcat(buffer, cli.first);
-    //     strcat(buffer, ", ");
-    // }   
     return;
 }
 

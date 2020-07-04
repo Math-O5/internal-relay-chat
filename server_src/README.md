@@ -27,6 +27,16 @@ ser consultados caso seja desejado um compreendimento mais profundo dos mesmos.
 
 Utilize os comandos `make all` para buildar e `make run` para executar o projeto no console.
 
+## Server Socket
+
+1. create a socket - Get the file descriptor
+2. bind to an address - Set the port.
+3. listen on a port, and wait for a connection to be established.
+4. accept the connection from a client.
+5. send/recv - Read and write for a file
+6. shutdown to end read/write.
+7. close to releases data.
+
 ## Threads e Arquitetura do projeto
 
 A arquitetura do projeto foi feita pensando nos seguintes critérios:

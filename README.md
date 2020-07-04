@@ -3,14 +3,33 @@ epic trabalhinho redes
 
 <h2>Descrição</h2>
 <p>Implementação dos antigos <strong>Internal Relay Chat (IRC)</strong>, o qual pode ser chamado também de antigo Telegram.</br>O protocolo de comunicação seguido foi o IRC 1459, o qual estabelece um padrão de comunicação client-server.</p>
+<p> Essa aplicação permite a comunicação entre multiplos processos e em máquinas distintas. Para isso, basta executar a aplicação do servidor e a aplicação do cliente. Podem ser executados diversos clientes.</p>
 
 ## Compilando e Executando
-Em <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente,
-Ou para facilitar, utilize os comandos `make server` `make server_run` e  `make client` `make client_run` a partir da pasta root.
-<h2>Demo</h2>
+Inicialmente, o servidor é compilado com `make server` e executado com `make server_run`, similarmente o cliente: `make client` `make client_run`; ambos a partir da pasta root do projeto.
+Para mais detalhes, <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente.
+
+## Executando em outras máquinas
+Para excutar em outras máquinas, execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o <a href="https://www.ssh.com/ssh/tunneling/example">ssh port fowarding</a> da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
+
+## Demo
+O primeiro terminal é o servidor, seguido de três clientes.
 <div style="display:inline-block;">
 	<img src="assets/chat.gif" alt="chat-client"></img>
 </div>
+
+## Lista de comandos
+`Users:`
+`• /join nomeCanal - Entra no canal;`
+`• /nickname apelidoDesejado - O cliente passa a ser reconhecido pelo apelido especificado;`
+`• /ping - O servidor retorna "pong"assim que receber a mensagem.`
+
+`Admin:`
+`• /kick nomeUsurio - Fecha a conexão de um usuário especificado`
+`• /mute nomeUsurio - Faz com que um usuário não possa enviar mensagens neste canal`
+`• /unmute nomeUsurio - Retira o mute de um usuário.`
+`• /whois nomeUsurio - Retorna o endereço IP do usuário apenas para o administrador`
+`• /invite nomeUsuario - convida o usuário para o canal.`
 <h3>Desenvolvido por:</h3>
 <p>
 <a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
