@@ -195,11 +195,20 @@ void msg(char type, char* msg)
 }
 
 // @Comentários em "message.h"
-void msg_client_channel(int id, char* nickname, char* channel)
+void msg_client_channel(const char* nickname, const char* channel)
 {
     char t_log[20];
     time_log(t_log, sizeof(t_log));
-    printf("  [+] - [%s] A mensagem do %s(%d) foi entregue ao canal %s...\n", t_log, nickname, channel);
+    printf("  [+] - [%s] %s enviou uma mensagem para o canal %s...\n", t_log, nickname, channel);
+    fflush(stdout);
+}
+
+// @Comentários em "message.h"
+void msg_channel_client(const char* nickname, const char* channel)
+{
+    char t_log[20];
+    time_log(t_log, sizeof(t_log));
+    printf("  [+] - [%s] O canal %s enviou uma mensagem para o usuario %s...\n", t_log, channel, nickname);
     fflush(stdout);
 }
 // ******************************* LIST *******************************

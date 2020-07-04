@@ -228,6 +228,7 @@ void clt_split_and_send(int id_cur, int max_conn, char* buffer, pthread_mutex_t*
     bzero(buffer, BUFFER_SIZE);
 }
 // @Comentários em "clients.h"
+
 int clt_read_buffer(client* cl, char* buffer) 
 {
     
@@ -461,7 +462,7 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                         break;
                     }   
 
-                    int response_code = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
+                    response_code = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
                     
                     if(response_code == VALID_PROTOCOL) 
                     {
@@ -470,6 +471,10 @@ void clt_run(int sv_socket, int id_cur, int max_conn, pthread_mutex_t* mutex){
                     {
                         clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");   
                     }  
+                    break;
+
+                case ACTION_PING:
+                    clt_send_message(clt->cl_socket, "/pong\n"); 
                     break;
             }
             pthread_mutex_unlock(mutex);
