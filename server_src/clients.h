@@ -1,5 +1,5 @@
 #ifndef CLIENTS_H
-    #define CLIENTS_H 4040
+#define CLIENTS_H 4040
 
 	/**
 	 * Constantes e Macros
@@ -20,15 +20,18 @@
 	 * Valor com a quantidade máxima de clientes permitidos no servidor
 	 */
 		#define BUFFER_SIZE 4096
+		#define MAX_MESSAGE_LENGHT 512
 
 		#define SUCCESS 0
 		#define FAIL 1
+        #define ERROR_CREATE_CHANNEL 8
 
 		#define CONTINUE 0
 		#define QUIT 1
 		#define PING 2
 
 		#define MAX_CLIENTS 20
+		#define MAX_SIZE_NAME 30
 	
 	/**
      * Bibliotecas importadas
@@ -39,18 +42,19 @@
     */
 		#include <iostream>
 		#include <netinet/in.h> /* struct sockaddr_in */
+		#include <arpa/inet.h>  /* get ipv4*/ 
 		#include <pthread.h> /* pthread_cond_t */
 		#include <vector>
 		#include <stdio.h>
 		#include <stdlib.h>
 		#include <string.h> /* strlen */
 		#include <unistd.h> /* close */
-
 	/**
      * Biblioteca do própio projeto
      * -----------------------------
     */
-		#include "message.h"
+	#include "message.h"
+	#include "channel.h"
 
 	using namespace std;
 
@@ -72,21 +76,25 @@
 	 * - cl_id: id do cliente. Obs.: O id dos clientes sempre começa pelo 10
 	 * - name[9]: nickname(apelido) do cliente
 	*/
+	// TODO: clear unsed information
 	typedef struct _client{
 		// atributos de conexão
 		struct sockaddr_in cl_address;
 		int cl_socket;
 		int sv_socket;
+
 		// atributos do cliente (chat)
 		int cl_id;
-		char name[9];
-	}client;
-
+		char* ip_address;
+		char* nickname;
+		struct _CHANNEL_conn* channel;
+	} client;
 	/**
 	 * @function
 	 * 
 	 * client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket)
 	 * --------------------------------------------------------------------------------
+	 * 
 	 * 
 	 * Cria um novo cliente de acordo com informações passadas no parâmetro: o endereço do cliente,
 	 * socket em que o cliente se conectou, id do cliente e socket em que o servidor se conectou respectivamente.
@@ -129,7 +137,7 @@
 	 * return: SUCCESS o cliente foi adicionado na lista com sucesso
 	 * 		   FAIL	   ocorreu um erro ao adicionar o cliente na lista (sem posição vaga na lista)
 	*/
-	int clt_add_queue(client* cl, int max_cl, pthread_mutex_t* mutex);
+	int clt_add_queue(client* cl, pthread_mutex_t* mutex);
 
 	/**
 	 * @function
@@ -143,7 +151,7 @@
 	 * return: client* endereço do cliente removido
 	 * 		   NULL    cliente não encontrado
 	*/
-	client* clt_remove_queue(int id, int max_cl, pthread_mutex_t* mutex);
+	client* clt_remove_queue(int id, pthread_mutex_t* mutex);
 
 	/**
 	 * @function
@@ -176,7 +184,7 @@
 	 * return: SUCESS foi enviada a mensagem para com o cliente 
 	 * 		   FAIL não foi possível enviar a mensagem para o cliente
 	*/
-	bool clt_send_message(int cl_socket, char* buffer);
+	bool clt_send_message(int cl_socket, const char* buffer);
 
 	/**
 	 * @function
@@ -190,6 +198,10 @@
 	void clt_send_message_all(int id_cur, int max_conn, pthread_mutex_t* mutex, char* buffer);
 
 	/**
+	 */
+	client* clt_get_by_nickname(const char* cli_nickname);
+
+	/**
 	 * @function
 	 * 
 	 * client* clt_get_by_id(int id, int max_clients)
@@ -200,7 +212,7 @@
 	 * return: cliente* struct do cliente com o id passado no parâmetro da função
 	 * 		   NULL     o cliente não foi encontrado
 	*/
-	client* clt_get_by_id(int id, int max_clients);
+	client* clt_get_by_id(int cli_id);
 
 	/**
 	 * @function
@@ -215,5 +227,7 @@
 
 	// Lê até o '\n' o '\0' e retorna a posição que parou
 	int decode_message(char* buffer, char* pack, int index);
+
+	int indexOf(char* str, char charater);
 
 #endif

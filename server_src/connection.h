@@ -1,6 +1,14 @@
 #ifndef SERVER_CONN_H
     #define SERVER_CONN_H 8080
 
+    /*
+        Para mais detalhes das bibliotecas usadas, consultar seção 2 (socket) e 7 (ip, tcp) do man. 
+        =$ man 2 socket
+        =$ man 2 bind
+        =$ man 7 ip
+        =$ man 7 tcp
+    */
+
     /**
      * Bibliotecas importadas
      * ----------------------
@@ -25,6 +33,7 @@
      * -----------------------------
     */
         #include "clients.h"
+        #include "channel.h"
         #include "message.h"
 
     /**
@@ -61,9 +70,6 @@
         #define ID_INITIALAZED 10
         
         #define MAX_CLIENTS 20
-
-
-
 
         using namespace std;
 
