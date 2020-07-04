@@ -372,9 +372,35 @@ void CHANNEL_join(char* nickname_channel, client* clt)
     }
 }
 
-void CHANNEL_invite(CHANNEL_conn* channel, client* clt, const char* kick_nickname) 
+void CHANNEL_invite(CHANNEL_conn* channel, client* clt, const char* invite_nickname) 
 {
+    // O canal existe e o usuário que usou o comando é admin.
+    if(channel == NULL) return;
+    if(strcmp(clt->nickname, channel->nickname_admin)) 
+    {
+        CHANNEL_broadcast(channel, clt, MESSAGE_INVITE_ERR_CHANOPRIVSNEEDED, invite_nickname);
+        return; 
+    }
 
+    // Confere se o cliente existe. 
+    client* invite_client = clt_get_by_nickname(invite_nickname);
+
+    if(invite_client == NULL)
+    {
+        CHANNEL_broadcast(channel, clt, MESSAGE_INVITE_ERR_NOSUCHNICK, invite_nickname);
+        return; 
+    }
+
+    // Restabelece bloqueios previos: banimento e silenciamento.
+    channel->mutedParticipants.erase(invite_nickname); 
+    channel->notAllowedParticipants.erase(invite_nickname);  
+
+    // Adiciona a lista de convidados.
+    channel->invitesParticipants.insert(invite_client->nickname);
+
+    // Envia o convite em forma de notificação.
+    CHANNEL_broadcast(channel, clt, MESSAGE_INVITE_CHANNEL, invite_nickname);
+    CHANNEL_broadcast(channel, invite_client, MESSAGE_INVITED, channel->nickname_channel);
     return;
 }
 
@@ -390,44 +416,28 @@ void CHANNEL_invite(CHANNEL_conn* channel, client* clt, const char* kick_nicknam
  */
 void CHANNEL_kick_user(CHANNEL_conn* channel, client* clt, const char* kick_nickname) 
 {   
-    client* ban = clt_get_by_nickname(kick_nickname);
-    
+     // apenas admin
     if(channel == NULL) return;
+    if(strcmp(clt->nickname, channel->nickname_admin)) 
+    {
+        CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_CHANOPRIVSNEEDED, kick_nickname);
+        return; 
+    }
+
+    client* ban = clt_get_by_nickname(kick_nickname);
     
     if(ban == NULL || channel->participants.find(kick_nickname) == channel->participants.end()) {
         CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_NOSUCHNICK, kick_nickname);
         return;
     }
 
-
-    // apenas admin
-    if(!strcmp(clt->nickname, channel->nickname_admin)) 
-    {   
-
-        // Se o canal existe, o usuario é adicionado da lista de kick. Obs. sets não armazena valores duplicados.
-        channel->notAllowedParticipants.insert(ban->nickname);
-        
-        // printf("size %d\n", channel->notAllowedParticipants.size());
-        // for(auto i : channel->notAllowedParticipants) {
-        //     printf("value: %s\n", i);
-        // }
-        
-        // exclui o usuario do canal
-        CHANNEL_remove_user(channel, ban);
-        clt_send_message(ban->cl_socket, "/servermsg : O administrador baniu do canal.\n");        
-        CHANNEL_broadcast(channel, clt, MESSAGE_KICK_CHANNEL, kick_nickname);
-    } else {
-        CHANNEL_broadcast(channel, clt, MESSAGE_KICK_ERR_CHANOPRIVSNEEDED, kick_nickname);
-    }
-}
-
-void CHANNEL_list_ban(CHANNEL_conn* channel, char* buffer) 
-{    
-    memset(buffer, 0, sizeof(buffer));
-    for(auto i : channel->notAllowedParticipants) {
-        strcat(buffer, i);
-        strcat(buffer, ", ");
-    }
+    // Se o canal existe, o usuario é adicionado da lista de kick. Obs. sets não armazena valores duplicados.
+    channel->notAllowedParticipants.insert(ban->nickname);
+    
+    // exclui o usuario do canal
+    CHANNEL_remove_user(channel, ban);
+    clt_send_message(ban->cl_socket, "/servermsg : O administrador baniu do canal.\n");        
+    CHANNEL_broadcast(channel, clt, MESSAGE_KICK_CHANNEL, kick_nickname);
 }
 
 // /**
@@ -445,7 +455,7 @@ void CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt, const char* unkick_
     if(channel == NULL) return;
     client* ban = clt_get_by_nickname(unkick_nickname);
     
-    if(ban == NULL || channel->participants[unkick_nickname] != 0) 
+    if(ban == NULL) 
     {
         CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_ERR_NOSUCHNICK, unkick_nickname);
         return;
@@ -464,6 +474,15 @@ void CHANNEL_unkick_user(CHANNEL_conn* channel, client* clt, const char* unkick_
         }
     } else {
         CHANNEL_broadcast(channel, clt, MESSAGE_UNKICK_ERR_CHANOPRIVSNEEDED, unkick_nickname);
+    }
+}
+
+void CHANNEL_list_ban(CHANNEL_conn* channel, char* buffer) 
+{    
+    memset(buffer, 0, sizeof(buffer));
+    for(auto i : channel->notAllowedParticipants) {
+        strcat(buffer, i);
+        strcat(buffer, ", ");
     }
 }
 
@@ -844,7 +863,17 @@ int CHANNEL_broadcast(CHANNEL_conn* channel, client* clt, int type, const char* 
                     buffer, buffer);
             clt_send_message(clt->cl_socket, msg_buffer);
             break;
+
+        case MESSAGE_INVITE_ERR_NOSUCHNICK:
+            sprintf(msg_buffer, "/invite ERR_NOSUCHNICK %s\n", buffer);
+            CHANNEL_send_message_one(channel, clt, msg_buffer);
+            break;
         
+        case MESSAGE_INVITE_ERR_CHANOPRIVSNEEDED:
+            sprintf(msg_buffer, "/invite ERR_CHANOPRIVSNEEDED");
+            CHANNEL_send_message_one(channel, clt, msg_buffer);
+            break;
+
         default:
             return FAIL;
     }
