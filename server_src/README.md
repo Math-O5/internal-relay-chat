@@ -3,9 +3,9 @@
 Aplicação utilizada para prática e aprendizado de protocolos, sockets, threads e arquiteturas 
 cliente-servidor utilizando o ambiente POSIX.
 
-## Introdução ao Server do Chat
+## O que é o Server do Chat
 
-O servidor é responsável por estabelecer conexão e garentir o recebimento e envio de todas mensagens e entre clientes. Além disso, ele registrar todas atividades feita pelo cliente.
+O servidor é responsável por estabelecer conexão entre clientes e garentir o recebimento e envio de todas mensagens e destes. Além disso, ele registra todas atividades feita pelo cliente e cria canais de broadcast, ou seja, seções em que apenas quem está no canal recebe a mensagem. 
 
 ## Esquemático das bibliotecas
 
@@ -15,8 +15,10 @@ Veja a seguir uma introdução geral dos arquivos que compõem o projeto:
 / server_src
 | -- main.cpp           Responsável por conter as variáveis globais e iniciar o servidor.
 | -- connection.cpp     Responsável por controlar o protocolo e as conexões e execução dos clientes.
-| -- client.cpp         Responsável por lidar com o recebimento de mensagem do cliente, decodificar e reenviar.
+| -- channel.cpp		Responsável por gerenciar os canais e interagir com os clientes.
+| -- client.cpp         Responsável por lidar com o recebimento de mensagem do cliente e reenviar.
 | -- mensagem.cpp       Responsável por imprimir logs no console.
+| -- decodec.cpp 		Responsável por decodificar as mensagem e comandos.
 | -- makefile           Script auxiliar para compilar e executar o programa adequadamente.
 ```
 
@@ -25,10 +27,11 @@ ser consultados caso seja desejado um compreendimento mais profundo dos mesmos.
 
 ## Compilando e Executando
 
-Utilize os comandos `make all` para buildar e `make run` para executar o projeto no console.
+Utilize os comandos, dentro da pasta server_src, `make all` para buildar e `make run` para executar o projeto no console.
 
 ## Server Socket
-
+O uso das socketem ambiente POSIX pode ser encontrado em `man 2 socket`, `man 2 bind`, `man 2 listen`,  `man 2 send`,  `man 2 recv`, `man 7 ip`, `man 7 tcp`.
+Sintetizando, o socket é criado segundo o seguinte processo:
 1. create a socket - Get the file descriptor
 2. bind to an address - Set the port.
 3. listen on a port, and wait for a connection to be established.
