@@ -26,7 +26,6 @@
         #include <sys/socket.h>
         #include <sys/types.h>
         #include <pthread.h> /* pthread_t */
-        #include <iostream>
 
     /**
      * Bibliotecas do própio projeto
@@ -70,8 +69,6 @@
         #define ID_INITIALAZED 10
         
         #define MAX_CLIENTS 20
-
-        using namespace std;
 
     /**
      * @struct

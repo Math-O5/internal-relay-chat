@@ -48,8 +48,6 @@
         #include <netinet/in.h> /* struct sockaddr_in */
 
         #include "clients.h"
-
-    using namespace std;
     /**
      * @function
      * 

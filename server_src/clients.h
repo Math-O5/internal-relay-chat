@@ -40,14 +40,12 @@
      * Devido ao uso da biblioteca "pthread.h", é necessário que o código
      * seja compilado com o parâmetro -pthread junto ao g++
     */
-		#include <iostream>
 		#include <netinet/in.h> /* struct sockaddr_in */
 		#include <arpa/inet.h>  /* get ipv4*/ 
 		#include <pthread.h> /* pthread_cond_t */
 		#include <vector>
 		#include <stdio.h>
 		#include <stdlib.h>
-		#include <string.h> /* strlen */
 		#include <unistd.h> /* close */
 	/**
      * Biblioteca do própio projeto
@@ -55,8 +53,6 @@
     */
 	#include "message.h"
 	#include "channel.h"
-
-	using namespace std;
 
 	/**
 	 * @struct

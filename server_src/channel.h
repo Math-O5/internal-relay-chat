@@ -18,9 +18,7 @@
         #include <sys/socket.h>
         #include <sys/types.h>
         #include <pthread.h> /* pthread_t */
-        #include <iostream>
         #include <map>
-        #include <queue>
         #include <set>
 
         using namespace std;
