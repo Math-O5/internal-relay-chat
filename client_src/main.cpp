@@ -475,6 +475,7 @@ using namespace std;
                 case ACTION_MUTE:
                 case ACTION_UNMUTE:
                 case ACTION_KICK:
+                case ACTION_UNKICK:
 
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
@@ -629,7 +630,7 @@ using namespace std;
                             break;
 
                         case ACTION_JOIN:
-                            response_code = cdc_decode_join(&chat, message, temp_buffer_A, &temp_bool);
+                            response_code = cdc_decode_join(&chat, message, temp_buffer_A, &temp_bool, temp_buffer_B);
 
                             if(response_code == SUCCESS){
                                 strcpy(chat.channel, temp_buffer_A);
@@ -642,12 +643,23 @@ using namespace std;
                                 else
                                     sprintf(temp_buffer_C, "%svocê criou o canal %s%s%s e é seu operador!\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
 
+                            } else if(response_code == RPL_NAMREPLY) { 
+                                sprintf(temp_buffer_C, "%s membros do canal: %s\n", PREFIX_CHANNEL, temp_buffer_B);
+
                             } else if(response_code == ERR_INVITEONLYCHAN) {
                                 sprintf(temp_buffer_C, "%sé necessário um CONVITE para entrar neste canal.\n", PREFIX_ERROR);
 
                             } else if(response_code == ERR_BANNEDFROMCHAN){
                                 sprintf(temp_buffer_C, "%svocê foi banido deste canal.\n", PREFIX_ERROR);
+
+                            } else if(response_code == ERR_TOOMANYCHANNELS){
+                                sprintf(temp_buffer_C, "%so servidor atingiu a CAPACIDADE MÁXIMA de canais.\n", PREFIX_ERROR);
+
+                            } else if(response_code == ERR_CHANNELISFULL){
+                                sprintf(temp_buffer_C, "%so canal está LOTADO, selecione outro ou tente novamente mais tarde.\n", PREFIX_ERROR);
+
                             }
+
 
                             break;
 
@@ -683,8 +695,8 @@ using namespace std;
                                 sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
                                 
                             } else if(response_code == ERR_NOSUCHNICK){
-                                sprintf(temp_buffer_C, "%snão foi possível localizar este usuário no canal.\n", PREFIX_ERROR);
-                                
+                                sprintf(temp_buffer_C, "%snão foi possível localizar o usuário %s%s%s no canal.\n", PREFIX_ERROR, COLORB_RED, temp_buffer_A, COLOR_RED);
+
                             }
 
                             break;
@@ -723,7 +735,7 @@ using namespace std;
                                 sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
                                 
                             } else if(response_code == ERR_NOSUCHNICK){
-                                sprintf(temp_buffer_C, "%snão foi possível localizar este usuário no canal.\n", PREFIX_ERROR);
+                                sprintf(temp_buffer_C, "%snão foi possível localizar o usuário %s%s%s.\n", PREFIX_ERROR, COLORB_RED, temp_buffer_A, COLOR_RED);
                             }
                             break;
 

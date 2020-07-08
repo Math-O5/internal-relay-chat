@@ -68,20 +68,21 @@
       #define ACTION_SERVERMSG       700
       #define ACTION_CHANNELMSG      701
 
-
       #define INVALID_PROTOCOL       0
       #define SUCCESS               200
+      #define RPL_NAMREPLY          353
       
       #define ERR_NOSUCHNICK        401
+      #define ERR_NOSUCHCHANNEL     403
+      #define ERR_TOOMANYCHANNELS   405
       #define ERR_ERRONEUSNICKNAME  432
       #define ERR_NICKNAMEINUSE     433
       
+      #define ERR_CHANNELISFULL     471
       #define ERR_INVITEONLYCHAN    473
       #define ERR_BANNEDFROMCHAN    474
 
       #define ERR_CHANOPRIVSNEEDED  482
-
-
 
     /**
      * ENCONDER FUNCTIONS
@@ -169,7 +170,7 @@
 
 
       int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin);
+      int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin, char* channel_members);
 
       int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
       int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);

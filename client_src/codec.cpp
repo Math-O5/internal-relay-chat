@@ -295,7 +295,7 @@ int cdc_detectar_act(const char* cmd){
         return INVALID_PROTOCOL;
     }
 
-    int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin){
+    int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin, char* channel_members){
         if(rc == NULL || cmd == NULL || channel == NULL){
             return INVALID_PROTOCOL;
         }
@@ -307,7 +307,7 @@ int cdc_detectar_act(const char* cmd){
         int  nro_itens;
         
         // Decodificando o comando
-        nro_itens = sscanf(cmd, "/join %59s %30s %30s", response, temp_channel, params);
+        nro_itens = sscanf(cmd, "/join %59s %30s %500[^\n]", response, temp_channel, params);
         if(nro_itens < 1){
             return INVALID_PROTOCOL;
         }
@@ -318,15 +318,19 @@ int cdc_detectar_act(const char* cmd){
         // SUCCESS -> NICKNAME DEFINIDO COM SUCESSO
         if(strcmp(response,"SUCCESS") == 0 && nro_itens == 3){
 
-            if( strcmp(params, "user") == 0 ){
+            if( strcmp(params, "role:user") == 0 ){
                 (*is_admin) = false;
-            } else if( strcmp(params, "admin") == 0 ){
+            } else if( strcmp(params, "role:admin") == 0 ){
                 (*is_admin) = true;
             } else {
                 return INVALID_PROTOCOL;
             }
 
             return SUCCESS;
+
+        } else if(strcmp(response,"RPL_NAMREPLY") == 0){
+            strcpy(channel_members, params);
+            return RPL_NAMREPLY;
 
         // ERR_INVITEONLYCHAN -> USUARIO NAO FOI CONVIDADO PARA O CANAL
         } else if(strcmp(response,"ERR_INVITEONLYCHAN") == 0){
@@ -335,6 +339,13 @@ int cdc_detectar_act(const char* cmd){
         // ERR_BANNEDFROMCHAN -> USUARIO BANIDO DESTE CANAL
         } else if(strcmp(response,"ERR_BANNEDFROMCHAN") == 0){
             return ERR_BANNEDFROMCHAN;
+
+        } else if(strcmp(response,"ERR_TOOMANYCHANNELS") == 0){
+            return ERR_TOOMANYCHANNELS;
+        
+        } else if(strcmp(response,"ERR_CHANNELISFULL") == 0){
+            return ERR_CHANNELISFULL;
+        
         }
 
         return INVALID_PROTOCOL;
