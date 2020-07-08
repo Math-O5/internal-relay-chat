@@ -644,7 +644,7 @@ using namespace std;
                                     sprintf(temp_buffer_C, "%svocê criou o canal %s%s%s e é seu operador!\n", PREFIX_SUCCESS, COLORB_GREEN, temp_buffer_A, COLOR_GREEN);
 
                             } else if(response_code == RPL_NAMREPLY) { 
-                                sprintf(temp_buffer_C, "%s membros do canal: %s\n", PREFIX_CHANNEL, temp_buffer_B);
+                                sprintf(temp_buffer_C, "%s membros do canal: %s%s\n", PREFIX_CHANNEL, COLORB_BLUE, temp_buffer_B);
 
                             } else if(response_code == ERR_INVITEONLYCHAN) {
                                 sprintf(temp_buffer_C, "%sé necessário um CONVITE para entrar neste canal.\n", PREFIX_ERROR);
