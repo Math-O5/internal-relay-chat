@@ -569,7 +569,7 @@ int cdc_detectar_act(const char* cmd){
             return false;
 
         for(int i = 1; i < size; i++){
-            if(name[i] == ' ' || name[i] <= (char) 31 || name[i] == ',' || name[i])
+            if(name[i] == ' ' || name[i] <= (char) 31 || name[i] == ',')
                 return false;
         }
 
