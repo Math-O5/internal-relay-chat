@@ -354,9 +354,12 @@ using namespace std;
                         pthread_cond_signal(chat.cond_send_waiting);
                     pthread_mutex_unlock(chat.send_mutex); 
                     
+                    // pthread_join(recv_msg_thread, NULL);
+                    // pthread_join(send_msg_thread, NULL);
+
                     // 3º Cancela as threads
-                    pthread_cancel(recv_msg_thread);
-                    pthread_cancel(send_msg_thread);
+                    // pthread_cancel(recv_msg_thread);
+                    // pthread_cancel(send_msg_thread);
 
                     // 4º Resetando os buffers
                     // Obs: Threads já morreram mas ainda assim preciso dar 
