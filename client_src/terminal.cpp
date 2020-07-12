@@ -32,7 +32,7 @@ int terminal_input_iteration(terminal_control* t){
     t->input[0]  = getchar(); 
     
     // O sinal EOF indica que o usuário que sair
-    if( t->input[0] == EOF) {
+    if( t->input[0] == EOF ) {
 
         strcpy(t->input,"/quit");
         return 1;
@@ -54,9 +54,9 @@ int terminal_input_iteration(terminal_control* t){
             if( scanf("%[^\n]", t->input) == EOF){
                 printf("\n"); 
                 strcpy(t->input,"/quit");
-                return 1;
+            } else {
+                getchar();
             }
-            getchar();
             
             // Utilize a linha abaixo para remover a linha de output do terminal 
             printf("\033[A\33[2K\r");
