@@ -31,7 +31,7 @@
 		#define PING 2
 
 		#define MAX_CLIENTS 20
-		#define MAX_SIZE_NAME 30
+		#define MAX_SIZE_NAME 50
 	
 	/**
      * Bibliotecas importadas

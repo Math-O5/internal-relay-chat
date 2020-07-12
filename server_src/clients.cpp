@@ -3,14 +3,9 @@
 // Array com os structs dos clientes
 client *cl_arr[MAX_CLIENTS];
 
-
 bool clt_validate_nickname(char* nickname) 
 {
-    if (strlen(nickname) >= 3 && sscanf(nickname, " %50[a-zA-Z]", nickname) == 1 
-    &&  strcmp(nickname, "invalid"))
-        return true;
-    else 
-        return false;
+    return true;
 }
 
 /**

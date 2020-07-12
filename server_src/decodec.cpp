@@ -99,12 +99,12 @@ int decode_mode(const char* cmd, bool* invite_mode){
 
     if(mode_status[0] == '\0') return INVALID_PROTOCOL;
 
-    if(strcmp(mode_status, "+i") == 0){
+    if(strcmp(mode_status, "-i") == 0){
         (*invite_mode) = INVITE_ONLY_ON;
         return VALID_PROTOCOL;
     }
 
-    else if(strcmp(mode_status, "-i") == 0){
+    else if(strcmp(mode_status, "+i") == 0){
         (*invite_mode) = INVITE_ONLY_OFF;
         return VALID_PROTOCOL;
     }
