@@ -188,6 +188,7 @@ using namespace std;
 
         // Resetando as configurações do terminal do usuário       
         tcsetattr(0, TCSANOW, &terminal_backup);
+        printf("\e[m\n"); // Resetando a cor do terminal
 
         exit(EXIT_SUCCESS);
     }
