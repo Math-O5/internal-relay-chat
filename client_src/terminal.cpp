@@ -113,7 +113,7 @@ void msg_help(terminal_control* t){
 
     printf(PREFIX_NORMAL); printf("%sLista de Comandos do Servidor%s\n", COLORB_WHITE, COLOR_WHITE);
     printf(PREFIX_NORMAL); printf("| --- %s/nickname <NICK>%s          - Define ou altera seu nickname no servidor.\n", COLORB_YELLOW, COLOR_WHITE);
-    printf(PREFIX_NORMAL); printf("| --- %s/join <CHANNEL>%s           - Entra em um canal existente ou cria um novo.\n", COLORB_YELLOW, COLOR_WHITE);
+    printf(PREFIX_NORMAL); printf("| --- %s/join &<CHANNEL>%s          - Entra em um canal existente ou cria um novo.\n", COLORB_YELLOW, COLOR_WHITE);
     printf(PREFIX_NORMAL); printf("| --- %s/list%s                     - Lista todos os canais ativos no servidor.\n", COLORB_YELLOW, COLOR_WHITE);
     printf(PREFIX_EMPTY_LINE);
 

@@ -69,8 +69,8 @@
         #define DEFAULT_SERVER_HOST "127.0.0.1"
         #define DEFAULT_SERVER_PORT "9002"
         
-        #define NICKNAME_MAXLENGHT       30
-        #define CHANNEL_NAME_MAXLENGHT   30
+        #define NICKNAME_MAXLENGHT       50
+        #define CHANNEL_NAME_MAXLENGHT   50
         #define CHANNEL_NAME_SIMBOL      '&'
         #define CHANNEL_ADMIN_SIMBOL     '#'
         #define CHANNEL_USER_SIMBOL      '@'

@@ -117,7 +117,7 @@ int cdc_detectar_act(const char* cmd){
         }
 
         char nick[NICKNAME_MAXLENGHT+1];
-        int nro_itens = sscanf(cmd, "/nickname %30s", nick);
+        int nro_itens = sscanf(cmd, "/nickname %50s", nick);
 
         if(nro_itens != 1 || !is_valid_nickname(nick)){
             return NULL;
@@ -135,7 +135,7 @@ int cdc_detectar_act(const char* cmd){
         }
 
         char channel[CHANNEL_NAME_MAXLENGHT+1];
-        int nro_itens = sscanf(cmd, "/join %30s", channel); //Obs: 30 == CHANNEL_NAME_MAXLENGHT
+        int nro_itens = sscanf(cmd, "/join %50s", channel); //Obs: 30 == CHANNEL_NAME_MAXLENGHT
 
         if(nro_itens != 1 || !is_valid_channel_name(channel)){
             return NULL;
@@ -222,7 +222,7 @@ int cdc_detectar_act(const char* cmd){
         }
 
         char nick[NICKNAME_MAXLENGHT+1];
-        int  nro_itens = sscanf(cmd, "%*s %30s ", nick);
+        int  nro_itens = sscanf(cmd, "%*s %50s ", nick);
 
         if(nro_itens != 1 || !is_valid_nickname(nick)){
             return NULL;
@@ -271,7 +271,7 @@ int cdc_detectar_act(const char* cmd){
         int  nro_itens;
         
         // Decodificando o comando
-        nro_itens = sscanf(cmd, "/nickname %59s %30s", response, temp_nick);
+        nro_itens = sscanf(cmd, "/nickname %59s %50s", response, temp_nick);
         if(nro_itens != 2 || !is_valid_nickname(temp_nick)){
             return INVALID_PROTOCOL;
         }
@@ -307,7 +307,7 @@ int cdc_detectar_act(const char* cmd){
         int  nro_itens;
         
         // Decodificando o comando
-        nro_itens = sscanf(cmd, "/join %59s %30s %500[^\n]", response, temp_channel, params);
+        nro_itens = sscanf(cmd, "/join %59s %50s %500[^\n]", response, temp_channel, params);
         if(nro_itens < 1){
             return INVALID_PROTOCOL;
         }
@@ -364,7 +364,7 @@ int cdc_detectar_act(const char* cmd){
         int  nro_itens;
         
         // Decodificando o comando
-        nro_itens = sscanf(cmd, "/msg %30s :%500[^\n]", temp_nickname, temp_content);
+        nro_itens = sscanf(cmd, "/msg %50s :%500[^\n]", temp_nickname, temp_content);
         if(nro_itens != 2){
             return INVALID_PROTOCOL;
         }
@@ -549,10 +549,43 @@ int cdc_detectar_act(const char* cmd){
     }
 
 // FUNÇÕES DE VALIDAÇÃO
+    bool _is_char(char character) {
+        return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) ? true : false;
+    }
+
+    bool _is_number(char number) {
+        return (number >= '1' && number <= '9') ? true : false; 
+    }
+
+    bool _is_seleted_special_char(char special) {
+        return (special == '-' || special == '_') ? true : false; 
+    }
+
     int is_valid_channel_name(char* name){
-        return 1;
+        int size = strlen(name);
+
+        // Nomes de canais começam com &
+        if(size < 2 || name[0] != '&' || size > CHANNEL_NAME_MAXLENGHT)
+            return false;
+
+        for(int i = 1; i < size; i++){
+            if(name[i] == ' ' || name[i] <= (char) 31 || name[i] == ',' || name[i])
+                return false;
+        }
+
+        return true;
     }
 
     int is_valid_nickname(char* name){
-        return 1;
+        int size = strlen(name);
+
+        if(size < 2)
+            return false;
+
+        for(int i = 0; i < size; i++){
+            if( (!_is_char(name[i])) && (!_is_number(name[i])) && (!_is_seleted_special_char(name[i])) )
+                return false;
+        }
+
+        return true;
     }
