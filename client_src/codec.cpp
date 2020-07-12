@@ -554,7 +554,7 @@ int cdc_detectar_act(const char* cmd){
     }
 
     bool _is_number(char number) {
-        return (number >= '1' && number <= '9') ? true : false; 
+        return (number >= '0' && number <= '9') ? true : false; 
     }
 
     bool _is_seleted_special_char(char special) {
