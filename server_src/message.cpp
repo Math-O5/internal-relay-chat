@@ -264,7 +264,7 @@ void msg_destroy_channel(char* channel_name)
 void msg_create_nickname(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
-    printf("  [+] - [%s] O cliente %d criou seu nickname: '%s'.\n", t_log, id, nickname);
+    printf("  [+] - [%s] O cliente %d criou seu nickname: %s.\n", t_log, id, nickname);
     fflush(stdout);
 }
 
@@ -273,7 +273,7 @@ void msg_change_nickname(char* nickname, char* oldnickname)
 {
     char t_log[20];
     time_log(t_log, sizeof(t_log));
-    printf("  [+] - [%s] O usuario %s %s alterou seu nickname para '%s'.\n", t_log, nickname, oldnickname);
+    printf("  [+] - [%s] O usuario %s alterou seu nickname para %s.\n", t_log, nickname, oldnickname);
     fflush(stdout);
 }
 

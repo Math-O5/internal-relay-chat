@@ -1,41 +1,42 @@
-#include "channel.h"
+    #include "channel.h"
 
-map<const char*, CHANNEL_conn*, cmp_str> channels;              // Armazena todos o canais criados.
-map<const char*, CHANNEL_conn*, cmp_str>::iterator it_channel;  // Iterador da estrutura.
-map<int, char*>::iterator it_arrived;                           // Iterador da estrutura.
-map<const char*, int, cmp_str> ::iterator it;                   // Iterador da estrutura.
+    map<const char*, CHANNEL_conn*, cmp_str> channels;              // Armazena todos o canais criados.
+    map<const char*, CHANNEL_conn*, cmp_str>::iterator it_channel;  // Iterador da estrutura.
+    map<int, char*>::iterator it_arrived;                           // Iterador da estrutura.
+    map<const char*, int, cmp_str> ::iterator it;                   // Iterador da estrutura.
 
-/** map_* 
- *  @function map_insert_key_char
- *  @function map_insert_key_channel
- *  @function map_insert_key_int
- * 
- *  São funcções auxiliares para inserir um elemnto dentro das estruturas map<char*, auto>
- * 
- * @param { map<const char*, int, cmp_str>& } pointer : é a referencia da estrutura que vai receber o nó.
- * @param { char* } str : é a chave de busca.
- * @param { int } value : é o valor buscado.
- * 
- **/
-void map_insert_key_char(map<const char*, int, cmp_str>& pointer, const char* str, int value) {
-    char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
-    strcpy(strCopy, str);
-    pointer.insert(pair<char*, int>(strCopy, value));
-}
+    /** map_* 
+     *  @function map_insert_key_char
+     *  @function map_insert_key_channel
+     *  @function map_insert_key_int
+     * 
+     *  São funcções auxiliares para inserir um elemnto dentro das estruturas map<char*, auto>
+     * 
+     * @param { map<const char*, int, cmp_str>& } pointer : é a referencia da estrutura que vai receber o nó.
+     * @param { char* } str : é a chave de busca.
+     * @param { int } value : é o valor buscado.
+     * 
+     **/
+    void map_insert_key_char(map<const char*, int, cmp_str>& pointer, const char* str, int value) {
+        char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
+        strcpy(strCopy, str);
+        pointer.insert(pair<char*, int>(strCopy, value));
+    }
 
-void map_insert_key_channel(map<const char*, CHANNEL_conn*, cmp_str>& pointer, const char* str, CHANNEL_conn* value) {
-    char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
-    strcpy(strCopy, str);
-    pointer.insert(pair<char*, CHANNEL_conn*>(strCopy, value));
-}
+    void map_insert_key_channel(map<const char*, CHANNEL_conn*, cmp_str>& pointer, const char* str, CHANNEL_conn* value) {
+        char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
+        strcpy(strCopy, str);
+        pointer.insert(pair<char*, CHANNEL_conn*>(strCopy, value));
+    }
 
-void map_insert_key_int(map<int, char*>& pointer, int value, const char* str) {
-    char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
-    strcpy(strCopy, str);
-    pointer.insert(pair<int, char*>(value, strCopy));
-}
+    void map_insert_key_int(map<int, char*>& pointer, int value, const char* str) {
+        char* strCopy = (char*)malloc(sizeof(char)*(strlen(str)+1));
+        strcpy(strCopy, str);
+        pointer.insert(pair<int, char*>(value, strCopy));
+    }
 
-int is_valid_channel_name(char* name){
+    bool CHANNEL_is_valid_channel_name(char* name)
+{
     int size = strlen(name);
 
     // Nomes de canais começam com &
@@ -283,11 +284,6 @@ int is_valid_channel_name(char* name){
     void CHANNEL_join(char* nickname_channel, client* clt) 
     {    
         CHANNEL_conn* channel;
-
-        if(is_valid_channel_name(nickname_channel) == false) {
-            CHANNEL_broadcast(channel, clt, MESSAGE_NO_JOIN_CHANNEL, "");
-            return;
-        }
 
         // Se o usuário já estiver em um canal, ele é retirado dele.
         if(clt->channel != NULL) 
@@ -573,11 +569,6 @@ int is_valid_channel_name(char* name){
 
                 sprintf(msg_buffer, "/channelmsg : O usuario %c%s agora chama-se %c%s!\n", role, buffer, role, clt->nickname);  
                 CHANNEL_send_message_all(channel, msg_buffer);
-                break;
-
-            case MESSAGE_NO_JOIN_CHANNEL:
-                sprintf(msg_buffer, "/join ERR_NOSUCHNICK %s\n", buffer);
-                clt_send_message(clt->cl_socket, msg_buffer);
                 break;
                 
             case MESSAGE_NEW_JOIN_CHANNEL:          // Mensagem para quem criou o canal.
