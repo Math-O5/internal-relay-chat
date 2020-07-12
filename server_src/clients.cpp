@@ -3,19 +3,24 @@
     // Array com os structs dos clientes
     client *cl_arr[MAX_CLIENTS];
 
-    bool _is_char(char character) {
+    bool _is_char(char character) 
+    {
         return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')) ? true : false;
     }
 
-    bool _is_number(char number) {
+    bool _is_number(char number) 
+    {
         return (number >= '1' && number <= '9') ? true : false; 
     }
 
-    bool _is_seleted_special_char(char special) {
+    bool _is_seleted_special_char(char special) 
+    {
         return (special == '-' || special == '_') ? true : false; 
     }
 
-    bool clt_validate_nickname(char* nickname){
+    bool clt_validate_nickname(char* nickname)
+    {
+            if(!strcmp(nickname, "invalid")) return false;
             int size = strlen(nickname);
 
             if(size < 2)
@@ -37,7 +42,7 @@
      */
     int clt_is_valid_nickname(char* nickname) 
     {
-        if(!clt_validate_nickname(nickname)) return ERR_ERRONEUSNICKNAME;
+        if(!clt_validate_nickname(nickname) || !strcmp(nickname, "invalid")) return ERR_ERRONEUSNICKNAME;
         if(clt_get_by_nickname(nickname) != NULL)
             return ERR_NICKNAMEINUSE;
         else return SUCCESS;
@@ -45,35 +50,22 @@
 
     // @Comentários em "clients.h"
     client* clt_criar(struct sockaddr_in address, int socket, int id, int sv_socket){
-        client* cl = (client*) malloc(sizeof(client));
-        struct hostent *host_entry; 
-        char hostbuffer[256];
-        char *IP_buffer; 
-
-        
-        host_entry = NULL;
-        memset(hostbuffer, 0, sizeof(hostbuffer));
-
-        // Recuperando o Ipv4
-        if(gethostname(hostbuffer, sizeof(hostbuffer)) == -1)
-            return NULL;
-
-        host_entry = gethostbyname(hostbuffer); 
-        
-        if(host_entry == NULL)
-            return NULL;
-        
-        IP_buffer = inet_ntoa(*((struct in_addr*)host_entry->h_addr_list[0])); 
+        client* cl = (client*) malloc(sizeof(client));  
+        char tmp_ip[300];
         
         cl->cl_address = address;
         cl->cl_socket = socket;
         cl->cl_id = id;
-        cl->ip_address = (char*) malloc(sizeof(char)*300);
-        strcpy(cl->ip_address, IP_buffer);
-        printf("%s\n", IP_buffer);
         cl->sv_socket = sv_socket;
-        cl->channel = NULL;
         cl->nickname = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
+        cl->channel = NULL;
+        
+        cl->ip_address = (char*) malloc(sizeof(char)*300);
+        sprintf(cl->ip_address, "%d.%d.%d.%d", 
+        (address.sin_addr.s_addr & 0xff),
+        (address.sin_addr.s_addr & 0xff00) >> 8,
+        (address.sin_addr.s_addr & 0xff0000) >> 16,
+        (address.sin_addr.s_addr & 0xff000000) >> 24);
         strcpy(cl->nickname, "invalid");
 
         return cl;
@@ -412,11 +404,14 @@
                         } else if(response_code == VALID_PROTOCOL)
                         {    
                             CHANNEL_whois(clt->channel, clt, temp_buffer_A);
+                            msg_whois(clt->channel->nickname_admin, clt->nickname, clt->channel->nickname_channel, clt->cl_address);
                         } else 
                         {
                             sprintf(temp_buffer_C, "/whois ERR_NOSUCHNICK %s\n", temp_buffer_A);
                             CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
                         }
+
+
                         break;
                     
                     case ACTION_INVITE:
