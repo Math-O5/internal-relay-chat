@@ -70,6 +70,7 @@
         cl->cl_id = id;
         cl->ip_address = (char*) malloc(sizeof(char)*300);
         strcpy(cl->ip_address, IP_buffer);
+        printf("%s\n", IP_buffer);
         cl->sv_socket = sv_socket;
         cl->channel = NULL;
         cl->nickname = (char*) malloc(sizeof(char)*MAX_SIZE_NAME);
