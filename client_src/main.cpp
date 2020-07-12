@@ -477,7 +477,7 @@ using namespace std;
                 case ACTION_UNMUTE:
                 case ACTION_KICK:
                 case ACTION_UNKICK:
-
+                
                     // 0º Verifica se já não está desconectado
                     if(chat.connection_status == CONNECTION_CLOSED){
                         pthread_mutex_lock(terminal.terminal_mutex);
@@ -487,6 +487,22 @@ using namespace std;
                         break;
                     }
                     
+                    if(action_code != ACTION_NICK && !chat.has_nick){
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("você ainda não registrou seu %snickname.\n", COLORB_RED);
+                        pthread_mutex_unlock(terminal.terminal_mutex);
+                        break;
+                    }
+
+                    if(action_code != ACTION_NICK && action_code != ACTION_JOIN && !chat.has_channel){
+                        pthread_mutex_lock(terminal.terminal_mutex);
+                            printf(PREFIX_ERROR);
+                            printf("você ainda não entrou em nenhum %scanal.\n", COLORB_RED);
+                        pthread_mutex_unlock(terminal.terminal_mutex);
+                        break;
+                    }
+
                     // 1º Decodifica o input e verifica se está tudo ok
                     if(action_code == ACTION_NICK)
                         message = cdc_encode_nickname(&chat, terminal.input);

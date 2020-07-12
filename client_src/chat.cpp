@@ -114,6 +114,7 @@ int fechar_conexao(relay_chat* rc){
     close(rc->network_socket);
     rc->connection_status = CONNECTION_CLOSED;
     rc->network_socket    = -1;
+    rc->is_admin = rc->has_channel = rc->has_nick = false;
 
     return 0;
 }
