@@ -486,7 +486,7 @@
                         break;
 
                     case ACTION_PING:
-                        clt_send_message(clt->cl_socket, "/pong\n"); 
+                        clt_send_message(clt->cl_socket, "/servermsg : pong\n"); 
                         break;
                 }
                 pthread_mutex_unlock(mutex);
