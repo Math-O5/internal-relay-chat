@@ -10,7 +10,7 @@ Inicialmente, o servidor é compilado com `make server` e executado com `make se
 Para mais detalhes, <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente.
 
 ## Executando em outras máquinas
-Para excutar em outras máquinas, execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o <a href="https://www.ssh.com/ssh/tunneling/example">ssh tunneling</a> da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
+Para excutar em outras máquinas, você pode usar uma <a href="https://computersciencewiki.org/index.php/VPN">VPN</a> ou o <a href="https://www.ssh.com/ssh/tunneling/example">ssh tunneling</a>. Para fazer o ssh tunelamento execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o tunelamento da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
 
 ## Demo
 O primeiro terminal é o servidor, seguido de três clientes.
