@@ -10,7 +10,7 @@ Inicialmente, o servidor é compilado com `make server` e executado com `make se
 Para mais detalhes, <a href="/client_src">client_src</a> e <a href="/server_src">server_src</a> contém melhores explicações de como proceder seguramente.
 
 ## Executando em outras máquinas
-Para excutar em outras máquinas, execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o <a href="https://www.ssh.com/ssh/tunneling/example">ssh port fowarding</a> da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
+Para excutar em outras máquinas, execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o <a href="https://www.ssh.com/ssh/tunneling/example">ssh tunneling</a> da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
 
 ## Demo
 O primeiro terminal é o servidor, seguido de três clientes.
@@ -58,11 +58,4 @@ g++ (GCC) 9.2.1 20190827 (Red Hat 9.2.1-1)</br>
 <p>OS: Ubuntu 18.04.4 LTS x86_64</br>
 Shell: bash 4.4.20</br>
 g++ (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0</br>
-</p>
-
-<h3>Desenvolvido por:</h3>
-<p>
-<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a> Gabriel van Loon Bode da Costa Dourado Fuentes Rojas Da Silva Pinto</br>
-<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
-<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
 </p>
