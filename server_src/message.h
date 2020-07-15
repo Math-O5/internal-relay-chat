@@ -39,6 +39,35 @@
         #define CONNECT 0
     
     /**
+     * Cores
+    */
+        #define COLORL_GRAY     "\033[0;30m"
+        #define COLOR_RED       "\033[0;31m"
+        #define COLOR_GREEN     "\033[0;32m"
+        #define COLOR_YELLOW    "\033[0;33m"
+        #define COLOR_BLUE      "\033[0;34m"
+        #define COLOR_MAGENTA   "\033[0;35m"
+        #define COLOR_CYAN      "\033[0;36m"
+        #define COLOR_WHITE     "\033[0;37m"
+
+        #define COLORB_GRAY      "\033[1;30m"
+        #define COLORB_RED       "\033[1;31m"
+        #define COLORB_GREEN     "\033[1;32m"
+        #define COLORB_YELLOW    "\033[1;33m"
+        #define COLORB_BLUE      "\033[1;34m"
+        #define COLORB_MAGENTA   "\033[1;35m"
+        #define COLORB_CYAN      "\033[1;36m"
+        #define COLORB_WHITE     "\033[1;37m"
+
+        #define COLOR_RESET      "\033[0m"
+
+        #define PREFIX_NORMAL       "  \033[1;37m[-]"
+        #define PREFIX_EMPTY_LINE   "  \033[1;37m[ ]\n"
+
+        #define PREFIX_SUCCESS      "  \033[1;32m[+]"
+        #define PREFIX_ERROR        "  \033[1;31m[x]"
+    
+    /**
      * Bibliotecas importadas
      * ----------------------
     */
@@ -214,6 +243,7 @@
      *
     */
     void msg(char type, char* msg);
+    void msg_request_client_channel(int id, char* nickname);
     void msg_client_channel(const char* nickname, const char* channel);
     void msg_channel_client(const char* nickname, const char* channel);
     void msg_client_no_response_channel(int id, char* nickname, char* channel);
@@ -230,31 +260,37 @@
      * para o usuario que solicitou 
      * 
     */
-    void msg_list(char* nickname);
+    void msg_list(int id, char* nickname);
+
+    void msg_request_list(int id, char* nickname);
 
 // ******************************* JOIN *******************************
 
     /**
      * @function
      * 
-     * void msg_create_channel(char* nickname, char* channel_name)
+     * void msg_create_channel(int id, char* nickname, char* channel_name);
      * -----------------------------------------------------------
      * 
      * Mensagem que indica que o canal foi criado
      * 
     */
-    void msg_create_channel(char* nickname, char* channel_name);
+    void msg_create_channel(int id, char* nickname, char* channel_name);
+
+    void msg_request_create_channel(int id, char* nickname, char* channel_name);
+
+    void msg_error_create_channel(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_join_channel(char* nickname, char* channel_name)
+     * void msg_join_channel(int id, char* nickname, char* channel_name)
      * ---------------------------------------------------------
      * 
      * Mensagem que notifica que o usuario entrou no canal
      * 
     */
-    void msg_join_channel(char* nickname, char* channel_name);
+    void msg_join_channel(int id, char* nickname, char* channel_name);
 
     /**
      * @function
@@ -300,23 +336,39 @@
      * Mensagem indicando que o nickname do usuario foi alterado
      * 
     */
-    void msg_change_nickname(char* nickname, char* oldnickname);
+    void msg_change_nickname(int id, char* old_nickname, char* new_nickname);
+
+    void msg_request_nickname(int id, char* new_nickname);
+
+    void msg_error_nicknameinuse(int id);
+
+    void msg_error_nickname(int id);
 
 // ******************************* KICK *******************************
 
+    void msg_request_kick(int id, char* nickname);
+    
      /**
      * @function
      * 
-     * void msg_kick(char* nickname_adm, char* nickname_user, char* channel_name)
-     * --------------------------------------------------------------------------
+     * void msg_kick(int id, char* nickname_adm, char* nickname_user)
+     * --------------------------------------------------------------
      * 
      * Mensagem avisando que o usuario foi expulso do canal
      * 
     */
-    void msg_kick(char* nickname_adm, char* nickname_user, char* channel_name);
+    void msg_kick(int id, char* nickname_adm, char* nickname_user);
+
+    void msg_error_kick_no_channel(int id, char* nickname);
+
+    void msg_error_kick_denied(int id, char* nickname);
+
+    void msg_error_kick_no_nick(int id, char* nickname);
 
 // ******************************* UNKICK *******************************
      
+    void msg_request_unkick(int id, char* nickname);
+
      /**
      * @function
      * 
@@ -326,83 +378,137 @@
      * Mensagem avisando que o usuario voltou a ser permitido participar do canal
      * 
     */
-    void msg_unkick(char* nickname_adm, char* nickname_user, char* channel_name);
+    void msg_unkick(int id, char* nickname_adm, char* nickname_user);
+
+    void msg_error_unkick_no_channel(int id, char* nickname);
+
+    void msg_error_unkick_denied(int id, char* nickname);
+
+    void msg_error_unkick_no_nick(int id, char* nickname);
 
 // ******************************* MUTE *******************************
+
+    void msg_request_mute(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_mute(char* nickname_adm, char* nickname_user, char* channel_name)
-     * --------------------------------------------------------------------------
+     * void msg_mute(int id, char* nickname_adm, char* nickname_user)
+     * --------------------------------------------------------------
      * 
      * Mensagem indicando que o usuario foi mutado
      * 
     */
-    void msg_mute(char* nickname_adm, char* nickname_user, char* channel_name);
+    void msg_mute(int id, char* nickname_adm, char* nickname_user);
+
+    void msg_error_mute_no_channel(int id, char* nickname);
+
+    void msg_error_mute_denied(int id, char* nickname);
+
+    void msg_error_mute_no_nick(int id, char* nickname);
 
 // ******************************* UNMUTE *******************************
+
+    void msg_request_unmute(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_unmute(char* nickname_adm, char* nickname_user, char* channel_name)
-     * ---------------------------------------------------------------------------- 
+     * void msg_unmute(int id, char* nickname_adm, char* nickname_user)
+     * ----------------------------------------------------------------
      * 
      * Mensagem indicando que o usuario foi desmutado
      * 
     */
-    void msg_unmute(char* nickname_adm, char* nickname_user, char* channel_name);
+    void msg_unmute(int id, char* nickname_adm, char* nickname_user);
+
+    void msg_error_unmute_no_channel(int id, char* nickname);
+
+    void msg_error_unmute_denied(int id, char* nickname);
+
+    void msg_error_unmute_no_nick(int id, char* nickname);
 
 // ******************************** WHOIS *******************************
+
+    void msg_request_whois(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_whois(char* nickname_adm, char* nickname_user, char* channel_name, struct sockaddr_in cl_addr)
-     * --------------------------------------------------------------------------------------------------------
+     * msg_whois(int id, char* nickname_adm, char* nickname_user_ip)
+     * -------------------------------------------------------------
      * 
      * Mensagem que mostra o IP do usuario, o qual foi solicitado pelo administrador do canal
      * 
     */
-    void msg_whois(char* nickname_adm, char* nickname_user, char* channel_name, struct sockaddr_in cl_addr);
+    void msg_whois(int id, char* nickname_adm, char* nickname_user_ip);
+
+    void msg_error_whois_no_channel(int id, char* nickname);
+
+    void msg_error_whois_not_adm(int id, char* nickname);
+
+    void msg_error_whois_no_nick(int id, char* nickname);
 
 // ******************************** MODE ********************************
+
+    void msg_request_mode(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_invite_only_on(char* nickname_adm, char* channel_name)
+     * void msg_invite_only_on(int id, char* nickname_adm, char* channel_name)
      * ---------------------------------------------------------------
      * 
      * Mensagem avisando que o modo do canal foi alterado para apenas convidados
      * 
     */
-    void msg_invite_only_on(char* nickname_adm, char* channel_name);
+    void msg_invite_only_on(int id, char* nickname_adm, char* channel_name);
 
     /**
      * @function
      * 
-     * void msg_invite_only_off(char* nickname_adm, char* channel_name)
+     * void msg_invite_only_off(int id, char* nickname_adm, char* channel_name)
      * ----------------------------------------------------------------
      * 
      * Mensagem avisando que o modo do canal foi alterado para qualquer usuario possa
      * participar
      * 
     */
-    void msg_invite_only_off(char* nickname_adm, char* channel_name);
+    void msg_invite_only_off(int id, char* nickname_adm, char* channel_name);
+
+    void msg_error_mode_no_channel(int id, char* nickname);
+
+    void msg_error_mode_not_adm(int id, char* nickname, char* channel_name);
 
 // ******************************** INVITE ********************************
+
+    void msg_request_invite(int id, char* nickname);
 
     /**
      * @function
      * 
-     * void msg_invite(char* nickname_in, char* nickname_out, char* channel_name)
-     * --------------------------------------------------------------------------
+     * void msg_invite(int id, char* nickname_adm, char* nickname_user)
+     * ----------------------------------------------------------------
      * 
      * Mensagem indicando que tal usuario convidou outro para o canal
      * 
     */
-    void msg_invite(char* nickname_in, char* nickname_out, char* channel_name);
+    void msg_invite(int id, char* nickname_adm, char* nickname_user);
+
+    void msg_error_invite_no_channel(int id, char* nickname);
+
+    void msg_error_invite_denied(int id, char* nickname);
+
+    void msg_error_invite_no_nick(int id, char* nickname);
+
+// ******************************** PING ********************************
+
+    void msg_request_ping(int id, char* nickname);
+
+    void msg_pong(int id, char* nickname);
+
+// ******************************** INVALID PROTOCOL ********************************
+
+    void msg_invalid_protocol(int id);
 
 #endif

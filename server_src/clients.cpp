@@ -312,85 +312,105 @@
                     case ACTION_NICK:
                         decode_nickname(buffer, temp_buffer_A);
                         response_code = clt_is_valid_nickname(temp_buffer_A);
-                        
+                        msg_request_nickname(clt->cl_id, temp_buffer_A);
+
                         if (response_code == SUCCESS) 
                         {
                             strcpy(temp_buffer_B, clt->nickname);
                             strcpy(clt->nickname, temp_buffer_A); 
-                            
                             sprintf(buffer, "/nickname SUCCESS %s\n", clt->nickname);  
                             clt_send_message(clt->cl_socket,buffer);
-
                             CHANNEL_on_change_nickname(clt, temp_buffer_B);  
-                            msg_nickname_cliente(clt->cl_id, clt->nickname, temp_buffer_B);   
+                            msg_change_nickname(clt->cl_id, temp_buffer_B, clt->nickname);
+
                         } else if(response_code == ERR_NICKNAMEINUSE) 
                         {
                             sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", temp_buffer_A);  
                             clt_send_message(clt->cl_socket,buffer);
+                            msg_error_nicknameinuse(clt->cl_id);
                         } else 
                         {
                             sprintf(buffer, "/nickname ERR_ERRONEUSNICKNAME %s\n", temp_buffer_A);  
                             clt_send_message(clt->cl_socket,buffer);
+                            msg_error_nickname(clt->cl_id);
                         }
 
                         break;
 
                     case ACTION_JOIN:
+                        
                         if(clt_validate_nickname(clt->nickname) == false) 
                         {
                             sprintf(buffer, "/nickname ERR_NICKNAMEINUSE %s\n", clt->nickname);    
                             clt_send_message(clt->cl_socket,buffer);
+                            msg_error_nicknameinuse(clt->cl_id);
                             break;
                         }
-
+                        
                         decode_join(buffer, temp_buffer_A);
                         if(CHANNEL_is_valid_channel_name(temp_buffer_A) == false) 
                         {
                             sprintf(buffer, "/join ERR_BADCHANNELKEY %s\n", clt->nickname);    
                             clt_send_message(clt->cl_socket, buffer);
+                            msg_error_create_channel(clt->cl_id, clt->nickname);
                             break;
                         }
-
+                        
                         CHANNEL_join(temp_buffer_A, clt);
                         if(clt->channel != NULL)
-                            msg_join_channel(clt);
+                            msg_join_channel(clt->cl_id, clt->nickname, temp_buffer_A);
                         break;
 
                     case ACTION_LIST:
+                        msg_request_list(clt->cl_id, clt->nickname);
                         memset(buffer, 0 , BUFFER_SIZE);
                         CHANNEL_list(buffer);
                         clt_send_message(clt->cl_socket, buffer);
+                        msg_list(clt->cl_id, clt->nickname);
                         break;
 
                     case ACTION_MODE:
-                    if(clt->channel == NULL) 
-                    {
-                            clt_send_message(
-                                clt->cl_socket, 
-                                "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
-                            ); 
-                            break;
-                        }   
-                        response_code = decode_mode(buffer, &temp_bool);
 
-                        if(CHANNEL_check_privilege(clt->channel, clt) == false) 
-                        {
-                            sprintf(temp_buffer_A, "/mode ERR_CHANOPRIVSNEEDED\n");
-                            CHANNEL_send_message_one(clt->channel, clt, temp_buffer_A);
-                        } else if(response_code == VALID_PROTOCOL) {
-                            CHANNEL_mode(clt->channel, clt, temp_bool);
-                        } else {
-                            clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");
-                        }
-                        break;
+                        msg_request_mode(clt->cl_id, clt->nickname);
 
-                    case ACTION_WHOIS:
                         if(clt->channel == NULL) 
                         {
                             clt_send_message(
                                 clt->cl_socket, 
                                 "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
                             ); 
+                            msg_error_mode_no_channel(clt->cl_id, clt->nickname);
+                            break;
+                        }   
+
+                        response_code = decode_mode(buffer, &temp_bool);
+
+                        if(CHANNEL_check_privilege(clt->channel, clt) == false) 
+                        {
+                            sprintf(temp_buffer_A, "/mode ERR_CHANOPRIVSNEEDED\n");
+                            CHANNEL_send_message_one(clt->channel, clt, temp_buffer_A);
+                            msg_error_mode_not_adm(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
+                        } else if(response_code == VALID_PROTOCOL) {
+                            CHANNEL_mode(clt->channel, clt, temp_bool);
+                            if(!temp_bool == INVITE_ONLY_ON) msg_invite_only_on(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
+                            else if(!temp_bool == INVITE_ONLY_OFF) msg_invite_only_off(clt->cl_id, clt->nickname, clt->channel->nickname_channel);
+                        } else {
+                            clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");
+                            msg_invalid_protocol(clt->cl_id);
+                        }
+                        break;
+
+                    case ACTION_WHOIS:
+
+                        msg_request_whois(clt->cl_id, clt->nickname);
+
+                        if(clt->channel == NULL) 
+                        {
+                            clt_send_message(
+                                clt->cl_socket, 
+                                "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
+                            ); 
+                            msg_error_whois_no_channel(clt->cl_id, clt->nickname);
                             break;
                         }   
                         
@@ -401,14 +421,16 @@
                         {
                             sprintf(temp_buffer_A, "/whois ERR_CHANOPRIVSNEEDED\n");
                             CHANNEL_send_message_one(clt->channel, clt, temp_buffer_A);
+                            msg_error_whois_not_adm(clt->cl_id, clt->nickname);
                         } else if(response_code == VALID_PROTOCOL)
                         {    
                             CHANNEL_whois(clt->channel, clt, temp_buffer_A);
-                            msg_whois(clt->channel->nickname_admin, clt->nickname, clt->channel->nickname_channel, clt->cl_address);
+                            msg_whois(clt->cl_id, clt->nickname, temp_buffer_A);
                         } else 
                         {
                             sprintf(temp_buffer_C, "/whois ERR_NOSUCHNICK %s\n", temp_buffer_A);
                             CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+                            msg_error_whois_no_nick(clt->cl_id, clt->nickname);
                         }
 
 
@@ -419,8 +441,31 @@
                     case ACTION_UNMUTE:
                     case ACTION_KICK:
                     case ACTION_UNKICK:
-                    if(clt->channel == NULL) 
-                    {
+                        
+                        if(clt->channel == NULL) 
+                        {   
+
+                            if(action_code == ACTION_INVITE){   
+                                msg_request_invite(clt->cl_id, clt->nickname);
+                                msg_error_invite_no_channel(clt->cl_id, clt->nickname);
+                            }
+                            else if(action_code == ACTION_MUTE){
+                                msg_request_mute(clt->cl_id, clt->nickname);
+                                msg_error_mute_no_channel(clt->cl_id, clt->nickname);
+                            } 
+                            else if(action_code == ACTION_UNMUTE){
+                                msg_request_unmute(clt->cl_id, clt->nickname);
+                                msg_error_unmute_no_channel(clt->cl_id, clt->nickname);
+                            }
+                            else if(action_code == ACTION_KICK){
+                                msg_request_kick(clt->cl_id, clt->nickname);
+                                msg_error_kick_no_channel(clt->cl_id, clt->nickname);
+                            }
+                            else if(action_code == ACTION_UNKICK){
+                                msg_request_unkick(clt->cl_id, clt->nickname);
+                                msg_error_unkick_no_channel(clt->cl_id, clt->nickname);
+                            }
+
                             clt_send_message(
                                 clt->cl_socket, 
                                 "/servermsg : Entre em um canal para continuar!\n\t/join <nome_do_canal>\t: para criar/entrar em nome_do_canal.\n\t/list\t: para ver todos os canais.\n"
@@ -428,16 +473,26 @@
                             break;
                         }   
 
-                        if(action_code == ACTION_INVITE)
+                        if(action_code == ACTION_INVITE){
+                            msg_request_invite(clt->cl_id, clt->nickname);
                             response_code = decode_invite(buffer, temp_buffer_A);
-                        else if(action_code == ACTION_MUTE)
+                        }
+                        else if(action_code == ACTION_MUTE){
+                            msg_request_mute(clt->cl_id, clt->nickname);
                             response_code = decode_mute(buffer, temp_buffer_A);
-                        else if(action_code == ACTION_UNMUTE)
+                        }
+                        else if(action_code == ACTION_UNMUTE){
+                            msg_request_unmute(clt->cl_id, clt->nickname);
                             response_code = decode_unmute(buffer, temp_buffer_A);
-                        else if(action_code == ACTION_KICK)
+                        }
+                        else if(action_code == ACTION_KICK){
+                            msg_request_kick(clt->cl_id, clt->nickname);
                             response_code = decode_kick(buffer, temp_buffer_A);
-                        else if(action_code == ACTION_UNKICK)
+                        }
+                        else if(action_code == ACTION_UNKICK){
+                            msg_request_unkick(clt->cl_id, clt->nickname);
                             response_code = decode_unkick(buffer, temp_buffer_A);
+                        }
                         
                         /* Confirma privilégios */ 
                         if(CHANNEL_check_privilege(clt->channel, clt) == false) 
@@ -446,25 +501,52 @@
                             strncpy(temp_buffer_B, buffer, indexOf(buffer, ' '));
                             sprintf(temp_buffer_C, "%s ERR_CHANOPRIVSNEEDED\n", temp_buffer_B);
                             CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+
+                            if(action_code == ACTION_INVITE) msg_error_invite_denied(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_MUTE) msg_error_mute_denied(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_UNMUTE) msg_error_unmute_denied(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_KICK) msg_error_kick_denied(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_UNKICK) msg_error_unkick_denied(clt->cl_id, clt->nickname);
+
                         } else if(response_code == VALID_PROTOCOL)
                         {    
-                            if(action_code == ACTION_INVITE)
+                            if(action_code == ACTION_INVITE){
                                 CHANNEL_invite(clt->channel, clt, temp_buffer_A);
-                            else if(action_code == ACTION_MUTE)
+                                msg_invite(clt->cl_id, clt->nickname, temp_buffer_A);
+                            }
+                            else if(action_code == ACTION_MUTE){
                                 CHANNEL_mute_user(clt->channel, clt, temp_buffer_A);
-                            else if(action_code == ACTION_UNMUTE)
+                                msg_mute(clt->cl_id, clt->nickname, temp_buffer_A);
+                            }
+                            else if(action_code == ACTION_UNMUTE){
                                 CHANNEL_unmute_user(clt->channel, clt, temp_buffer_A);
-                            else if(action_code == ACTION_KICK)
+                                msg_unmute(clt->cl_id, clt->nickname, temp_buffer_A);
+                            }
+                            else if(action_code == ACTION_KICK){
                                 CHANNEL_kick_user(clt->channel, clt, temp_buffer_A);
-                            else if(action_code == ACTION_UNKICK)
+                                msg_kick(clt->cl_id, clt->nickname, temp_buffer_A);
+                            }
+                            else if(action_code == ACTION_UNKICK){
                                 CHANNEL_unkick_user(clt->channel, clt, temp_buffer_A);
+                                msg_unkick(clt->cl_id, clt->nickname, temp_buffer_A);
+                            }
+
                         } else {
                             sprintf(temp_buffer_C, "/%s ERR_NOSUCHNICK %s\n", buffer, temp_buffer_A);
                             CHANNEL_send_message_one(clt->channel, clt, temp_buffer_C);
+
+                            if(action_code == ACTION_INVITE) msg_error_invite_no_nick(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_MUTE) msg_error_mute_no_nick(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_UNMUTE) msg_error_unmute_no_nick(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_KICK) msg_error_kick_no_nick(clt->cl_id, clt->nickname);
+                            else if(action_code == ACTION_UNKICK) msg_error_unkick_no_nick(clt->cl_id, clt->nickname);
                         }
                         break;
 
                     case ACTION_MESSAGE:
+
+                        msg_request_client_channel(clt->cl_id, clt->nickname);
+
                         if(clt->channel == NULL) 
                         {
                             clt_send_message(
@@ -476,17 +558,19 @@
 
                         response_code = decode_msg(buffer, temp_buffer_A, temp_buffer_B, temp_buffer_C);
                         
-                        if(response_code == VALID_PROTOCOL) 
-                        {
-                        CHANNEL_msg(clt->channel, clt, temp_buffer_C);
-                        } else
-                        {
+                        if(response_code == VALID_PROTOCOL){
+                            CHANNEL_msg(clt->channel, clt, temp_buffer_C);
+                        } 
+                        else{
                             clt_send_message(clt->cl_socket, "/servermsg : Invalid protocol.\n");   
                         }  
                         break;
 
                     case ACTION_PING:
+
+                        msg_request_ping(clt->cl_id, clt->nickname);
                         clt_send_message(clt->cl_socket, "/servermsg : pong\n"); 
+                        msg_pong(clt->cl_id, clt->nickname);
                         break;
                 }
                 pthread_mutex_unlock(mutex);

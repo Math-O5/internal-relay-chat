@@ -197,7 +197,7 @@
                 CHANNEL_broadcast(channel, clt, MESSAGE_NEW_ADMIN_CHANNEL, "");
             }                
         }
-        // se não tem nenhum participante no cai, ele deve ser excluido 
+        // se não tem nenhum participante no canal, ele deve ser excluido 
         else
         {
             CHANNEL_destroy(channel);
@@ -535,7 +535,7 @@
         // Tenta enviar a mensagem
         if(CHANNEL_send_message(clt->cl_socket , buffer)) 
         { 
-            msg_channel_client(channel->nickname_channel, clt->nickname);
+            msg_channel_client(clt->nickname, channel->nickname_channel);
         }
         else 
         {
@@ -574,9 +574,9 @@
             case MESSAGE_NEW_JOIN_CHANNEL:          // Mensagem para quem criou o canal.
                 sprintf(msg_buffer, "/join SUCCESS %s role:admin\n", channel->nickname_channel);
                 CHANNEL_send_message_one(channel, clt, msg_buffer);
-
                 sprintf(msg_buffer, "/join RPL_NAMREPLY %s #%s\n", channel->nickname_channel, clt->nickname);
                 CHANNEL_send_message_one(channel, clt, msg_buffer);
+                msg_create_channel(clt->cl_id, clt->nickname, channel->nickname_channel);
                 break;
 
             case MESSAGE_JOIN_CHANNEL:          // Mensagem padrão dos usuários que acabaram de entrar no canal.
@@ -591,7 +591,6 @@
                 sprintf(msg_buffer, "/join RPL_NAMREPLY %s", channel->nickname_channel);
                 CHANNEL_list_participants(clt, msg_buffer);
                 strcat(msg_buffer, "\n\0");
-                printf("Lets see... %s\n", msg_buffer);
                 CHANNEL_send_message_one(channel, clt, msg_buffer);
 
                 // mensagem para todos no canal
