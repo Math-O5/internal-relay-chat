@@ -169,6 +169,17 @@
     /**
      * @function
      * 
+     * void msg_client_no_response_channel(int id, char* nickname, char* channel)
+     * --------------------------------------------------------------------------
+     * 
+     * Mensagem que indica que o cliente enviou nenhuma resposta e foi removido 
+     * do canal
+    */
+    void msg_client_no_response_channel(int id, char* nickname, char* channel);
+
+    /**
+     * @function
+     * 
      * void msg_cliente_desconexao(int id)
      * -----------------------------------
      * 
@@ -210,12 +221,21 @@
     /**
      * @function
      * 
-     * void msg_nickname_cliente()
+     * void msg_nickname_cliente(int id, const char* newNickname, char* oldNickname)
      * --------------------------
      * 
      * Mensagem atualização do nome cliente
     */
     void msg_nickname_cliente(int id, const char* newNickname, char* oldNickname);
+    
+    /**
+     * @function
+     * 
+     * void msg_join_channel(struct _client* clt)
+     * ------------------------------------------
+     * 
+     * Mensagem de aviso que um novo usuario entrou no canal
+    */
     void msg_join_channel(struct _client* clt);
 
     /**
@@ -227,8 +247,6 @@
      * Mensagem de finalização do servidor
     */
     void msg_encerrar_server();
-
-    // ############################################################ PARTE 3 ############################################################
 
 // ******************************* MENSAGENS GERAIS *******************************
 
@@ -243,13 +261,52 @@
      *
     */
     void msg(char type, char* msg);
+
+    /**
+     * @function
+     * 
+     * void msg_request_client_channel(int id, char* nickname)
+     * -------------------------------------------------------
+     * 
+     * Mensagem que indica que o cliente fez uma requisicao ao servidor para
+     * mandar uma mensagem no canal
+    */
     void msg_request_client_channel(int id, char* nickname);
+
+    /**
+     * @function
+     * 
+     * void msg_client_channel(const char* nickname, const char* channel)
+     * ------------------------------------------------------------------
+     * 
+     * Mensagem que indica que o cliente enviou uma mensagem para o canal
+    */
     void msg_client_channel(const char* nickname, const char* channel);
+
+    /**
+     * @function
+     * 
+     * void msg_channel_client(const char* nickname, const char* channel)
+     * ------------------------------------------------------------------
+     * 
+     * Mensagem que indica que o canal enviou uma mensagem para o cliente
+    */
     void msg_channel_client(const char* nickname, const char* channel);
-    void msg_client_no_response_channel(int id, char* nickname, char* channel);
+    
 
 // ******************************* LIST *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_list(int id, char* nickname)
+     * ---------------------------------------------
+     * 
+     * Mensagem que indica que o cliente fez uma requisicao ao servidor para
+     * mostrar a lista de canais
+    */
+    void msg_request_list(int id, char* nickname);
+    
     /**
      * @function
      * 
@@ -262,10 +319,19 @@
     */
     void msg_list(int id, char* nickname);
 
-    void msg_request_list(int id, char* nickname);
-
 // ******************************* JOIN *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_create_channel(int id, char* nickname, char* channel_name)
+     * ---------------------------------------------------------------------------
+     * 
+     * Mensagem que indica que o cliente fez uma requisicao ao servidor para criar
+     * um novo canal
+    */
+    void msg_request_create_channel(int id, char* nickname, char* channel_name);
+    
     /**
      * @function
      * 
@@ -277,8 +343,14 @@
     */
     void msg_create_channel(int id, char* nickname, char* channel_name);
 
-    void msg_request_create_channel(int id, char* nickname, char* channel_name);
-
+    /**
+     * @function
+     * 
+     * void msg_error_create_channel(int id, char* nickname)
+     * -----------------------------------------------------
+     * 
+     * Mensagem que indica que ocorreu um erro ao criar/entrar no canal
+    */
     void msg_error_create_channel(int id, char* nickname);
 
     /**
@@ -316,7 +388,18 @@
 
 // ******************************* NICKNAME *******************************
 
-     /**
+    /**
+     * @function
+     * 
+     * void msg_request_nickname(int id, char* new_nickname)
+     * -----------------------------------------------------
+     * 
+     * Mensagem indicando que um cliente solicitou uma requisicao para o servidor
+     * para alterar o nickname
+    */
+    void msg_request_nickname(int id, char* new_nickname);
+    
+    /**
      * @function
      * 
      * void msg_create_nickname(int id, char* nickname)
@@ -327,7 +410,7 @@
     */
     void msg_create_nickname(int id, char* nickname);
 
-     /**
+    /**
      * @function
      * 
      * void msg_change_nickname(char* nickname, char* oldNickname)
@@ -338,17 +421,40 @@
     */
     void msg_change_nickname(int id, char* old_nickname, char* new_nickname);
 
-    void msg_request_nickname(int id, char* new_nickname);
-
+    /**
+     * @function
+     * 
+     * void msg_error_nicknameinuse(int id)
+     * ------------------------------------
+     * 
+     * Mensagem de erro que indica que o nickname escolhido ja esta em uso
+    */
     void msg_error_nicknameinuse(int id);
 
+    /**
+     * @function
+     * 
+     * void msg_error_nickname(int id)
+     * -------------------------------
+     * 
+     * Mensagem de erro ao solicitar a alteracao do nickname
+    */
     void msg_error_nickname(int id);
 
 // ******************************* KICK *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_kick(int id, char* nickname)
+     * ---------------------------------------------
+     * 
+     * Mensagem que indica que um cliente (administrador) fez uma requisicao para o servidor para
+     * expulsar um outro cliente do canal
+    */
     void msg_request_kick(int id, char* nickname);
     
-     /**
+    /**
      * @function
      * 
      * void msg_kick(int id, char* nickname_adm, char* nickname_user)
@@ -359,17 +465,51 @@
     */
     void msg_kick(int id, char* nickname_adm, char* nickname_user);
 
+    /**
+     * @function
+     * 
+     * void msg_error_kick_no_channel(int id, char* nickname)
+     * ------------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente que fez a requisicao esta em nenhum canal
+    */
     void msg_error_kick_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_kick_denied(int id, char* nickname)
+     * --------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente o qual fez a requisicao nao tem permissao
+     * para expulsar outro cliente do canal
+    */
     void msg_error_kick_denied(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_kick_no_nick(int id, char* nickname)
+     * ---------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente solicitou expulsar um nick que nao existe
+    */
     void msg_error_kick_no_nick(int id, char* nickname);
 
 // ******************************* UNKICK *******************************
      
+    /**
+     * @function
+     * 
+     * void msg_request_unkick(int id, char* nickname)
+     * -----------------------------------------------
+     * 
+     * Mensagem que indica que um cliente solicitou retirar a expulsao de um outro cliente
+     * do canal
+    */
     void msg_request_unkick(int id, char* nickname);
 
-     /**
+    /**
      * @function
      * 
      * void msg_unkick(char* nickname_adm, char* nickname_user, char* channel_name)
@@ -380,14 +520,49 @@
     */
     void msg_unkick(int id, char* nickname_adm, char* nickname_user);
 
+    /**
+     * @function
+     * 
+     * void msg_error_unkick_no_channel(int id, char* nickname)
+     * --------------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente esta em nenhum canal
+    */
     void msg_error_unkick_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_unkick_denied(int id, char* nickname)
+     * ----------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente que fez a requisicao, nao tem
+     * permissao para retirar a expulsao de outro cliente do canal
+    */
     void msg_error_unkick_denied(int id, char* nickname);
 
+
+    /**
+     * @function
+     * 
+     * void msg_error_unkick_no_nick(int id, char* nickname)
+     * -----------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o nick nao existe
+    */
     void msg_error_unkick_no_nick(int id, char* nickname);
 
 // ******************************* MUTE *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_mute(int id, char* nickname)
+     * ---------------------------------------------
+     * 
+     * Mensagem que indica que um cliente fez um requisicao para silenciar
+     * outro cliente no canal
+    */
     void msg_request_mute(int id, char* nickname);
 
     /**
@@ -401,14 +576,50 @@
     */
     void msg_mute(int id, char* nickname_adm, char* nickname_user);
 
+    /**
+     * @function
+     * 
+     * void msg_error_mute_no_channel(int id, char* nickname)
+     * ------------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente que fez a requisicao para silenciar outro
+     * cliente, participa de nenhum canal 
+    */
     void msg_error_mute_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_mute_denied(int id, char* nickname)
+     * --------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o cliente o qual fez a requisicao, nao tem
+     * permissao para silenciar outro cliente
+    */
     void msg_error_mute_denied(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_mute_no_nick(int id, char* nickname)
+     * ---------------------------------------------------
+     * 
+     * Mensagem de erro que indica que o nick que cliente deseja silenciar nao
+     * existe no canal
+    */
     void msg_error_mute_no_nick(int id, char* nickname);
 
 // ******************************* UNMUTE *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_unmute(int id, char* nickname)
+     * -----------------------------------------------
+     * 
+     * Mensagem que indica que o cliente fez uma requisicao ao servidor
+     * solicitando retirar o silenciamento de outro cliente
+    */
     void msg_request_unmute(int id, char* nickname);
 
     /**
@@ -422,14 +633,49 @@
     */
     void msg_unmute(int id, char* nickname_adm, char* nickname_user);
 
+    /**
+     * @function
+     * 
+     * void msg_error_unmute_no_channel(int id, char* nickname)
+     * --------------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente esta em nenhum canal para 
+     * retirar o silenciamento de outro cliente
+    */
     void msg_error_unmute_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_unmute_denied(int id, char* nickname)
+     * ----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente nao tem permissao para retirar
+     * o silenciamento de outro cliente no canal
+    */
     void msg_error_unmute_denied(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_unmute_no_nick(int id, char* nickname)
+     * -----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o nick que foi solicitado nao existe
+    */
     void msg_error_unmute_no_nick(int id, char* nickname);
 
 // ******************************** WHOIS *******************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_whois(int id, char* nickname)
+     * ----------------------------------------------
+     * 
+     * Mensagem que indica que um cliente fez uma requisicao ao servidor o qual
+     * foi solicitado o IP de outro cliente
+    */
     void msg_request_whois(int id, char* nickname);
 
     /**
@@ -443,14 +689,48 @@
     */
     void msg_whois(int id, char* nickname_adm, char* nickname_user_ip);
 
+    /**
+     * @function
+     * 
+     * void msg_error_whois_no_channel(int id, char* nickname)
+     * -------------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente que fez a requisicao do IP, esta em 
+     * nenhum canal
+    */
     void msg_error_whois_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_whois_not_adm(int id, char* nickname)
+     * ----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente nao tem permissao para solicitar um IP
+    */
     void msg_error_whois_not_adm(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_whois_no_nick(int id, char* nickname)
+     * ----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o nick do cliente solicitado nao existe
+    */
     void msg_error_whois_no_nick(int id, char* nickname);
 
 // ******************************** MODE ********************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_mode(int id, char* nickname)
+     * ---------------------------------------------
+     * 
+     * Mensagem que indica que um cliente fez requisicao ao servidor para alterar o
+     * modo do canal 
+    */
     void msg_request_mode(int id, char* nickname);
 
     /**
@@ -476,12 +756,38 @@
     */
     void msg_invite_only_off(int id, char* nickname_adm, char* channel_name);
 
+    /**
+     * @function
+     * 
+     * void msg_error_mode_no_channel(int id, char* nickname)
+     * ------------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente que fez a requisicao esta em nenhum canal
+    */
     void msg_error_mode_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_mode_not_adm(int id, char* nickname, char* channel_name)
+     * -----------------------------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente que fez a requisicao para alterar o modo
+     * do canal, nao tem permissao
+    */
     void msg_error_mode_not_adm(int id, char* nickname, char* channel_name);
 
 // ******************************** INVITE ********************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_invite(int id, char* nickname)
+     * -----------------------------------------------
+     * 
+     * Mensagem que indica que um cliente fez uma requisicao para mandar um
+     * convite para outro cliente
+    */
     void msg_request_invite(int id, char* nickname);
 
     /**
@@ -495,20 +801,71 @@
     */
     void msg_invite(int id, char* nickname_adm, char* nickname_user);
 
+    /**
+     * @function
+     * 
+     * void msg_error_invite_no_channel(int id, char* nickname)
+     * --------------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente que fez a requisicao para mandar um convite,
+     * esta em nenhum canal
+    */
     void msg_error_invite_no_channel(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_invite_denied(int id, char* nickname)
+     * ----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o cliente que fez a requisicao para mandar
+     * convite, nao tem permissao
+    */
     void msg_error_invite_denied(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_error_invite_no_nick(int id, char* nickname)
+     * -----------------------------------------------------
+     * 
+     * Mensagem de erro indicando que o nick solictado para mandar convite, nao existe
+    */
     void msg_error_invite_no_nick(int id, char* nickname);
 
 // ******************************** PING ********************************
 
+    /**
+     * @function
+     * 
+     * void msg_request_ping(int id, char* nickname)
+     * ---------------------------------------------
+     * 
+     * Mensagem que indica que um cliente fez uma requisicao ao servidor
+     * para receber um 'pong'. O cliente envia um 'ping' para o servidor
+    */
     void msg_request_ping(int id, char* nickname);
 
+    /**
+     * @function
+     * 
+     * void msg_pong(int id, char* nickname)
+     * -------------------------------------
+     * 
+     * Mensagem que indica que o servidor enviou um 'pong' para o cliente
+    */
     void msg_pong(int id, char* nickname);
 
 // ******************************** INVALID PROTOCOL ********************************
 
+    /**
+     * @function
+     * 
+     * void msg_invalid_protocol(int id)
+     * ---------------------------------
+     * 
+     * Mensagem de erro de protocolo invalido
+    */
     void msg_invalid_protocol(int id);
 
 #endif

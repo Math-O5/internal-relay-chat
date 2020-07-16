@@ -70,6 +70,7 @@ void msg_info_client(int id, int socket, struct sockaddr_in cl_addr)
                                     (cl_addr.sin_addr.s_addr & 0xff000000) >> 24);
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] Port: %d\n", PREFIX_NORMAL, t_log, cl_addr.sin_port);
+    fflush(stdout);
 }
 
 // @Comentários em "message.h"
@@ -78,7 +79,8 @@ void msg_recv_cliente(int id, char* buffer){
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] O cliente %d enviou uma mensagem/comando...\n", PREFIX_SUCCESS, t_log, id);
     time_log(t_log, sizeof(t_log));
-    printf("%s - [%s] <CLIENTE %d>: %s", PREFIX_SUCCESS, t_log, id, buffer);
+    printf("%s - [%s] <CLIENTE %d>: %s\n", PREFIX_SUCCESS, t_log, id, buffer);
+    fflush(stdout);
 }
 
 // @Comentários em "message.h"
@@ -109,7 +111,7 @@ void msg_client_no_response(int id){
 void msg_client_no_response_channel(int id, char* nickname, char* channel){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
-    printf("%s - [%s] O cliente %s(%d) não responde e foi removido do canal %s...\n", PREFIX_ERROR, t_log, nickname, id, channel);
+    printf("%s - [%s] O cliente %d (%s) não responde e foi removido do canal %s...\n", PREFIX_ERROR, t_log, id, nickname, channel);
     fflush(stderr);
 }
 
@@ -138,6 +140,7 @@ void msg_max_client(struct sockaddr_in cl_addr){
                                     (cl_addr.sin_addr.s_addr & 0xff000000) >> 24);
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] Port: %d\n", PREFIX_ERROR, t_log, cl_addr.sin_port);
+    fflush(stdout);
 }
 
 // @Comentários em "message.h"
@@ -161,12 +164,15 @@ void msg_nickname_cliente(int id, const char* newNickname, char* oldNickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] O cliente %d mudou o nickname de %s para %s...\n", PREFIX_SUCCESS, t_log, id, oldNickname, newNickname);
+    fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_join_channel(struct _client* clt){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] O %s %d entrou no canal %s.\n", PREFIX_SUCCESS, t_log, clt->nickname, clt->cl_id, clt->channel->nickname_channel);
+    fflush(stdout);
 }
 
 // @Comentários em "message.h"
@@ -177,20 +183,17 @@ void msg_encerrar_server(){
     fflush(stdout);
 }
 
-
-// ############################################################ PARTE 3 ############################################################
-
 // ******************************* MENSAGENS GERAIS *******************************
 
 // @Comentários em "message.h"
-void msg(char type, char* msg)
-{
+void msg(char type, char* msg){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("  [%c] - [%s] %s\n", type, t_log, msg);
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_request_client_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -215,6 +218,7 @@ void msg_channel_client(const char* nickname, const char* channel){
 }
 // ******************************* LIST *******************************
 
+// @Comentários em "message.h"
 void msg_request_list(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -232,6 +236,7 @@ void msg_list(int id, char* nickname){
 
 // ******************************* JOIN *******************************
 
+// @Comentários em "message.h"
 void msg_request_create_channel(int id, char* nickname, char* channel_name){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -247,6 +252,7 @@ void msg_create_channel(int id, char* nickname, char* channel_name){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_create_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -293,6 +299,7 @@ void msg_request_nickname(int id, char* new_nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] O cliente %d solicitou alterar o seu nickname para %s\n", PREFIX_NORMAL, t_log, id, new_nickname);
+    fflush(stdout);
 }
 
 // @Comentários em "message.h"
@@ -316,10 +323,12 @@ void msg_error_nickname(int id){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] Ocorreu um erro ao alterar o nickname do cliente %d\n", PREFIX_ERROR, t_log, id);
+    fflush(stdout);
 }
 
 // ******************************* KICK *******************************
 
+// @Comentários em "message.h"
 void msg_request_kick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -335,6 +344,7 @@ void msg_kick(int id, char* nickname_adm, char* nickname_user){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_kick_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -342,6 +352,7 @@ void msg_error_kick_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_kick_denied(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -349,6 +360,7 @@ void msg_error_kick_denied(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_kick_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -358,6 +370,7 @@ void msg_error_kick_no_nick(int id, char* nickname){
 
 // ******************************* UNKICK *******************************
 
+// @Comentários em "message.h"
 void msg_request_unkick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -373,6 +386,7 @@ void msg_unkick(int id, char* nickname_adm, char* nickname_user){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unkick_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -380,6 +394,7 @@ void msg_error_unkick_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unkick_denied(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -387,6 +402,7 @@ void msg_error_unkick_denied(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unkick_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -396,6 +412,7 @@ void msg_error_unkick_no_nick(int id, char* nickname){
 
 // ******************************* MUTE *******************************
 
+// @Comentários em "message.h"
 void msg_request_mute(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -411,6 +428,7 @@ void msg_mute(int id, char* nickname_adm, char* nickname_user){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_mute_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -418,6 +436,7 @@ void msg_error_mute_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_mute_denied(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -425,6 +444,7 @@ void msg_error_mute_denied(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_mute_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -434,6 +454,7 @@ void msg_error_mute_no_nick(int id, char* nickname){
 
 // ******************************* UNMUTE *******************************
 
+// @Comentários em "message.h"
 void msg_request_unmute(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -449,6 +470,7 @@ void msg_unmute(int id, char* nickname_adm, char* nickname_user){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unmute_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -456,6 +478,7 @@ void msg_error_unmute_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unmute_denied(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -463,6 +486,7 @@ void msg_error_unmute_denied(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_unmute_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -472,6 +496,7 @@ void msg_error_unmute_no_nick(int id, char* nickname){
 
 // ******************************** WHOIS *******************************
 
+// @Comentários em "message.h"
 void msg_request_whois(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -487,6 +512,7 @@ void msg_whois(int id, char* nickname_adm, char* nickname_user_ip){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_whois_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -494,6 +520,7 @@ void msg_error_whois_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_whois_not_adm(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -501,6 +528,7 @@ void msg_error_whois_not_adm(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_whois_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -510,6 +538,7 @@ void msg_error_whois_no_nick(int id, char* nickname){
 
 // ******************************** MODE ********************************
 
+// @Comentários em "message.h"
 void msg_request_mode(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -533,6 +562,7 @@ void msg_invite_only_off(int id, char* nickname_adm, char* channel_name){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_mode_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -540,6 +570,7 @@ void msg_error_mode_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_mode_not_adm(int id, char* nickname, char* channel_name){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -549,6 +580,7 @@ void msg_error_mode_not_adm(int id, char* nickname, char* channel_name){
 
 // ******************************** INVITE ********************************
 
+// @Comentários em "message.h"
 void msg_request_invite(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -564,6 +596,7 @@ void msg_invite(int id, char* nickname_adm, char* nickname_user){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_invite_no_channel(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -571,6 +604,7 @@ void msg_error_invite_no_channel(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_invite_denied(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -578,6 +612,7 @@ void msg_error_invite_denied(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_error_invite_no_nick(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -587,6 +622,7 @@ void msg_error_invite_no_nick(int id, char* nickname){
 
 // ******************************** PING ********************************
 
+// @Comentários em "message.h"
 void msg_request_ping(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
@@ -594,6 +630,7 @@ void msg_request_ping(int id, char* nickname){
     fflush(stdout);
 }
 
+// @Comentários em "message.h"
 void msg_pong(int id, char* nickname){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
