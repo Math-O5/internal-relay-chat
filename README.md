@@ -6,18 +6,18 @@ epic trabalhinho redes: <strong>Internal Relay Chat (IRC)</strong>
 <p> Essa aplicação permite a comunicação entre multiplos processos e em máquinas distintas. Para isso, basta executar a aplicação do servidor e a aplicação do cliente. Podem ser executados diversos clientes.</p>
 <p>Para dois clientes se comunicarem, eles devem estar no mesmo canal. O administrador do canal é o usuário que  está a mais tempo nele.</p>
 
-## Desenvolvido por:
-
-<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
-<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
-<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
-
 ## Demo
 O primeiro terminal é o cliente, seguido do log do servidor. 
 <div style="display:inline-block;">
 	<img style="height:auto; width:900px;" src="assets/video_chat.gif" alt="chat-client"></img>
 </div>
 <p>Neste exemplo, Gabriel e João entram no Chat Relay para bater um papo. João então cria o canal &redes para conversar com seus amigos. De repente, Joel(pseudonimo para Mathias), invade o canal e começa a pertubadoramente floodar o canal com a mensagem "Eu sou o Joel". Em um ato heróico, João usa o comando /help para ver seus comandos e então decide mutar Joel.</p>
+
+## Desenvolvido por:
+
+<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a> Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
+<a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
+<a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
 
 ## Compilando e Executando
 Inicialmente, o servidor é compilado com `make server` e executado com `make server_run`, similarmente o cliente: `make client` `make client_run`; ambos a partir da pasta root do projeto.
