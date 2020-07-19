@@ -4,13 +4,20 @@ epic trabalhinho redes: <strong>Internal Relay Chat (IRC)</strong>
 <h2>Descrição</h2>
 <p>Implementação dos antigos <strong>Internal Relay Chat (IRC)</strong>, o qual pode ser chamado também de antigo Telegram.</br>O protocolo de comunicação seguido foi o IRC 1459, o qual estabelece um padrão de comunicação client-server.</p>
 <p> Essa aplicação permite a comunicação entre multiplos processos e em máquinas distintas. Para isso, basta executar a aplicação do servidor e a aplicação do cliente. Podem ser executados diversos clientes.</p>
+<p>Para dois clientes se comunicarem, eles devem estar no mesmo canal. O administrador do canal é o usuário que  está a mais tempo nele.</p>
 
 ## Desenvolvido por:
 
-<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas do Pinto Silva</br>
+<a href="https://github.com/GabrielVanLoon">GabrielVanLoon</a>Gabriel van Loon Bode da Costa Dourado Fuentes Rojas</br>
 <a href="https://github.com/Math-O5">Math-O5</a> Mathias Fernandes Duarte Coelho</br>
 <a href="https://github.com/JNagasava">JNagasava</a> Joao Ricardo Minoru Nagasava</br>
 
+## Demo
+O primeiro terminal é o cliente, seguido do log do servidor. 
+<div style="display:inline-block;">
+	<img style="height:auto; width:900px;" src="assets/video_chat.gif" alt="chat-client"></img>
+</div>
+<p>Neste exemplo, Gabriel e João entram no Chat Relay para bater um papo. João então cria o canal &redes para conversar com seus amigos. De repente, Joel(pseudonimo para Mathias), invade o canal e começa a pertubadoramente floodar o canal com a mensagem "Eu sou o Joel". Em um ato heróico, João usa o comando /help para ver seus comandos e então decide mutar Joel.</p>
 
 ## Compilando e Executando
 Inicialmente, o servidor é compilado com `make server` e executado com `make server_run`, similarmente o cliente: `make client` `make client_run`; ambos a partir da pasta root do projeto.
@@ -18,12 +25,6 @@ Para mais detalhes, <a href="/client_src">client_src</a> e <a href="/server_src"
 
 ## Executando em outras máquinas
 Para excutar em outras máquinas, você pode usar uma <a href="https://computersciencewiki.org/index.php/VPN">VPN</a> ou o <a href="https://www.ssh.com/ssh/tunneling/example">ssh tunneling</a>. Para fazer o ssh tunelamento execute primeiro o servidor e então o comando `ssh -R relayChatMaster.serveo.net:9002:localhost:9002 serveo.net`. Esse comando vai fazer o tunelamento da porta em que seu servidor executa com ajuda do <a href="http://serveo.net/">server.net</a>. Agora você pode acessar remotamente o servidor. Para se conectar, bastar executar a aplicação do cliente em qualquer máquina e usar `/connect relayChatMaster.serveo.net`. 
-
-## Demo
-O primeiro terminal é o cliente, seguido do log do servidor.
-<div style="display:inline-block;">
-	<img style="height:auto; width:800px" src="assets/video_chat.gif" alt="chat-client"></img>
-</div>
 
 ## Lista de comandos
 Users:</br>
