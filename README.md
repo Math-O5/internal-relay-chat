@@ -15,7 +15,7 @@ Para excutar em outras máquinas, você pode usar uma <a href="https://computers
 ## Demo
 O primeiro terminal é o servidor, seguido de três clientes.
 <div style="display:inline-block;">
-	<img src="assets/chat.gif" alt="chat-client"></img>
+	<img style="height:auto; width:800px" src="assets/video_chat.gif" alt="chat-client"></img>
 </div>
 
 ## Lista de comandos
