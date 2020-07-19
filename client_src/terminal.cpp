@@ -11,7 +11,6 @@ void echo_enable(terminal_control* t){
     tcgetattr(0, &termInfo);
     termInfo.c_lflag |= ECHO; 
     tcsetattr(0, TCSANOW, &termInfo);
-
     t->input_enabled = INPUT_ENABLED;
 }
 
