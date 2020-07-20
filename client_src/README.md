@@ -17,8 +17,9 @@ Veja a seguir uma introdução geral dos arquivos que compõem o projeto:
 ```
 / client_src
 | -- main.cpp    Responsável por conter as variáveis globais e iniciar a execução das threads e variáveis necessárias.
-| -- chat.h      Responsável por controlar o protocolo e as conexões/trocas de dados com o servidor.
-| -- termina.h   Responsável por lidar com algumas configurações necessárias para o bom funcionamento do console.
+| -- chat.h      Responsável por controlar as conexões/trocas de dados com o servidor e o estado do client.
+| -- terminal.h  Responsável por lidar com algumas configurações necessárias para o bom funcionamento do console.
+| -- codec.h     Responsável por lidar com a manipulação das mensagens trocadas com o servidor.
 | -- makefile    Script auxiliar para compilar e executar o programa adequadamente.
 | -- makeClient  Abre multiplos terminais para teste.
 ```
@@ -39,7 +40,7 @@ Exemplo `bash makeClient.bash konsole` ou `bash makeClient.bash gnome-terminal`
 
 A arquitetura do projeto foi feita pensando nos seguintes critérios:
 
-- 1º Separar rotinas de I/O com o termianl das rotinas que lidam com I/O de dados do servidor.
+- 1º Separar rotinas de I/O com o terminal das rotinas que lidam com I/O de dados do servidor.
 - 2º Garantir que os outputs do terminal não se intercalassem causando erros de visualização.
 
 Para isso o client conta com 4 threads, sendo duas responsáveis pela iteração com o usuário e outras duas responsáveis 
@@ -70,15 +71,11 @@ O Esquemático o projeto pode ser então visto abaixo:
 
 ## Considerações finais e definições
 
-#### Alterando o endereço de conexão 
-Por hora o projeto ainda conta com uma conexão por padrão no servidor localizado em **127.0.0.1:9002** e caso seja necessário
-conectar em outra porta é necessário alterar o IP e a Porta nas definições localizadas no arquivo **chat.h** e compilar o 
-programa novamente.
-
-#### Comandos implementados
-No momento, apenas os seguintes comandos são interpretados pelo Input do usuário ou reconhecidas adequadamente pelo servidor:
-- **/quit** fecha a conexão com o servidor e encerra o programa.
-- **/ping** o servidor retorna uma mensagem com o texto 'pong'
+#### Endereço Padrão de Conexão 
+O projeto consta como conexão padrão o servidor localizado no endereço **127.0.0.1:9002** e permite que outro endereço seja
+selecionado durante a etapa de conexão. Os testes de conexão só foram possíveis utilizando endereços IPv4 e não apresentaram
+nenhum tipo de problema durante sua execução. Ele, no entanto, deve funcionar similarmente bem utilizando IPv6 não tendo nenhuma
+restrição de implementação para tais casos.
 
 #### Acerca do console
 O projeto lida com a **biblioteca <termios.h>** para otimizar a experiência de I/O no console e para isso altera algumas
