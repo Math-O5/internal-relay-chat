@@ -180,6 +180,7 @@ void msg_encerrar_server(){
     char t_log[20];
     time_log(t_log, sizeof(t_log));
     printf("%s - [%s] Servidor finalizado com sucesso.\n", PREFIX_SUCCESS, t_log);
+    printf("%s", COLOR_RESET);
     fflush(stdout);
 }
 
