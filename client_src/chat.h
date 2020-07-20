@@ -4,20 +4,17 @@
   * 
   * Biblioteca responsável pelas duas principais tarefas do chat.
   * 
-  * 1ª Controlador do Protocolo: conhece o protocolo utilizado (que
-  * no caso é uma versão simplificada do RFC 1459), fazendo a inter-
-  * pretação dos comandos recebidos e formatação correta dos pacotes
-  * que serão enviados. Também faz a conversão dos pacotes recebidos
-  * em strings a serem entregues à interface do usuário
-  * 
-  * 2º Controlador de Conexões: responsável por gerenciar o socket de
+  * 1º Controlar Conexões: responsável por gerenciar o socket de
   * comunicação com o servidor designado, além de armazenar em dois 
-  * buffers distintos os pacotes recebidos e na fila de envio.
+  * buffers distintos os pacotes recebidos e aguardando envio.
   * 
-  * As mensagens enviadas/recebidas devem ter, conforme definido previamente,
-  * o tamanho máximo de 4KB (4096 Bytes) e serem encerrados com CR-LF ("\r\n").
-  * 
-  * Quanto ao formato das mensagens é seguido o que foi defnido pelo RFC 1459.
+  * 2º Controle de Estados: responsável por salvar estados e configurações
+  * do chat durante sua iteração com o servidor ou com o aplicativo.
+  * (Ex: nickname atual, canal atual, é um administrador?, etc...)
+  *
+  * As mensagens enviadas seguem uma versão adaptada do RFC 1459, contendo o
+  * tamanho máximo definido pela constante MAX_MESSAGE_LENGHT e terminados 
+  * pelo caracter '\n'
   */
 
 #ifndef RELAY_CHAT_H
@@ -58,6 +55,10 @@
      * Definem um endereço padrão com quem o servidor se conectará. Por
      * padrão o servidor está localizado no endereço "127.0.0.1:9002"
      *
+     * NICKNAME_MAXLENGHT e CHANNEL_NAME_MAXLENGH
+     * Valor utilizado como tamanho máximo permitido tanto para o nickname
+     * quanto para os nomes de canais.
+     * 
      */
 
         #define CONNECTION_CLOSED -1
@@ -79,7 +80,6 @@
      * @struct 
      * typedef struct _relay_chat relay_chat
      * -------------------------------------
-     * 
      * Struct responsável por centralizar as variáveis de conexão, estado, buffer
      * e também mutexes/conditionals que são necessárias para o funcionamento do
      * client.
@@ -87,7 +87,7 @@
      * Uma vez configurada, deve ser utilizada para abrir/fechar conexões ou
      * atualizar estados como mudança de canal, mudança de nick, etc.
      * 
-     * atributos de conexão
+     * Atributos de conexão
      * --------------------
      * - sserver: string contendo o ip do servidor e é inicializada com o valor definido
      *            em DEFAULT_SERVER_HOST.
@@ -98,7 +98,7 @@
      * - connection_status(*): indica se há uma conexão aberta, podendo conter o valor de 
      *                         CONNECTION_CLOSED ou CONNECTION_OPEN
      * 
-     * atributos de bufferização
+     * Atributos de bufferização
      * -------------------------
      * - send_buff(*): vetor alocado no tamanho de BUFFER_SIZE e que salva as mensagens
      *              em uma fila para serem enviadas ao servidor.
@@ -106,24 +106,33 @@
      *              fila para ser processada pelo cliente.
      * - *_buff_size(*): inteiro que realiza o controle de tamanho do buffer.
      * 
-     * mutexes e conditionals
+     * Mutexes e Conditionals
      * ----------------------
      * - send_mutex(*): mutex utilizado para impedir acesso de escrita simultânea ao 
-     *               send_buff.
-     * - recv_mutex(*): idem para controle do recv_buff
-     * -  state_mutex(*): caso alguma das variáveis de estado tenha que ser alterada.
+     *                  send_buff.
+     * - recv_mutex(*):  idem para controle do recv_buff
+     * - state_mutex(*): caso alguma das variáveis de estado tenha que ser alterada.
      * 
      * - cond_send_waiting(*): utilizada para indicar que uma nova mensagem foi
-     *                      adicionada no send_buff. É utilizada pela thread de Input
-     *                      para acordar a send_msg_handler.
+     *                         adicionada no send_buff. É utilizada pela thread de Input
+     *                         para acordar a send_msg_handler.
      * 
      * - cond_recv_waiting(*): utilizada para indicar que uma nova mensagem foi recebida
-     *                      do servidor e adicionada ao recv_buff. É utilizada pela thread
-     *                      de recv para acordar a output_terminal_handler
+     *                         do servidor e adicionada ao recv_buff. É utilizada pela thread
+     *                         de recv para acordar a output_terminal_handler
      * 
      * 
-     * (*) USO INTERNO, NÃO DEVE SER ACESSADO DIRETAMENTE.
-     * 
+     * (*) STRUCT DE USO INTERNO, NÃO DEVE SER MANIPULADA DIRETAMENTE.
+     *
+     * Atributos de estado: 
+     * - has_channel:   indica se o usuário já se encontra em algum canal.
+     * - has_nick:      indica se o usuário já cadastrou algum nickname.
+     * - is_admin:      indica se o usuário é administrador do canal atual.
+     * - nickname:      salva o nickname atual do usuário.
+     * - channel:       salva o nome do canal atual do usuário.
+     *
+     * (*) OS ESTADOS SÃO ALTERADOS DE ACORDO COM AS ITERAÇÕES DO USUÁRIO
+     *     COM O SERVIDOR.
      */
         typedef struct _relay_chat {
             // atributos de conexão

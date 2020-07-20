@@ -2,12 +2,12 @@
  * Internet Relay Chat - Client Application
  * ----------------------------------------
  * 
- * Aplicação utilizada para prática e aprendizado de protocolos, sockets
- * e threads utilizando o ambiente POSIX.
+ * Aplicação utilizada para prática e aprendizado de protocolos de redes, 
+ * sockets e threads utilizando o ambiente POSIX.
  * 
  * documentação: a esquemática geral do projeto está definida no README.md
- *               incluso na raíz do cliente, já as especificações de cada
- *               struct e função declarada se encontra respectivos arquivos.
+ *               incluso na raíz do client, já as especificações de cada
+ *               struct e função declarada se encontra nos respectivos arquivos.
  *               
  * data: 27/abril/2020 
  * 
@@ -35,24 +35,18 @@ using namespace std;
 /**
  * Constantes e Macros
  * -------------------
- * 
- * TRUE e FALSE
- * Macros apenas para tornar valores booleanos mais semânticos.
- * 
+ *
  * ACTION_***** (ver: codec.h)
  * Valores utilizados para identificar a ação que o usuário deseja
  * realizar durante cada input. A descrição de cada ação está melhor 
  * definida na devida thread de input.
- */
-    #define TRUE  1
-    #define FALSE 0 
-
-/**
+ *
+ *
  * Variáveis Globais
  * -----------------
  * 
  * Para o bom funcionamento do projeto é necessário a instância de dois
- * objetos: um relay_chat responsável por manter os estados da aplicação
+ * objetos: um relay_chat responsável por manter os estados e conexẽos da aplicação
  * e um terminal_control responsável por garantir uma boa experiência de 
  * I/O com o usuário.
  * 
@@ -111,23 +105,19 @@ using namespace std;
  * --------------------------------
  * 
  * A main neste programa possui o simples papel de inicializar as variáveis,
- * iniciar a execução das threads e garantir que tudo conseguiu executar de maneira
+ * iniciar a execução das threads e garantir que tudo consiga executar de maneira
  * adequada. Sendo mais especifico o papel dela é:
  * 
  * 0º   Iniciar MUTEXES e CONDITIONALS.
  * 1º   Instânciar o relay_chat e o terminal_control.
- * (*)  Abrir a CONEXÂO com o servidor padrão.
- * 2º   Iniciar Threads de Conexão (send_msg_thread, recv_msg_thread).
- * 3º   Iniciar Threads de I/O (in_terminal_thread, out_terminal_thread).
+ * 2º   Iniciar Threads de I/O (in_terminal_thread, out_terminal_thread).
  * 
  * Após as devidas configurações, a main entra em modo sleep e aguarda até que a thread
  * de input, que representa a instância de iteração direta com o usuário, seja finalizada.
  * 
  * As variáveis são então destruidas, a conexão, caso exista, é fechada e o programa 
- * é finalizado.
+ * é finalizado restaurando as configurações do terminal do usuário.
  * 
- * (*) Em versões posteriores, a conexão deverá ser feita sob comando do usuário e essa etapa
- *     deverá ser removida dos afazeres da main().
  */
     int main(int argc, char *argv[]){
         
@@ -136,7 +126,8 @@ using namespace std;
         
         // Fazendo Backup das configurações do terminal do usuário
         tcgetattr(0, &terminal_backup);
-
+        
+        // Limpando a tela do terminal
         system("clear");
         
         /**
@@ -190,7 +181,7 @@ using namespace std;
         tcsetattr(0, TCSANOW, &terminal_backup);
         printf("\e[m\n"); // Resetando a cor do terminal
 
-        exit(EXIT_SUCCESS);
+        return 0;
     }
 
 /**
@@ -204,10 +195,11 @@ using namespace std;
  * 
  * Caso algum input seja realizado, a intenção do usuário é interpretada e 
  * identficada por meio de uns dos códigos de ação definidas pelas constantes
- * ACTION_*.
+ * ACTION_***** (ver: codec.h).
  * 
  * Por consequencia, cada ação determina uma sequência de passos específicas a
- * ser seguida e executada pela thread.
+ * ser seguida e executada pela thread e que podem, em alguns casos, alterar as
+ * variáveis de estado do chat.
  * 
  * Caso o input do usuário gere algo que deva ser enviado ao servidor, uma requisição
  * ao lock de chat.send_mutex é realizada e os dados são inseridos no Buffer de Envio
@@ -216,10 +208,12 @@ using namespace std;
  * Além disso, um sinal é enviado para a thread 'Send Messages Handler' caso a mesma
  * esteja dormindo devido ao buffer vazio.
  * 
- * action_code: identificador do tipo de ação pretendida pelo usuário
- * 
- * repeat_loop: a thread é executada enquanto a flag se encontra como verdadeira.
- * 
+ * Variáveis utilizadas
+ * --------------------
+ * - action_code:   identificador do tipo de ação pretendida pelo usuário
+ * - repeat_loop:   a thread é executada enquanto a flag se encontra como verdadeira.
+ * - messages_list: ponteiro de array de strings auxiliar para salvar endereços de mensagens.
+ * - message:       ponteiro auxiliar para salvar endereços de mensagens.
  */ 
     void* input_terminal_handler(void*) {
 
@@ -231,7 +225,6 @@ using namespace std;
         char*  message = NULL;
 
         while(repeat_loop){
-            
             action_code = ACTION_NONE;
 
             /**
@@ -260,7 +253,7 @@ using namespace std;
                 * 
                 * Caso a conexão seja estabelecida com sucesso, as Threads do Servidor 
                 * são iniciadas.
-                 */
+                */
                 case ACTION_CONNECT:
                     
                     // 0º Verifica se já não está conectado em algo
@@ -328,9 +321,9 @@ using namespace std;
                  * 
                  * ACTION_DISCONNECT (/disconnect)
                  * --------------------
-                * É utilizada para caso o cliente queira desconectar do servidor sem necessáriamente
-                * fechar o programa. Neste caso, basta fechar a conexão, as threads de servidor e
-                * também resetar os buffers.
+                 * É utilizada para caso o cliente queira desconectar do servidor sem necessáriamente
+                 * fechar o programa. Neste caso, basta fechar a conexão, as threads de servidor e
+                 * também resetar os buffers.
                  */
                 case ACTION_QUIT:
                     repeat_loop = 0;
@@ -357,13 +350,14 @@ using namespace std;
                     // pthread_join(recv_msg_thread, NULL);
                     // pthread_join(send_msg_thread, NULL);
 
-                    // 3º Cancela as threads
+                    // 3º Cancela as threads:
+                    // Obs: Alterado, pois cancelamento de threads é uma má prática.
                     // pthread_cancel(recv_msg_thread);
                     // pthread_cancel(send_msg_thread);
 
                     // 4º Resetando os buffers
-                    // Obs: Threads já morreram mas ainda assim preciso dar 
-                    // o lock só para via das dúvidas.
+                    // Obs: Threads já morreram (provavelmente), mas ainda  
+                    // assim preciso dar o lock só para via das dúvidas.
                     pthread_mutex_lock(chat.recv_mutex);
                         chat.recv_buff_size = 0;
                     pthread_mutex_unlock(chat.recv_mutex);
@@ -443,7 +437,18 @@ using namespace std;
 
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
-                
+
+                /**
+                 * ACTION_PING (/ping)
+                 * -------------------
+                 * O usuário pretende testar a conexão com o servidor e envia um comando /ping.
+                 * Caso a conexão esteja ativa o servidor retorna com uma mensagem pong. 
+                 *
+                 *
+                 * ACTION_LIST (/list)
+                 * -------------------
+                 * O usuário solicita ao servidor a lista de canais existentes.
+                 */
                 case ACTION_PING:
                 case ACTION_LIST:
 
@@ -470,9 +475,50 @@ using namespace std;
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
 
+                /**
+                 * ACTION_NICK (/nickname)
+                 * -----------------------
+                 * O usuário deseja cadastrar um nickname ou alterá-lo. Para isso envia
+                 * um comando no formato /nickname <nickname>.
+                 *
+                 * ACTION_JOIN (/join)
+                 * -------------------
+                 * O usuário deseja entrar em um canal no servidor. Para isso envia
+                 * um comando no formato /join &<nome_canal>
+                 */
                 case ACTION_NICK:
                 case ACTION_JOIN:
                 
+                /**
+                 * COMANDOS DE ADMINISTRADOR
+                 * todos os comandos à seguir são feitos para serem executados
+                 * pelo operadorm do canal.
+
+                 * ACTION_MODE (/mode)
+                 * -------------------
+                 * O administrador altera o modo do canal para público (-i) ou
+                 * invite-only (+i) por meio do comando /mode <+i|-i>
+                 * 
+                 * ACTION_INVITE (/invite)
+                 * -----------------------
+                 * O administrador convida um usuário do servidor à participar de seu
+                 * canal com o comando /invite <nickname>
+                 *
+                 * ACTION_WHOIS (/whois)
+                 * ---------------------
+                 * O administrador pergunta ao servidor os dados de IP de um dos
+                 * participantes do canal com o comando /whois <nickname>
+                 * 
+                 * ACTION_MUTE e ACTION_UMUTE (/mute e /unmute)
+                 * --------------------------------------------
+                 * O administrador habilita ou desabilita a capacidade de um participante
+                 * do canal de enviar mensagens com o comando /mute <nickname> ou /unmute <nickname>
+                 *
+                 * ACTION_KICK e ACTION_UKICK (/kick e /unkick)
+                 * --------------------------------------------
+                 * O administrador habilita ou desabilita a capacidade de um usuário do servidor
+                 * de entrar no seu canal com o comando /kick <nickname> ou /unkick <nickname>
+                 */
                 case ACTION_MODE:
                 case ACTION_INVITE:
                 case ACTION_WHOIS:
@@ -547,12 +593,15 @@ using namespace std;
                     pthread_mutex_unlock(chat.send_mutex);
                     break;
 
+
+                /**
+                 * HELP (/help)
+                 * ------------
+                 * Exibe o menu de ajuda para o usuário.
+                 */
                 case ACTION_HELP:
                     pthread_mutex_lock(terminal.terminal_mutex);
                         msg_help(&terminal);
-
-
-
                     pthread_mutex_unlock(terminal.terminal_mutex);
             }
         }
@@ -602,7 +651,6 @@ using namespace std;
         bool temp_bool;
         char temp_buffer_C[2*MAX_MESSAGE_LENGHT];
 
-        
         while(repeat_loop){
             
             // 1º - Verifica se existe algo no buffer de received.
@@ -618,16 +666,19 @@ using namespace std;
                     pthread_cond_wait(chat.cond_recv_waiting, chat.recv_mutex); 
                 }
 
+                // Caso o buffer esteja com pendencias, processa todas as mensagens na fila.
                 buffer_it = 0;
                 while(buffer_it < chat.recv_buff_size && chat.connection_status == CONNECTION_OPEN){
                     
                     memset(message, 0, sizeof(message));
                     message_it = 0;
 
+                    // retirando a próxima mensagem na fila do buffer.
                     do{
                         message[message_it++] = chat.recv_buff[buffer_it];
                     } while(chat.recv_buff[buffer_it++] != '\n' && message_it < MAX_MESSAGE_LENGHT);
 
+                    // Detectando a ACTION_*** referente à mensagem
                     action_code = cdc_detectar_act(message);
                     switch(action_code){
 
@@ -677,9 +728,7 @@ using namespace std;
 
                             } else if(response_code == ERR_CHANNELISFULL){
                                 sprintf(temp_buffer_C, "%so canal está LOTADO, selecione outro ou tente novamente mais tarde.\n", PREFIX_ERROR);
-
                             }
-
 
                             break;
 
@@ -689,7 +738,6 @@ using namespace std;
                             if(response_code == SUCCESS){
                                 sprintf(temp_buffer_C, "%scanais disponíveis: %s\n", PREFIX_SERVER, temp_buffer_A);
                             }
-
                             break;
 
                         case ACTION_MODE:
@@ -700,9 +748,7 @@ using namespace std;
 
                             } else if(response_code == ERR_CHANOPRIVSNEEDED){
                                 sprintf(temp_buffer_C, "%svocê não é o %sadministrador%s deste canal.\n", PREFIX_ERROR, COLORB_RED, COLOR_RED);
-
                             }
-
                             break;
 
                         case ACTION_WHOIS:
@@ -716,9 +762,7 @@ using namespace std;
                                 
                             } else if(response_code == ERR_NOSUCHNICK){
                                 sprintf(temp_buffer_C, "%snão foi possível localizar o usuário %s%s%s no canal.\n", PREFIX_ERROR, COLORB_RED, temp_buffer_A, COLOR_RED);
-
                             }
-
                             break;
 
                         case ACTION_INVITE:
@@ -792,9 +836,9 @@ using namespace std;
                 }
 
                 // Se chegou aqui, recv_buffer já foi totalmente decodificado então
+                // pode ser reinicializado e liberado.
                 memset(chat.recv_buff, 0, sizeof(chat.recv_buff));
                 chat.recv_buff_size = 0;
-
             pthread_mutex_unlock(chat.recv_mutex);
             
             // 2º - Verifica se existe algo no buffer de output para ser exibido.

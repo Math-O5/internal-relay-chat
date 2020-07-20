@@ -99,6 +99,7 @@ void msg_inicio(terminal_control* t){
 
 }
 
+// @Comentários em "terminal.h"
 void msg_help(terminal_control* t){
 
     printf(PREFIX_NORMAL); printf("%sLista de Comandos Gerais:%s\n", COLORB_WHITE, COLOR_WHITE);
@@ -134,37 +135,13 @@ void msg_help(terminal_control* t){
     }
 }
 
-
-
-
-
-    // BACKUP para visualizar as cores
-    // printf("  \033[0;30m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;31m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;32m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;33m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;34m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;35m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;36m[+]   Comandos de Controle: \n");
-    // printf("  \033[0;37m[+]   Comandos de Controle: \n");
-    // printf("  [ ]   \n");
-    // printf("  \033[1;30m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;31m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;32m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;33m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;34m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;35m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;36m[+]   Comandos de Controle: \n");
-    // printf("  \033[1;37m[+]   Comandos de Controle: \n");
-    // printf("%s\n", COLOR_RESET);
-
-    // backup logo com USP no inicio
-    // printf("%s\n\n", COLORB_YELLOW);
-    // printf("   ██╗   ██╗███████╗██████╗     ██████╗ ███████╗██╗      █████╗ ██╗   ██╗     ██████╗██╗  ██╗ █████╗ ████████╗\n");
-    // printf("   ██║   ██║██╔════╝██╔══██╗    ██╔══██╗██╔════╝██║     ██╔══██╗╚██╗ ██╔╝    ██╔════╝██║  ██║██╔══██╗╚══██╔══╝\n");
-    // printf("   ██║   ██║███████╗██████╔╝    ██████╔╝█████╗  ██║     ███████║ ╚████╔╝     ██║     ███████║███████║   ██║   \n");
-    // printf("   ██║   ██║╚════██║██╔═══╝     ██╔══██╗██╔══╝  ██║     ██╔══██║  ╚██╔╝      ██║     ██╔══██║██╔══██║   ██║   \n");
-    // printf("   ╚██████╔╝███████║██║         ██║  ██║███████╗███████╗██║  ██║   ██║       ╚██████╗██║  ██║██║  ██║   ██║   \n");
-    // printf("    ╚═════╝ ╚══════╝╚═╝         ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝        ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   \n");
-    // printf("                                                                        powered by VanLoon, Math05, JNagasava.\n");
-    // printf("\n"); 
+// backup logo com USP no inicio
+// printf("%s\n\n", COLORB_YELLOW);
+// printf("   ██╗   ██╗███████╗██████╗     ██████╗ ███████╗██╗      █████╗ ██╗   ██╗     ██████╗██╗  ██╗ █████╗ ████████╗\n");
+// printf("   ██║   ██║██╔════╝██╔══██╗    ██╔══██╗██╔════╝██║     ██╔══██╗╚██╗ ██╔╝    ██╔════╝██║  ██║██╔══██╗╚══██╔══╝\n");
+// printf("   ██║   ██║███████╗██████╔╝    ██████╔╝█████╗  ██║     ███████║ ╚████╔╝     ██║     ███████║███████║   ██║   \n");
+// printf("   ██║   ██║╚════██║██╔═══╝     ██╔══██╗██╔══╝  ██║     ██╔══██║  ╚██╔╝      ██║     ██╔══██║██╔══██║   ██║   \n");
+// printf("   ╚██████╔╝███████║██║         ██║  ██║███████╗███████╗██║  ██║   ██║       ╚██████╗██║  ██║██║  ██║   ██║   \n");
+// printf("    ╚═════╝ ╚══════╝╚═╝         ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝        ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   \n");
+// printf("                                                                        powered by VanLoon, Math05, JNagasava.\n");
+// printf("\n"); 

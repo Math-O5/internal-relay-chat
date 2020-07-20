@@ -14,12 +14,17 @@
   * | -- garantir que as mensagens respeitam o protocolo estabelecido
   * |    tanto no formato quando no tamanho máximo permitido.
   * 
-  * @TODO
-  * As funções de DECODING ainda não foram implementadas para esta versão
+  * As funções de DENCODING são responsáveis por:
+  * | -- interpretar as mensagens do protocolo de acordo com a ação.
+  * | -- extrair e validar os dados recebidos do servidor.
+  * | -- retornar os dados de maneira organizada e semântica.
   * 
   * Obs: Não cabe à codec.h fazer verificações de conexão, pois para ela só 
-  *      importa a manipulação de strings para envio ao servidor ou apresentação.
-  *      ao usuário via terminal. 
+  *      importa a manipulação de strings para envio ao servidor ou a extração
+  *      dos dados das mensagens recebidas.
+  *
+  * Obs 2: A biblioteca não altera nenhum estado do chat, apenas realiza o 
+  *        processamento das strings de comando. 
   */
 #ifndef CODEC_H
     #define CODEC_H 1459
@@ -37,7 +42,15 @@
      * 
      * Para a codec.h basta ser capaz de mapear quais ACTIONS existem
      * no programa.
-     *  
+     *
+     * SUCCESS
+     * Código que indica que uma operação foi realizada com sucesso no servidor.
+     * 
+     * RPL_NAMREPLY
+     * Código especial enviado após um /join que lista os membros de um servidor.
+     *
+     * ERR_*
+     * Códigos de erros enviados pelo servidor e definidos na RFC.
     */
       // COMANDOS GERAIS
       #define ACTION_NONE               0
@@ -136,9 +149,43 @@
        */
         int cdc_encode_connect(relay_chat* rc, const char* cmd, char* host, char* port);
 
-      char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
+      /**
+       * @function
+       * char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
+       * -------------------------------
+       * 
+       * Recebe e processa a string cmd referente à ACTION_NICKNAME enviada pelo
+       * usuário. Tem como função extrair do comando a string de nickname inserida
+       * pelo usuário e formatá-la no padrão do protocolo.
+       *
+       * Se tudo estiver correto retorna um ponteiro para a mensagem formatada e
+       * alocada na memória no formato "/nickname <nickname>\n"
+       * 
+       * return: (char*) apontando para a mensagem alocada.
+       *         NULL em caso de nickname ou comando inválido.
+       *
+       * Obs: char* deve ser desalocado pelo usuário posteriormente.
+       */
+        char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
 
-      char* cdc_encode_join(relay_chat* rc, const char* cmd);
+      /**
+       * @function
+       * char* cdc_encode_nickname(relay_chat* rc, const char* cmd);
+       * -------------------------------
+       * 
+       * Recebe e processa a string cmd referente à ACTION_JOIN enviada pelo
+       * usuário. Tem como função extrair do comando o nome do canal inserido
+       * pelo usuário e formatá-lo no padrão do protocolo.
+       *
+       * Se tudo estiver correto retorna um ponteiro para a mensagem formatada e
+       * alocada na memória no formato "/join <channel>\n"
+       * 
+       * return: (char*) apontando para a mensagem alocada.
+       *         NULL em caso de parâmetros ou comando inválido.
+       *
+       * Obs: char* deve ser desalocado pelo usuário posteriormente.
+       */
+        char* cdc_encode_join(relay_chat* rc, const char* cmd);
 
       /**
        * @function
@@ -160,35 +207,237 @@
        */
         char** cdc_encode_client_message(relay_chat* rc, const char* raw_str, int raw_str_len);
 
-      char* cdc_encode_mode(relay_chat* rc, const char* cmd);
-      char* cdc_encode_invite(relay_chat* rc, const char* cmd);
-      char* cdc_encode_whois(relay_chat* rc, const char* cmd);
-      char* cdc_encode_mute(relay_chat* rc, const char* cmd);
-      char* cdc_encode_unmute(relay_chat* rc, const char* cmd);
-      char* cdc_encode_kick(relay_chat* rc, const char* cmd);
-      char* cdc_encode_unkick(relay_chat* rc, const char* cmd);
+      /**
+       * @function
+       * char* cdc_encode_mode(relay_chat* rc, const char* cmd);
+       * -------------------------------
+       * Recebe e processa a string cmd referente à ACTION_MODE enviada pelo
+       * usuário. Tem como função extrair e vaidar do comando os parâmetros
+       * inseridos pelo usuário.
+       *
+       * Se tudo estiver correto retorna um ponteiro para a mensagem formatada e
+       * alocada na memória no formato "/mode [+i|-i]\n"
+       * 
+       * return: (char*) apontando para a mensagem alocada.
+       *         NULL em caso de parâmetros ou comando inválido.
+       *
+       * Obs: char* deve ser desalocado pelo usuário posteriormente.
+       */
+        char* cdc_encode_mode(relay_chat* rc, const char* cmd);
 
+      /**
+       * @function
+       * char* cdc_encode_invite(relay_chat* rc, const char* cmd);
+       * char* cdc_encode_whois(relay_chat* rc, const char* cmd);
+       * char* cdc_encode_mute(relay_chat* rc, const char* cmd);
+       * char* cdc_encode_unmute(relay_chat* rc, const char* cmd);
+       * char* cdc_encode_kick(relay_chat* rc, const char* cmd);
+       * char* cdc_encode_unkick(relay_chat* rc, const char* cmd);
+       * -------------------------------
+       * Todas as funções acima processam uma string com um fluxo genérico 
+       * em comum e portanto podem ser explicadas conjuntamente.
+       * -------------------------------
+       * Recebe e processa a string cmd referente à ACTION_X enviada pelo
+       * usuário. Tem como função extrair do comando o nickname inserido pelo
+       * usuário, validá-lo e em seguida formatar uma nova string no padrão
+       * do protocolo.
+       *
+       * Se tudo estiver correto retorna um ponteiro para a mensagem formatada e
+       * alocada na memória no formato "/X <nickname>\n"
+       * 
+       * return: (char*) apontando para a mensagem alocada.
+       *         NULL em caso de nickname ou comando inválido.
+       *
+       * Obs: char* deve ser desalocado pelo usuário posteriormente.
+       */
+        char* cdc_encode_invite(relay_chat* rc, const char* cmd);
+        char* cdc_encode_whois(relay_chat* rc, const char* cmd);
+        char* cdc_encode_mute(relay_chat* rc, const char* cmd);
+        char* cdc_encode_unmute(relay_chat* rc, const char* cmd);
+        char* cdc_encode_kick(relay_chat* rc, const char* cmd);
+        char* cdc_encode_unkick(relay_chat* rc, const char* cmd);
 
-      int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin, char* channel_members);
+      /**
+       * @function
+       * int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_NICKNAME recebida pelo 
+       * servidor a fim de extrair e validar os dados recebidos.
+       * 
+       * Caso o nickname recebido seja válido o valor é copiado em (*nickname) para
+       * ser retornado ao usuário.
+       * 
+       *
+       * return: INVALID_PROTOCOL  - parâmetros ou nickname inválidos
+       *         SUCCESS           - nickname definido com sucesso no servidor.
+       *         ERR_NICKNAMEINUSE - nickname válido porém em uso por outro cliente.
+       *         ERR_ERRONEUSNICKNAME - nickname inválido segundo o servidor.
+       */
+        int cdc_decode_nickname(relay_chat* rc, const char* cmd, char* nickname);
+      
+      /**
+       * @function
+       *  int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin, char* channel_members);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_JOIN recebida pelo 
+       * servidor a fim de extrair e validar os dados recebidos.
+       * 
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * (char* channel, bool* is_admin, char* channel_members).
+       * 
+       *
+       * return: INVALID_PROTOCOL   - parâmetros ou dados inválidos
+       *         SUCCESS            - conexão ao canal feita com sucesso. 
+       *         ERR_INVITEONLYCHAN - o canal existe porém necessita de convites.
+       *         ERR_BANNEDFROMCHAN - o canal existe porém o usuário foi proibido de acessar.
+       *         ERR_TOOMANYCHANNELS - o servidor esgotou os slots de canais.
+       *         ERR_CHANNELISFULL   - o canal já atingiu o máximo de participantes.
+       */
+        int cdc_decode_join(relay_chat* rc, const char* cmd, char* channel, bool* is_admin, char* channel_members);
 
+      /**
+       * @function
+       * int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_MSG recebida pelo 
+       * servidor a fim de extrair e validar os dados recebidos.
+       * 
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * (char* nickname, char* content), senão o conteúdo é ignorado.
+       * 
+       *
+       * return: INVALID_PROTOCOL   - parâmetros ou dados inválidos
+       *         SUCCESS            - formato correto e parâmetros salvos.
+       */
       int cdc_decode_client_message(relay_chat* rc, const char* cmd, char* nickname, char* content);
-      int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);
+      
+      
+      /**
+       * @function
+       * int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_LIST recebida pelo 
+       * servidor a fim de extrair e validar os dados recebidos.
+       * 
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * (char* channels), senão o conteúdo é ignorado.
+       * 
+       *
+       * return: INVALID_PROTOCOL   - parâmetros ou dados inválidos
+       *         SUCCESS            - formato correto e parâmetros salvos.
+       */
+        int cdc_decode_list(relay_chat* rc, const char* cmd, char* channels);
 
-      int cdc_decode_mode(relay_chat* rc, const char* cmd);
-      int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
+     /**
+       * @function
+       * int cdc_decode_mode(relay_chat* rc, const char* cmd);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_MODE, retornando 
+       * se o modo do canal foi alterado com sucesso segundo o servidor.
+       * 
+       * return: INVALID_PROTOCOL     - parâmetros ou dados inválidos
+       *         SUCCESS              - formato correto e parâmetros salvos.
+       *         ERR_CHANOPRIVSNEEDED - o usuário não possui privilégio de administrador do canal.
+       */
+        int cdc_decode_mode(relay_chat* rc, const char* cmd);
 
-      int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
-      int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
+      /**
+       * @function
+       * int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_WHOIS recebida do 
+       * servidor e extrai os parâmetros recebidos.
+       *
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * char* nickname, char* ip_info), senão o conteúdo é ignorado.
+       * 
+       * return: INVALID_PROTOCOL     - parâmetros ou dados inválidos
+       *         SUCCESS              - formato correto e parâmetros salvos.
+       *         ERR_CHANOPRIVSNEEDED - o usuário não possui privilégio de administrador do canal.
+       */
+        int cdc_decode_whois(relay_chat* rc, const char* cmd, char* nickname, char* ip_info);
 
-      int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
-      int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
+      /**
+       * @function
+       * int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
+       * int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
+       * int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
+       * int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
+       * int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
+       * -------------------------------
+       * Todas as funções acima processam um comando com um fluxo genérico 
+       * em comum e portanto podem ser explicadas conjuntamente.
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_X recebida do 
+       * servidor e extrai os parâmetros recebidos.
+       *
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * (char* nickname), senão o conteúdo é ignorado.
+       * 
+       * return: INVALID_PROTOCOL     - parâmetros ou dados inválidos
+       *         SUCCESS              - formato correto e parâmetros salvos.
+       *         ERR_CHANOPRIVSNEEDED - o usuário não possui privilégio de administrador do canal.
+       *         ERR_NOSUCHNICK       - o nickname informado não consta no canal ou no servidor.
+       */
+        int cdc_decode_invite(relay_chat* rc, const char* cmd, char* nickname);
+        int cdc_decode_mute(relay_chat* rc, const char* cmd, char* nickname);
+        int cdc_decode_unmute(relay_chat* rc, const char* cmd, char* nickname);
+        int cdc_decode_kick(relay_chat* rc, const char* cmd, char* nickname);
+        int cdc_decode_unkick(relay_chat* rc, const char* cmd, char* nickname);
 
-      int is_valid_channel_name(char* name);
-      int is_valid_nickname(char* name);
+      /**
+       * @function
+       * int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
+       * int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
+       * -------------------------------
+       * Todas as funções acima processam um comando com um fluxo genérico 
+       * em comum e portanto podem ser explicadas conjuntamente.
+       * -------------------------------
+       * Processa uma mensagem/comando referente à ACTION_X recebida do 
+       * servidor e extrai os parâmetros recebidos.
+       *
+       * Caso os parâmetros estejam corretos os mesmos serão salvos nos parâmetros
+       * (char* content), senão o conteúdo é ignorado.
+       * 
+       * return: INVALID_PROTOCOL     - parâmetros ou dados inválidos
+       *         SUCCESS              - formato correto e parâmetros salvos.
+       */
+        int cdc_decode_server_message(relay_chat* rc, const char* cmd,  char* content);
+        int cdc_decode_channel_message(relay_chat* rc, const char* cmd,  char* content);
+
+      /**
+       * @function
+       * int is_valid_channel_name(char* name);
+       * -------------------------------
+       * Verifica se o parametro name está válido segundo o formato estabelecido
+       * pelo protocolo implementado.
+       *
+       * nome de canal valido: 
+       * - 1º caracter precisa ser '&' .
+       * - apenas caractéres imprimíveis.
+       * - não pode haver virgulas ou espaços em branco em meio ao nome.
+       *
+       * returne: true  - nome de canal válido
+       *          false - nome de canal inválido
+       */
+        int is_valid_channel_name(char* name);
+
+      /**
+       * @function
+       * int is_valid_channel_name(char* name);
+       * -------------------------------
+       * Verifica se o parametro name está válido segundo o formato estabelecido
+       * pelo protocolo implementado.
+       *
+       * nickname valido: 
+       * - caracteres alfabéticas [a-z e A-Z]
+       * - números [0-9]
+       - - traços '-' e undersocores '_'
+       * 
+       * returne: true  - a string é um nickname válido
+       *          false - nickname invalido.  
+       */
+        int is_valid_nickname(char* name);
 
 
 #endif 

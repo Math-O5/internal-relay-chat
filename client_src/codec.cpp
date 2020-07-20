@@ -4,83 +4,83 @@
 #include <string>
 #include <string.h>
 
-int cdc_detectar_act(const char* cmd){
+    int cdc_detectar_act(const char* cmd){
 
-    int action_code = ACTION_NONE;
+        int action_code = ACTION_NONE;
 
-    /**
-     * strstr(cmd, "/COMMAND") == cmd
-     * 
-     * O comando só é valido se o usuário iniciar a mensagem
-     * com /, caso contrário será sempre considerado uma mensagem.
-     */
+        /**
+        * strstr(cmd, "/COMMAND") == cmd
+        * 
+        * O comando só é valido se o usuário iniciar a mensagem
+        * com /, caso contrário será sempre considerado uma mensagem.
+        */
 
-    // COMANDOS GERAIS
-    if ( strstr(cmd, "/connect") == cmd ){
-        action_code = ACTION_CONNECT;
-    
-    } else if ( strstr(cmd, "/disconnect") == cmd ) {
-        action_code = ACTION_DISCONNECT;
-    
-    } else if ( strstr(cmd, "/quit") == cmd ) {
-        action_code = ACTION_QUIT;
-    
-    } else if ( strstr(cmd, "/help") == cmd ) {
-        action_code = ACTION_HELP;
-
-    } else if ( strstr(cmd, "/ping") == cmd ) {
-        action_code = ACTION_PING;
-    }
-
-    // COMANDOS QUE ALTERAM ESTADO DO CLIENTE 
-    else if ( strstr(cmd, "/nickname") == cmd ) {
-        action_code = ACTION_NICK;
-
-    } else if ( strstr(cmd, "/join") == cmd ) {
-        action_code = ACTION_JOIN;
-    }
-    
-    // COMANDOS ADMINISTRADOR
-    else if ( strstr(cmd, "/mode") == cmd ) {
-        action_code = ACTION_MODE;
-
-    } else if ( strstr(cmd, "/invite") == cmd ) {
-        action_code = ACTION_INVITE;
-
-    }  else if ( strstr(cmd, "/whois") == cmd ) {
-        action_code = ACTION_WHOIS;
-
-    } else if ( strstr(cmd, "/mute") == cmd ) {
-        action_code = ACTION_MUTE;
+        // COMANDOS GERAIS
+        if ( strstr(cmd, "/connect") == cmd ){
+            action_code = ACTION_CONNECT;
         
-    }  else if ( strstr(cmd, "/unmute") == cmd ) {
-        action_code = ACTION_UNMUTE;
+        } else if ( strstr(cmd, "/disconnect") == cmd ) {
+            action_code = ACTION_DISCONNECT;
+        
+        } else if ( strstr(cmd, "/quit") == cmd ) {
+            action_code = ACTION_QUIT;
+        
+        } else if ( strstr(cmd, "/help") == cmd ) {
+            action_code = ACTION_HELP;
 
-    } else if ( strstr(cmd, "/kick") == cmd ) {
-        action_code = ACTION_KICK;
+        } else if ( strstr(cmd, "/ping") == cmd ) {
+            action_code = ACTION_PING;
+        }
 
-    } else if ( strstr(cmd, "/unkick") == cmd ) {
-        action_code = ACTION_UNKICK;
-    } 
-    
-    // COMANDOS ESPECIAIS SERVIDOR >> CLIENTE
-    else if ( strstr(cmd, "/servermsg") == cmd ) {
-        action_code = ACTION_SERVERMSG;
+        // COMANDOS QUE ALTERAM ESTADO DO CLIENTE 
+        else if ( strstr(cmd, "/nickname") == cmd ) {
+            action_code = ACTION_NICK;
 
-    } else if ( strstr(cmd, "/channelmsg") == cmd ) {
-        action_code = ACTION_CHANNELMSG;
-    }  
+        } else if ( strstr(cmd, "/join") == cmd ) {
+            action_code = ACTION_JOIN;
+        }
+        
+        // COMANDOS ADMINISTRADOR
+        else if ( strstr(cmd, "/mode") == cmd ) {
+            action_code = ACTION_MODE;
 
-    // COMANDO DO CANAL
-    else if ( strstr(cmd, "/list") == cmd ) {
-        action_code = ACTION_LIST;
+        } else if ( strstr(cmd, "/invite") == cmd ) {
+            action_code = ACTION_INVITE;
 
-    } else if (strstr(cmd, "/msg ") == cmd || cmd[0] != '/') {             // Obs: (cmd[0] != '/') impede de enviar 
-        action_code = ACTION_MESSAGE;       //      um comando como mensagem sem querer.
+        }  else if ( strstr(cmd, "/whois") == cmd ) {
+            action_code = ACTION_WHOIS;
+
+        } else if ( strstr(cmd, "/mute") == cmd ) {
+            action_code = ACTION_MUTE;
+            
+        }  else if ( strstr(cmd, "/unmute") == cmd ) {
+            action_code = ACTION_UNMUTE;
+
+        } else if ( strstr(cmd, "/kick") == cmd ) {
+            action_code = ACTION_KICK;
+
+        } else if ( strstr(cmd, "/unkick") == cmd ) {
+            action_code = ACTION_UNKICK;
+        } 
+        
+        // COMANDOS ESPECIAIS SERVIDOR >> CLIENTE
+        else if ( strstr(cmd, "/servermsg") == cmd ) {
+            action_code = ACTION_SERVERMSG;
+
+        } else if ( strstr(cmd, "/channelmsg") == cmd ) {
+            action_code = ACTION_CHANNELMSG;
+        }  
+
+        // COMANDO DO CANAL
+        else if ( strstr(cmd, "/list") == cmd ) {
+            action_code = ACTION_LIST;
+
+        } else if (strstr(cmd, "/msg ") == cmd || cmd[0] != '/') {             // Obs: (cmd[0] != '/') impede de enviar 
+            action_code = ACTION_MESSAGE;       //      um comando como mensagem sem querer.
+        }
+
+        return action_code;
     }
-
-    return action_code;
-}
 
 
 // COMANDOS GERAIS

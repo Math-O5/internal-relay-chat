@@ -41,6 +41,13 @@
      *  
      * BUFFER_SIZE
      * Tamanho máximo que o buffer de output pode ocupar.
+     *
+     * COLOR_* e COLORB_* 
+     * Conjunto de caractéres especiais utilizados para estilizar a cor de
+     * texto no output do terminal.
+     *
+     * PREFIX_*
+     * Configurações pré-definidas de possíveis outputs.
      */
 
         #define MAX_MESSAGE_LENGHT 512
@@ -183,8 +190,17 @@
          */
         void msg_inicio(terminal_control* t);
 
+        /**
+         * @custom_message
+         * void msg_inicio(&t)
+         * -------------------
+         * Encapsula uma sequência de printf's que exibe todos os comandos implementados
+         * e disponíveis pro usuário.
+         *
+         * Obs: é uma função que bloqueia o terminal e apaga os outputs após a inserção
+         *      da tecla ENTER para não atrapalhar a usabilidade.
+         */
         void msg_help(terminal_control* t);
-
 
 
 #endif
