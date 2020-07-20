@@ -136,7 +136,7 @@
      */
         typedef struct _relay_chat {
             // atributos de conexão
-            char            sserver[24], sport[24];
+            char            sserver[60], sport[30];
             struct hostent  *server;
             int             port;
             int             network_socket;

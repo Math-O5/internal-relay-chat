@@ -92,7 +92,7 @@
         char temp_host[120]; 
         char temp_port[120];
 
-        int nro_itens = sscanf(cmd, "/connect %119s %119s", temp_host, temp_port);
+        int nro_itens = sscanf(cmd, "/connect %59s %29s", temp_host, temp_port);
 
         if(nro_itens >= 1) {
             strcpy(host, temp_host);
